@@ -1,0 +1,14 @@
+# environment and secrets
+.venv/
+.env
+.env.*
+# generated data (rebuild with build_suites.py / build_arabic.py and the run_* scripts)
+*.jsonl
+*.log
+__pycache__/
+.DS_Store
+# local copies of third-party files and stale duplicates
+bench/
+laya/
+laya_ref/
+models/
