@@ -34,41 +34,9 @@ mkdir -p _site && cp site/* results.json _site/ && python3 -m http.server 8062 -
 
 ## Roadmap
 
-Models to add next, researched 2026-10-07. Several vendors publish their own scores; none go on the site until they've run
-here like every other model. The roadmap on the site renders from `site/meta.json`, so update both together.
-
-**Runs today on OpenRouter's Decisions API**
-
-- **Perplexity Decider V1 27B** (`perplexity/pplx-decider-v1-27b`): $0.04 per 1M input tokens. Open weights (Apache-2.0); answers all three question types and reads images.
-- **Liquid AI d1** (`liquid/d1`): $0.04 per 1M input tokens. 65K context.
-- **Cloudflare Clef and Clef Flash** (`cloudflare/clef, cloudflare/clef-flash`): $0.24 and $0.09 per 1M input tokens. Open weights (27B and 9B), so they can run both hosted and locally.
-- **Upstage Solar Decide** (`upstage/solar-decide`): $0.05 per 1M input tokens. 524K context, for a long-state track.
-- **Inception Mercury Decide** (`inception/mercury-decide:free`): Free. A diffusion model, so mainly a latency test.
-- **Kev 4B** (`jaredpalmer/kev-4b`): $0.042 per 1M input tokens. English only, 8K context, open weights.
-- **Together Tev1 4B Experimental** (`togethercomputer/tev1-4b-experimental`): Choice questions only (2 to 24 options), so it runs on a subset.
-- **Respan Span-01 and Span-01 Lite** (`respan/span-01, respan/span-01-lite:free`): Yes/no questions only, aimed at judging conversations.
-
-**Needs a small adapter**
-
-- **Fastino GLiDE** (`api.fastino.ai/v1/systemone`): Same request shape on Fastino's own API, so only the base URL and key change. $0.15 per 1M input tokens.
-- **Fastino GLiNER2.5-Decide and multi-Decide** (`Hugging Face, fastino/GLiNER2.5-Decide`): 340M open-weight models; the multi version is multilingual.
-- **Laya Multilingual** (`Hugging Face, convaiinnovations/laya-multilingual`): The base model of both Arabic fine-tunes, so the fair control for them.
-- **vLLM Semantic Router Decision-2.0** (`Hugging Face, vllm-sr/Decision-2.0-*`): Six sizes from 0.6B to 27B: a model-size sweep on one recipe.
-- **Plain chat-model baselines** (`openai/gpt-6-luna, qwen/qwen3.5-9b`): The same base models as Luna Decisions and Clef Flash, prompted for JSON. Shows what decision training adds.
-- **GLiClass Multilang** (`Hugging Face, knowledgator/gliclass-multilang-mini`): Small zero-shot classifier trained on 20 languages including Arabic: a cheap multilingual floor.
-
-**Watching**
-
-- **Community distills** (`JEV-9B, GEV-26B-Decide, Mapika decider, wfzyx/von`): Unofficial open models trained to imitate decision models. Worth a run once they have model cards and licences.
-- **Other leaderboards** (`JevBench, Decision Index`): External results to cross-check ours against.
-
-Sources: [OpenRouter Decisions models](https://openrouter.ai/api/v1/models?output_modalities=decisions),
-[Fastino System One API](https://docs.fastino.ai/inference/systemone),
-[Perplexity Decisions](https://docs.perplexity.ai/docs/decisions/quickstart),
-[Cloudflare Clef](https://blog.cloudflare.com/clef-decision-models),
-[Laya Multilingual](https://huggingface.co/convaiinnovations/laya-multilingual),
-[vLLM Semantic Router Decision-2.0](https://huggingface.co/vllm-sr/Decision-2.0-Kai-0.6B),
-[GLiClass Multilang](https://huggingface.co/knowledgator/gliclass-multilang-mini).
+The roadmap lives in `site/meta.json` and is published at [systemonebench.dev/#roadmap](https://systemonebench.dev/#roadmap).
+As of 2026-10-07 it lists 8 models that run today on OpenRouter's Decisions API, 6 that need a small adapter, and 2 entries
+on a watch list. Several vendors publish their own scores; none go on the site until they've run here like every other model.
 
 ## Live race
 

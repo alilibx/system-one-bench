@@ -477,7 +477,7 @@ function renderMatrix() {
 
 function renderRoadmap() {
   $("road").innerHTML = (M.roadmap || []).map(g => `<div class="card"><h3>${esc(g.title)}</h3><p class="count">${g.items.length} ${g.items.length === 1 ? "entry" : "entries"}</p><ul>${
-    g.items.map(i => `<li><b>${esc(i.name)}</b><code>${esc(i.access)}</code><span>${esc(i.note)}</span></li>`).join("")}</ul></div>`).join("");
+    g.items.map(i => `<li><b>${esc(i.name)}</b>${i.access ? `<code>${esc(i.access)}</code>` : ""}<span>${esc(i.note)}</span></li>`).join("")}</ul></div>`).join("");
 }
 
 function tabs(id, onPick) {

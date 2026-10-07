@@ -157,7 +157,6 @@
   },
   "roadmap": [
     {
-      "stage": "Next",
       "title": "Runs today on OpenRouter's Decisions API",
       "items": [
         {
@@ -203,7 +202,6 @@
       ]
     },
     {
-      "stage": "Adapter",
       "title": "Needs a small adapter",
       "items": [
         {
@@ -213,18 +211,18 @@
         },
         {
           "name": "Fastino GLiNER2.5-Decide and multi-Decide",
-          "access": "Hugging Face, fastino/GLiNER2.5-Decide",
-          "note": "340M open-weight models; the multi version is multilingual."
+          "access": "fastino/GLiNER2.5-Decide, fastino/GLiNER2.5-multi-Decide",
+          "note": "Open weights on Hugging Face. 340M open-weight models; the multi version is multilingual."
         },
         {
           "name": "Laya Multilingual",
-          "access": "Hugging Face, convaiinnovations/laya-multilingual",
-          "note": "The base model of both Arabic fine-tunes, so the fair control for them."
+          "access": "convaiinnovations/laya-multilingual",
+          "note": "Open weights on Hugging Face. The base model of both Arabic fine-tunes, so the fair control for them."
         },
         {
           "name": "vLLM Semantic Router Decision-2.0",
-          "access": "Hugging Face, vllm-sr/Decision-2.0-*",
-          "note": "Six sizes from 0.6B to 27B: a model-size sweep on one recipe."
+          "access": "vllm-sr/Decision-2.0-{Kai-0.6B … Vega-27B}",
+          "note": "Open weights on Hugging Face. Six sizes from 0.6B to 27B: a model-size sweep on one recipe."
         },
         {
           "name": "Plain chat-model baselines",
@@ -233,24 +231,23 @@
         },
         {
           "name": "GLiClass Multilang",
-          "access": "Hugging Face, knowledgator/gliclass-multilang-mini",
-          "note": "Small zero-shot classifier trained on 20 languages including Arabic: a cheap multilingual floor."
+          "access": "knowledgator/gliclass-multilang-mini",
+          "note": "Open weights on Hugging Face. Small zero-shot classifier trained on 20 languages including Arabic: a cheap multilingual floor."
         }
       ]
     },
     {
-      "stage": "Watching",
       "title": "Watching",
       "items": [
         {
           "name": "Community distills",
-          "access": "JEV-9B, GEV-26B-Decide, Mapika decider, wfzyx/von",
-          "note": "Unofficial open models trained to imitate decision models. Worth a run once they have model cards and licences."
+          "access": "",
+          "note": "Unofficial open models trained to imitate decision models: JEV-9B, GEV-26B-Decide, the Mapika decider family and wfzyx/von. Worth a run once they have model cards and licences."
         },
         {
           "name": "Other leaderboards",
-          "access": "JevBench, Decision Index",
-          "note": "External results to cross-check ours against."
+          "access": "",
+          "note": "JevBench and Decision Index publish decision-model results to cross-check ours against."
         }
       ]
     }
