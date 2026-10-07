@@ -1,10 +1,32 @@
-# Jev vs OpenAI Decisions (and Laya)
+# System One Bench
 
-Head-to-head benchmark of TypeSafe Jev against OpenAI's GPT-6 Luna Decisions, both called through
-[OpenRouter's Decisions API](https://openrouter.ai/docs/api/api-reference/alphadecisions/submit-a-decisions-questions-and-answers-request)
-(`POST https://openrouter.ai/api/alpha/decisions`). An earlier round compared Jev with
-[convaiinnovations/laya](https://huggingface.co/convaiinnovations/laya) (open weights, run locally); those results are
-further down. Every model gets byte-identical `state` + `questions` bodies.
+A benchmark for System One models: models that read a `state` and answer named questions with typed, probabilistic
+answers (`noul` yes/no, `choice`, and ordered `score`) in one fast call. Every model gets byte-identical `state` +
+`questions` bodies, and is scored on accuracy, calibration, latency, and cost across 16 labelled datasets (3,250 cases,
+4,850 decisions) in English, French, and Arabic. A live race runs two models side by side on the same cases.
+
+Models covered so far:
+
+| Model | How it runs | Round |
+|---|---|---|
+| TypeSafe Jev (`typesafe/jev-1.13`) | [OpenRouter Decisions API](https://openrouter.ai/docs/api/api-reference/alphadecisions/submit-a-decisions-questions-and-answers-request), or the TypeSafe API | all |
+| OpenAI GPT-6 Luna Decisions (`openai/gpt-6-luna-decisions`) | OpenRouter Decisions API | 2026-10-07 |
+| [convaiinnovations/laya](https://huggingface.co/convaiinnovations/laya) and its Arabic fine-tunes | open weights, locally on Apple MPS | 2026-09-23, 2026-09-25 |
+
+Both API models are called at `POST https://openrouter.ai/api/alpha/decisions`, so they share one gateway.
+
+**Latest results: [alilibx.github.io/system-one-bench](https://alilibx.github.io/system-one-bench/)**
+
+## Results site
+
+`site/` is a static page that reads `results.json` and `site/meta.json` (display names, makers, run dates, and dataset
+descriptions). `.github/workflows/pages.yml` publishes it to GitHub Pages on every push to `main` that touches
+`results.json` or `site/`, so re-running `score.py` and merging is all it takes to update it. When you add a model, give
+it an entry in `site/meta.json`. To preview locally:
+
+```bash
+mkdir -p _site && cp site/* results.json _site/ && python3 -m http.server 8062 -d _site
+```
 
 ## Live race
 

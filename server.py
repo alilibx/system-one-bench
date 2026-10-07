@@ -1,4 +1,4 @@
-"""Live race: TypeSafe Jev vs a challenger on the same labelled cases.
+"""System One Bench live race: TypeSafe Jev vs a challenger on the same labelled cases.
 
 Challengers: OpenAI's GPT-6 Luna Decisions (OpenRouter Decisions API), and, with LAYA=1, Laya running locally.
 

@@ -1,0 +1,30 @@
+{
+  "updated": "2026-10-07",
+  "models": {
+    "or_jev": {"label": "Jev 1.13", "maker": "TypeSafe", "access": "OpenRouter API", "slug": "typesafe/jev-1.13", "run": "2026-10-07", "series": 1, "shape": "circle", "latency": "API, 8 in flight"},
+    "luna": {"label": "GPT-6 Luna Decisions", "maker": "OpenAI", "access": "OpenRouter API", "slug": "openai/gpt-6-luna-decisions", "run": "2026-10-07", "series": 2, "shape": "circle", "latency": "API, 8 in flight"},
+    "laya_router": {"label": "Laya Router", "maker": "Convai Innovations", "access": "Open weights, local", "slug": "convaiinnovations/laya", "run": "2026-09-23", "series": 3, "shape": "circle", "latency": "Apple M5 GPU, one at a time"},
+    "laya_ara": {"label": "laya-ara", "maker": "Wouze", "access": "Open weights, local", "slug": "Wouze/laya-ara", "run": "2026-09-25", "series": 3, "shape": "square", "latency": "Apple M5 GPU, one at a time"},
+    "laya_ara-rag": {"label": "laya-ara-rag", "maker": "Wouze", "access": "Open weights, local", "slug": "Wouze/laya-ara-rag", "run": "2026-09-25", "series": 3, "shape": "diamond", "latency": "Apple M5 GPU, one at a time"},
+    "jev": {"label": "Jev 1.13", "maker": "TypeSafe", "access": "TypeSafe API", "slug": "jev-1.13.0", "run": "2026-09-23", "series": 1, "shape": "circle", "latency": "API, 8 in flight", "note": "Same model as the OpenRouter run, measured two weeks earlier. Left out of the dataset chart.", "chart": false}
+  },
+  "languages": ["English", "French", "Arabic"],
+  "suites": {
+    "ag_news": {"label": "AG News", "task": "News topic, 4 options", "lang": "English"},
+    "sst2": {"label": "SST-2", "task": "Movie review sentiment, yes/no", "lang": "English"},
+    "sst5": {"label": "SST-5", "task": "Sentiment on a 5-level score", "lang": "English"},
+    "emotion": {"label": "DAIR Emotion", "task": "Emotion, 6 options", "lang": "English"},
+    "banking77": {"label": "Banking77", "task": "Banking intent, 77 options", "lang": "English"},
+    "boolq": {"label": "BoolQ", "task": "Reading comprehension, yes/no", "lang": "English"},
+    "xnli_en": {"label": "XNLI English", "task": "Does one sentence follow from another, 3 options", "lang": "English"},
+    "typed-decisions": {"label": "Typed decisions", "task": "Agent and product states, 5 questions per case", "lang": "English"},
+    "xnli_fr": {"label": "XNLI French", "task": "Does one sentence follow from another, 3 options", "lang": "French"},
+    "xnli_ar": {"label": "XNLI Arabic", "task": "Does one sentence follow from another, 3 options", "lang": "Arabic"},
+    "ar_massive_scenario": {"label": "MASSIVE scenario", "task": "Assistant request scenario, 18 options", "lang": "Arabic"},
+    "ar_massive_intent": {"label": "MASSIVE intent", "task": "Assistant request intent, 20 options", "lang": "Arabic"},
+    "ar_offensive": {"label": "OSACT4 offensive", "task": "Offensive tweet, yes/no", "lang": "Arabic"},
+    "ar_sentiment": {"label": "Tweet sentiment", "task": "Sentiment, 3 options", "lang": "Arabic"},
+    "ar_miracl_rerank": {"label": "MIRACL rerank", "task": "Pick the relevant passage out of 8", "lang": "Arabic"},
+    "ar_miracl_pair": {"label": "MIRACL pairwise", "task": "Is this passage relevant, yes/no", "lang": "Arabic"}
+  }
+}
