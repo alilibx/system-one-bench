@@ -7,13 +7,20 @@ answers (`noul` yes/no, `choice`, and ordered `score`) in one fast call. Every m
 
 Models covered so far:
 
-| Model | How it runs | Round |
-|---|---|---|
-| TypeSafe Jev (`typesafe/jev-1.13`) | [OpenRouter Decisions API](https://openrouter.ai/docs/api/api-reference/alphadecisions/submit-a-decisions-questions-and-answers-request), or the TypeSafe API | all |
-| OpenAI GPT-6 Luna Decisions (`openai/gpt-6-luna-decisions`) | OpenRouter Decisions API | 2026-10-07 |
-| [convaiinnovations/laya](https://huggingface.co/convaiinnovations/laya) and its Arabic fine-tunes | open weights, locally on Apple MPS | 2026-09-23, 2026-09-25 |
+| Model | Maker | How it runs | Round |
+|---|---|---|---|
+| Jev 1.13 (`typesafe/jev-1.13`) | TypeSafe | OpenRouter Decisions API, or the TypeSafe API | all |
+| GPT-6 Luna Decisions (`openai/gpt-6-luna-decisions`) | OpenAI | OpenRouter Decisions API | 2026-10-07 |
+| Decider V1 27B (`perplexity/pplx-decider-v1-27b`) | Perplexity | OpenRouter Decisions API | 2026-10-07 |
+| d1 (`liquid/d1`) | Liquid AI | OpenRouter Decisions API | 2026-10-07 |
+| Clef and Clef Flash (`cloudflare/clef`, `cloudflare/clef-flash`) | Cloudflare | OpenRouter Decisions API | 2026-10-07 |
+| Solar Decide (`upstage/solar-decide`) | Upstage | OpenRouter Decisions API | 2026-10-07 |
+| Mercury Decide (`inception/mercury-decide:free`) | Inception | OpenRouter Decisions API, free tier | 2026-10-07 |
+| Kev 4B (`jaredpalmer/kev-4b`) | Jared Palmer | OpenRouter Decisions API | 2026-10-07 |
+| Tev1 4B Experimental (`togethercomputer/tev1-4b-experimental`) | Together AI | OpenRouter Decisions API | 2026-10-07 |
+| [Laya](https://huggingface.co/convaiinnovations/laya) and its Arabic fine-tunes | Convai Innovations, Wouze | open weights, locally on Apple MPS | 2026-09-23, 2026-09-25 |
 
-Both API models are called at `POST https://openrouter.ai/api/alpha/decisions`, so they share one gateway.
+Every API model is called at `POST https://openrouter.ai/api/alpha/decisions`, so they all share one gateway.
 
 **Latest results: [systemonebench.dev](https://systemonebench.dev/)**
 
@@ -49,8 +56,8 @@ OPENROUTER_API_KEY=<your key> .venv/bin/python server.py
 OPENROUTER_API_KEY=kerstel://global/OPENROUTER_API_KEY ks run -- .venv/bin/python server.py
 ```
 
-Then open http://localhost:8061, pick a dataset, and press **Start race**. The default challenger is OpenAI Decisions
-(`openai/gpt-6-luna-decisions`). Jev runs as `typesafe/jev-1.13` on the same OpenRouter endpoint, so both lanes pay the
+Then open http://localhost:8061, pick a dataset and a challenger, and press **Start race**. Every API model on the
+leaderboard is available as a challenger; the default is OpenAI Decisions (`openai/gpt-6-luna-decisions`). Jev runs as `typesafe/jev-1.13` on the same OpenRouter endpoint, so both lanes pay the
 same gateway overhead. Each lane shows accuracy, latency and the summed `usage.cost` of its calls. The key stays in the
 server process and never reaches the browser; keep it in a secrets manager, never in this repo. "API parallel 1" is the
 fair setting: one request in flight per model.
