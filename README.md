@@ -56,16 +56,16 @@ OPENROUTER_API_KEY=<your key> .venv/bin/python server.py
 OPENROUTER_API_KEY=kerstel://global/OPENROUTER_API_KEY ks run -- .venv/bin/python server.py
 ```
 
-Then open http://localhost:8061, pick a dataset and a challenger, and press **Start race**. Every API model on the
-leaderboard is available as a challenger; the default is OpenAI Decisions (`openai/gpt-6-luna-decisions`). Jev runs as `typesafe/jev-1.13` on the same OpenRouter endpoint, so both lanes pay the
-same gateway overhead. Each lane shows accuracy, latency and the summed `usage.cost` of its calls. The key stays in the
-server process and never reaches the browser; keep it in a secrets manager, never in this repo. "API parallel 1" is the
-fair setting: one request in flight per model.
+Then open http://localhost:8061, pick any set of models with the chips (or **All**), choose a dataset, and press **Start
+race**. Every selected model gets its own lane and they all run at the same time on the same cases: everything vs
+everything. Each lane shows accuracy, median latency, finish position and the summed `usage.cost` of its calls; the
+standings table ranks lanes by accuracy as answers arrive, and the verdict names the fastest, most accurate and
+cheapest model. The key stays in the server process and never reaches the browser; keep it in a secrets manager, never
+in this repo. "Parallel per model 1" is the fair setting: one request in flight per model.
 
-To race Laya instead, start the server with `LAYA=1 OMP_NUM_THREADS=1 HF_HUB_OFFLINE=1` and pick Laya Router, laya-ara,
-or laya-ara-rag. Laya runs on the Apple GPU (MPS); `OMP_NUM_THREADS=1` avoids a libomp deadlock when several
-checkpoints load in one process. Without `OPENROUTER_API_KEY`, the Jev lane falls back to the TypeSafe API
-(`TYPESAFE_API_KEY`).
+To add Laya lanes, start the server with `LAYA=1 OMP_NUM_THREADS=1 HF_HUB_OFFLINE=1`. Laya runs on the Apple GPU (MPS);
+`OMP_NUM_THREADS=1` avoids a libomp deadlock when several checkpoints load in one process. Without
+`OPENROUTER_API_KEY`, only Jev is available, through the TypeSafe API (`TYPESAFE_API_KEY`).
 
 ## Full benchmark
 
