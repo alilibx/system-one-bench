@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>System One Bench</title>
+<link rel="canonical" href="https://systemonebench.dev/">
+<meta name="description" content="Independent accuracy, calibration, latency and cost results for System One decision models on 16 labelled datasets in English, French and Arabic.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --page: #f4f6f9; --surface: #ffffff; --ink: #121a2b; --ink-2: #4a5468; --muted: #6f7889;
+  --rule: #dfe3ea; --grid: #e9ecf1; --axis: #c3c9d3; --hover: #eef1f6; --good: rgba(27, 175, 122, 0.08);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a;
+  --display: "Bricolage Grotesque", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0c121d; --surface: #131b29; --ink: #eef2f8; --ink-2: #b6bfce; --muted: #8b95a7;
+    --rule: #263043; --grid: #1d2636; --axis: #3a465c; --hover: #1a2334; --good: rgba(25, 158, 112, 0.12);
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0c121d; --surface: #131b29; --ink: #eef2f8; --ink-2: #b6bfce; --muted: #8b95a7;
+  --rule: #263043; --grid: #1d2636; --axis: #3a465c; --hover: #1a2334; --good: rgba(25, 158, 112, 0.12);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 16px/1.55 var(--body); -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--s1); outline-offset: 3px; border-radius: 3px; }
+code { font: 0.9em ui-monospace, "SF Mono", Menlo, monospace; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+
+/* Masthead */
+.top { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 20px 0; border-bottom: 1px solid var(--rule); }
+.mark { display: flex; align-items: center; gap: 10px; font: 800 20px/1 var(--display); letter-spacing: -0.01em; text-decoration: none; }
+.top nav { display: flex; gap: 20px; font-size: 15px; color: var(--ink-2); }
+
+.hero { padding: 48px 0 8px; }
+.hero h1 { font: 700 clamp(32px, 5vw, 54px)/1.03 var(--display); letter-spacing: -0.025em; margin: 0 0 14px; max-width: 20ch; text-wrap: balance; }
+.lede { max-width: 68ch; color: var(--ink-2); margin: 0 0 6px; font-size: 17px; }
+.stamp { color: var(--muted); font-size: 14px; margin: 0 0 28px; }
+
+/* Cards hold one chart each: a title, what is measured and which way is better, then the chart. */
+.card { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 20px 20px 16px; min-width: 0; }
+.card h3 { font: 700 20px/1.2 var(--display); letter-spacing: -0.01em; margin: 0; }
+.card .sub { color: var(--muted); font-size: 13.5px; margin: 4px 0 12px; }
+.trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.trio .card h3 { font-size: 18px; }
+
+.section { padding: 48px 0 0; }
+.section > h2 { font: 700 30px/1.1 var(--display); letter-spacing: -0.015em; margin: 0 0 6px; }
+.section > p.note { color: var(--ink-2); margin: 0 0 18px; max-width: 72ch; }
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+
+.card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.tabs { display: inline-flex; border: 1px solid var(--rule); border-radius: 8px; padding: 3px; background: var(--page); flex-wrap: wrap; }
+.tabs button { font: 500 13.5px var(--body); color: var(--ink-2); background: none; border: 0; border-radius: 5px; padding: 5px 11px; cursor: pointer; }
+.tabs button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--rule); }
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13.5px; color: var(--ink-2); list-style: none; margin: 0; padding: 0; }
+.legend li { display: inline-flex; align-items: center; gap: 7px; }
+.legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+svg.chart { display: block; width: 100%; overflow: visible; font-family: var(--body); }
+svg.chart text { font-variant-numeric: tabular-nums; }
+svg.chart .bar:hover path, svg.chart .pt:hover circle { opacity: 0.85; }
+
+.multiples { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.multiples .card { padding: 16px 16px 12px; }
+.multiples .card h3 { font-size: 16px; }
+.multiples .card .sub { font-size: 12.5px; margin-bottom: 6px; }
+.group-title { font: 600 15px var(--body); color: var(--ink-2); margin: 26px 0 10px; }
+
+.tip { position: absolute; z-index: 5; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--rule);
+  border-radius: 8px; padding: 9px 12px; font-size: 13px; box-shadow: 0 6px 24px rgba(10, 16, 30, 0.14); max-width: 280px; font-variant-numeric: tabular-nums; }
+.tip[hidden] { display: none; }
+.tip b { display: block; font-size: 14px; }
+.tip span { color: var(--ink-2); display: block; }
+
+/* Leaderboard */
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th { font: 500 13px var(--body); color: var(--muted); text-align: right; padding: 0 12px 10px; white-space: nowrap; vertical-align: bottom; }
+th:first-child, td:first-child { text-align: left; padding-left: 0; }
+td { padding: 13px 12px; border-top: 1px solid var(--rule); text-align: right; white-space: nowrap; vertical-align: middle; }
+td:last-child, th:last-child { padding-right: 0; }
+.model { display: flex; align-items: center; gap: 10px; }
+.model i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.model b { font-weight: 600; display: block; }
+.model small { color: var(--muted); font-size: 13px; display: block; }
+.dim td { color: var(--muted); }
+tr.group td { border-top: 0; padding: 22px 0 6px; font: 600 14px var(--body); color: var(--ink-2); text-align: left; white-space: normal; }
+.na { color: var(--muted); }
+details { margin: 16px 0 0; }
+summary { cursor: pointer; color: var(--ink-2); font-size: 15px; }
+details table { margin-top: 12px; font-size: 14px; }
+details td, details th { padding: 7px 10px; }
+details td.win { font-weight: 600; }
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+.cols h3 { font: 700 18px var(--display); margin: 0 0 8px; }
+.cols p, .cols li { color: var(--ink-2); }
+.cols ul { padding-left: 18px; margin: 0; }
+pre { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font: 13px/1.6 ui-monospace, "SF Mono", Menlo, monospace; }
+footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40px; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 8px 24px; }
+.error { border: 1px solid var(--rule); border-radius: 8px; padding: 16px; background: var(--surface); }
+
+@media (max-width: 1000px) { .multiples { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 860px) {
+  .trio, .pair, .cols { grid-template-columns: 1fr; }
+  .multiples { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .multiples { grid-template-columns: 1fr; }
+  .top nav a:not(:last-child) { display: none; }
+  #board thead { display: none; }
+  #board tr:not(.group) { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 16px; padding: 14px 0; border-top: 1px solid var(--rule); }
+  #board td { border: 0; padding: 0; text-align: left; white-space: normal; }
+  #board td:first-child { grid-column: 1 / -1; }
+  #board td[data-label]::before { content: attr(data-label); display: block; color: var(--muted); font-size: 12px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="mark" href="./" aria-label="System One Bench home">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+        <rect x="1" y="7" width="24" height="12" rx="6" fill="none" stroke="currentColor" stroke-width="2"/>
+        <rect x="4" y="10" width="13" height="6" rx="3" fill="currentColor"/>
+      </svg>
+      System One Bench
+    </a>
+    <nav><a href="#index">Index</a><a href="#datasets">Datasets</a><a href="#method">Method</a><a href="https://github.com/alilibx/system-one-bench">GitHub</a></nav>
+  </header>
+
+  <section class="hero" aria-live="polite">
+    <h1 id="headline">Loading the latest results.</h1>
+    <p class="lede">System One models read a situation and answer typed questions in one fast call: yes or no, pick one option, or score a level, each with probabilities. Every model gets the same cases and the same request body, scored against each dataset's labels.</p>
+    <p class="stamp" id="stamp"></p>
+  </section>
+
+  <div class="trio">
+    <div class="card"><h3>System One Index</h3><p class="sub">Mean accuracy across all 16 datasets. Higher is better.</p><div id="mini-index"></div></div>
+    <div class="card"><h3>Latency</h3><p class="sub">Median time per call, in milliseconds. APIs with 8 calls in flight; Laya locally, one at a time. Lower is better.</p><div id="mini-latency"></div></div>
+    <div class="card"><h3>Cost</h3><p class="sub">USD per 1,000 calls, as billed by the API. Lower is better.</p><div id="mini-cost"></div></div>
+  </div>
+
+  <section class="section" id="index">
+    <h2>System One Index</h2>
+    <p class="note">The index is the mean accuracy across datasets, with every dataset weighted equally, on a 0 to 100 scale. A model gets an index only if it ran every dataset in the set, so the Arabic fine-tunes appear in the Arabic index alone.</p>
+    <div class="card">
+      <div class="card-head">
+        <div><h3 id="index-title">All datasets</h3><p class="sub" id="index-sub"></p></div>
+        <div class="tabs" role="group" aria-label="Index" id="index-tabs">
+          <button type="button" data-set="all" aria-pressed="true">All datasets</button>
+          <button type="button" data-set="English" aria-pressed="false">English</button>
+          <button type="button" data-set="Arabic" aria-pressed="false">Arabic</button>
+        </div>
+      </div>
+      <div id="chart-index"></div>
+    </div>
+  </section>
+
+  <section class="section" id="tradeoffs">
+    <h2>Accuracy against speed and cost</h2>
+    <p class="note">The shaded corner is the most attractive: more accurate, and faster or cheaper. The line joins the models that nothing else beats on both measures.</p>
+    <div class="pair">
+      <div class="card"><h3>Index against latency</h3><p class="sub">System One Index (all datasets) against median latency per call. API models measured through OpenRouter with 8 calls in flight; Laya on a local Apple M5 GPU, so its latency excludes any network.</p><div id="chart-vs-latency"></div></div>
+      <div class="card"><h3>Index against cost</h3><p class="sub">System One Index (all datasets) against USD per 1,000 calls. Local models have no per-call price.</p><div id="chart-vs-cost"></div></div>
+    </div>
+  </section>
+
+  <section class="section" id="calibration">
+    <h2>Calibration, speed and cost</h2>
+    <p class="note">Calibration error is the average gap between a model's stated confidence and how often it's right, in percentage points. A well-calibrated model's 80% answers are right about 80% of the time.</p>
+    <div class="pair">
+      <div class="card"><h3>Calibration error</h3><p class="sub">Top-label ECE over every question, all datasets. Lower is better.</p><div id="chart-ece"></div></div>
+      <div class="card"><h3>Latency, median and 95th percentile</h3><p class="sub">Milliseconds per call. The bar is the median; the tick marks the 95th percentile, shown on hover. Lower is better.</p><div id="chart-latency"></div></div>
+      <div class="card"><h3>Cost to run System One Bench</h3><p class="sub">USD for all 3,250 cases, as billed. Lower is better.</p><div id="chart-run-cost"></div></div>
+      <div class="card"><h3>Input tokens per call</h3><p class="sub">Mean billed input tokens. Each tokenizer counts differently, so this explains cost rather than ranks models.</p><div id="chart-tokens"></div></div>
+    </div>
+  </section>
+
+  <section class="section" id="datasets">
+    <h2>By dataset</h2>
+    <p class="note">One chart per dataset. Bars are colored by who makes the model.</p>
+    <div class="card-head" style="margin-bottom:14px">
+      <ul class="legend" id="legend"></ul>
+      <div class="tabs" role="group" aria-label="Metric" id="metric-tabs">
+        <button type="button" data-metric="acc" aria-pressed="true">Accuracy</button>
+        <button type="button" data-metric="ece" aria-pressed="false">Calibration error</button>
+      </div>
+    </div>
+    <div id="multiples"></div>
+    <details><summary>Show every dataset as a table</summary><div class="table-wrap"><table id="matrix"></table></div></details>
+  </section>
+
+  <section class="section" id="leaderboard">
+    <h2>All runs</h2>
+    <p class="note">Every model run with its overall numbers. Overall accuracy here counts every question, so the 5-question typed-decisions dataset weighs more than in the index.</p>
+    <div class="table-wrap"><table id="board"><thead><tr>
+      <th scope="col">Model</th><th scope="col">Index</th><th scope="col">Accuracy</th><th scope="col">Calibration error</th>
+      <th scope="col">Median latency</th><th scope="col">Cost per 1,000 calls</th><th scope="col">Datasets</th>
+    </tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <section class="section" id="method">
+    <h2>Method</h2>
+    <div class="cols">
+      <div>
+        <h3>What's measured</h3>
+        <ul>
+          <li>Each case is a <code>state</code> plus one to five named questions, sent unchanged to every model.</li>
+          <li>Accuracy compares the most likely answer with the dataset's label. A failed call counts as wrong.</li>
+          <li>Calibration error is top-label ECE over 10 bins. Log loss, Brier score and more are in <a href="results.json">results.json</a>.</li>
+          <li>Cost is the summed <code>usage.cost</code> the API reports.</li>
+          <li>API latency was measured with 8 requests in flight through OpenRouter; Laya ran locally on an Apple M5 GPU, one call at a time.</li>
+          <li>Nothing was tuned on test data. Some open-weight fine-tunes trained on related data; the repo README lists which.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Run it yourself</h3>
+        <pre>export OPENROUTER_API_KEY=&lt;your key&gt;
+python run_decisions.py --model openai/gpt-6-luna-decisions --name luna
+python run_decisions.py --model typesafe/jev-1.13 --name or_jev
+python score.py preds_or_jev.jsonl preds_luna.jsonl</pre>
+        <p>To race two models live on the same cases, run <code>python server.py</code> and open <code>localhost:8061</code>. The race needs API keys, so it runs on your machine rather than on this page.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span id="foot-updated"></span>
+    <a href="results.json">Raw results (JSON)</a>
+    <a href="https://github.com/alilibx/system-one-bench">github.com/alilibx/system-one-bench</a>
+  </footer>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const date = s => new Date(s + "T12:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+let R, M, indexSet = "all", metric = "acc";
+
+Promise.all([fetch("results.json").then(r => r.json()), fetch("meta.json").then(r => r.json())])
+  .then(([results, meta]) => { R = results; M = meta; render(); })
+  .catch(() => {
+    $("headline").textContent = "The results didn't load.";
+    $("index").insertAdjacentHTML("afterbegin", '<p class="error">This page reads results.json and meta.json from the same folder. Serve the folder over HTTP (for example <code>python -m http.server</code>) instead of opening the file directly.</p>');
+  });
+
+// ---------- data ----------
+const runs = () => Object.keys(M.models).filter(k => R[k]);
+const unlisted = () => Object.keys(R).filter(k => !M.models[k]);
+// The newest run date stands for the whole page, so a new run only needs its meta.json entry updated.
+const updated = () => runs().map(k => M.models[k].run).sort().at(-1);
+const charted = () => runs().filter(k => M.models[k].chart !== false);
+const suites = set => Object.keys(M.suites).filter(s => set === "all" || M.suites[s].lang === set);
+const val = (k, s, key = "acc") => R[k]?.["suite:" + s]?.[key];
+function index(k, set = "all") {
+  const ss = suites(set);
+  if (ss.some(s => val(k, s) == null)) return null;
+  return 100 * ss.reduce((a, s) => a + val(k, s), 0) / ss.length;
+}
+const per1k = k => R[k].cost && R[k].cost.usd != null ? 1000 * R[k].cost.usd / R[k].cost.calls : null;
+const color = k => `var(--s${M.models[k].series}, var(--muted))`;
+
+// ---------- tooltip ----------
+const tip = $("tip");
+function showTip(e, html) {
+  tip.innerHTML = html; tip.hidden = false;
+  const x = Math.min(e.pageX + 14, window.scrollX + document.documentElement.clientWidth - tip.offsetWidth - 8);
+  tip.style.left = Math.max(8, x) + "px"; tip.style.top = (e.pageY + 14) + "px";
+}
+const hideTip = () => { tip.hidden = true; };
+document.addEventListener("keydown", e => { if (e.key === "Escape") hideTip(); });
+function wireTips(root) {
+  root.querySelectorAll("[data-tip]").forEach(el => {
+    el.addEventListener("mousemove", e => showTip(e, el.dataset.tip));
+    el.addEventListener("mouseleave", hideTip);
+    el.addEventListener("focus", () => { const b = el.getBoundingClientRect(); showTip({ pageX: window.scrollX + b.right, pageY: window.scrollY + b.top }, el.dataset.tip); });
+    el.addEventListener("blur", hideTip);
+  });
+}
+
+// ---------- charts ----------
+function niceTicks(hi, n) {
+  const step = Math.pow(10, Math.floor(Math.log10(hi / n)));
+  const unit = [1, 2, 2.5, 5, 10].map(f => f * step).find(u => hi / u <= n) || step * 10;
+  const out = [];
+  for (let t = unit; t < hi; t += unit) out.push(+t.toFixed(6));
+  return out;
+}
+
+// Vertical bars, best first, value above each bar, name under it. Bars are 4px-rounded at the data end only.
+function bars(el, items, { fmt, lower = false, height = 230, max, labelKey = "short", note } = {}) {
+  if (!items.length) { el.innerHTML = `<p class="na">${note || "No data for these models."}</p>`; return; }
+  items = items.slice().sort((a, b) => lower ? a.v - b.v : b.v - a.v);
+  const w = Math.max(el.clientWidth, 200), top = 22, bottom = 40, plotH = height - top - bottom;
+  const hi = max ?? Math.max(...items.map(d => Math.max(d.v, d.w ?? 0))) * 1.12;
+  const slot = w / items.length, bw = Math.min(64, slot * 0.62), y = v => top + plotH * (1 - v / hi);
+  // Full names only when every one fits its slot (about 7px per character at 12.5px); otherwise short names.
+  const key = labelKey === "label" && items.some(d => M.models[d.k].label.length * 7 + 12 > slot) ? "short" : labelKey;
+  let s = `<svg class="chart" viewBox="0 0 ${w} ${height}" role="img" aria-label="${esc(items.map(d => `${M.models[d.k].label} ${fmt(d.v)}`).join(", "))}">`;
+  s += niceTicks(hi, 4).map(t => `<line x1="0" x2="${w}" y1="${y(t)}" y2="${y(t)}" stroke="var(--grid)"/>`).join("");
+  s += `<line x1="0" x2="${w}" y1="${y(0)}" y2="${y(0)}" stroke="var(--axis)"/>`;
+  items.forEach((d, i) => {
+    const cx = slot * i + slot / 2, x0 = cx - bw / 2, yt = y(d.v), r = Math.min(4, (y(0) - yt) / 2);
+    const m = M.models[d.k];
+    const tipHtml = `<b>${esc(m.label)}</b><span>${esc(m.maker)}, ${esc(m.access)}</span><span>${fmt(d.v)}${d.w != null ? `, 95th percentile ${fmt(d.w)}` : ""}</span>`;
+    s += `<g class="bar" tabindex="0" data-tip="${esc(tipHtml)}">
+      <rect x="${x0 - 6}" y="${top}" width="${bw + 12}" height="${plotH}" fill="transparent"/>
+      <path d="M${x0} ${y(0)}V${yt + r}Q${x0} ${yt} ${x0 + r} ${yt}H${x0 + bw - r}Q${x0 + bw} ${yt} ${x0 + bw} ${yt + r}V${y(0)}Z" fill="${color(d.k)}"/>
+      ${d.w != null ? `<line x1="${cx}" x2="${cx}" y1="${yt}" y2="${y(d.w)}" stroke="var(--muted)" stroke-width="1"/><line x1="${cx - bw / 4}" x2="${cx + bw / 4}" y1="${y(d.w)}" y2="${y(d.w)}" stroke="var(--muted)" stroke-width="2"/>
+` : ""}
+      ${d.w != null ? `<text x="${x0 + bw + 6}" y="${yt + 4}" font-size="13" font-weight="600" fill="var(--ink)">${fmt(d.v)}</text>`
+        : `<text x="${cx}" y="${yt - 7}" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)">${fmt(d.v)}</text>`}
+      <text x="${cx}" y="${y(0) + 18}" text-anchor="middle" font-size="12.5" fill="var(--ink-2)">${esc(m[key])}</text>
+    </g>`;
+  });
+  el.innerHTML = s + "</svg>";
+  wireTips(el);
+}
+
+// Index (y) against a cost-like measure (x, lower is better), with the attractive quadrant and the Pareto line.
+function scatter(el, pts, { xFmt, xLabel, note }) {
+  if (pts.length < 2) { el.innerHTML = `<p class="na">${note}</p>`; return; }
+  const w = Math.max(el.clientWidth, 260), h = 300, L = 44, Rt = 16, T = 14, B = 44;
+  const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+  const xHi = Math.max(...xs) * 1.15, yLo = Math.max(0, Math.floor((Math.min(...ys) - 5) / 10) * 10), yHi = Math.min(100, Math.ceil((Math.max(...ys) + 5) / 10) * 10);
+  const X = v => L + (w - L - Rt) * v / xHi, Y = v => T + (h - T - B) * (1 - (v - yLo) / (yHi - yLo));
+  const mid = a => (Math.min(...a) + Math.max(...a)) / 2;
+  const mx = mid(xs), my = mid(ys);
+  // Pareto front: walking from cheapest to dearest, keep each point that beats every cheaper one on the index.
+  let best = -Infinity;
+  const front = pts.slice().sort((a, b) => a.x - b.x).filter(p => p.y > best && (best = p.y, true));
+  let s = `<svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(pts.map(p => `${M.models[p.k].label}: index ${p.y.toFixed(1)}, ${xFmt(p.x)}`).join("; "))}">`;
+  s += `<rect x="${L}" y="${T}" width="${X(mx) - L}" height="${Y(my) - T}" fill="var(--good)"/>`;
+  for (let t = yLo; t <= yHi; t += 10) s += `<line x1="${L}" x2="${w - Rt}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--grid)"/><text x="${L - 8}" y="${Y(t) + 4}" text-anchor="end" font-size="12" fill="var(--muted)">${t}</text>`;
+  niceTicks(xHi, 4).forEach(t => { s += `<text x="${X(t)}" y="${h - B + 18}" text-anchor="middle" font-size="12" fill="var(--muted)">${xFmt(t)}</text>`; });
+  s += `<line x1="${L}" x2="${w - Rt}" y1="${h - B}" y2="${h - B}" stroke="var(--axis)"/><line x1="${L}" x2="${L}" y1="${T}" y2="${h - B}" stroke="var(--axis)"/>`;
+  s += `<text x="${(L + w - Rt) / 2}" y="${h - 6}" text-anchor="middle" font-size="12.5" fill="var(--ink-2)">${xLabel}</text>`;
+  s += `<text x="${L + 8}" y="${T + 16}" font-size="12" fill="var(--ink-2)">Most attractive</text>`;
+  if (front.length > 1) s += `<polyline points="${front.map(p => `${X(p.x)},${Y(p.y)}`).join(" ")}" fill="none" stroke="var(--ink-2)" stroke-width="2" stroke-dasharray="5 4"/>`;
+  pts.forEach(p => {
+    const m = M.models[p.k], cx = X(p.x), cy = Y(p.y), right = cx > w - 120;
+    const tipHtml = `<b>${esc(m.label)}</b><span>Index ${p.y.toFixed(1)}</span><span>${xFmt(p.x)}</span>`;
+    s += `<g class="pt" tabindex="0" data-tip="${esc(tipHtml)}"><circle cx="${cx}" cy="${cy}" r="14" fill="transparent"/>
+      <circle cx="${cx}" cy="${cy}" r="7" fill="${color(p.k)}" stroke="var(--surface)" stroke-width="2"/>
+      <text x="${cx + (right ? -12 : 12)}" y="${cy + 4}" text-anchor="${right ? "end" : "start"}" font-size="13" font-weight="600" fill="var(--ink)" stroke="var(--surface)" stroke-width="4" style="paint-order:stroke">${esc(m.short)}</text></g>`;
+  });
+  el.innerHTML = s + "</svg>";
+  wireTips(el);
+}
+
+// ---------- page ----------
+const fmtIdx = v => v.toFixed(1), fmtMs = v => Math.round(v) + " ms", fmtUsd = v => "$" + (v < 1 ? v.toFixed(3) : v.toFixed(2)), fmtPct = v => v.toFixed(1) + "%";
+
+function render() {
+  const full = charted().filter(k => index(k) != null);
+  const topK = full.slice().sort((a, b) => index(b) - index(a))[0];
+  $("stamp").textContent = `Updated ${date(updated())}. ${runs().length} model runs across ${suites("all").length} datasets.`;
+  $("foot-updated").textContent = `Last run ${date(updated())}`;
+  $("legend").innerHTML = [...new Set(charted().map(k => M.models[k].series))].map(sr => `<li><i style="background:var(--s${sr}, var(--muted))"></i>${esc(M.series[sr] || M.models[charted().find(k => M.models[k].series === sr)].maker)}</li>`).join("");
+  if (unlisted().length) $("leaderboard").insertAdjacentHTML("beforeend", `<p class="na">Not shown: ${unlisted().map(esc).join(", ")}. Add an entry to site/meta.json to include a run.</p>`);
+  draw(); renderBoard(); renderMatrix();
+  if (!topK) { $("headline").textContent = "No model has run every dataset yet."; return; }
+  const wins = {};
+  for (const s of suites("all")) {
+    const vs = charted().filter(k => val(k, s) != null), best = Math.max(...vs.map(k => val(k, s)));
+    vs.filter(k => val(k, s) === best).forEach(k => wins[k] = (wins[k] || 0) + 1);
+  }
+  const t = M.models[topK];
+  $("headline").textContent = `${t.label} leads the System One Index at ${fmtIdx(index(topK))}, and wins ${wins[topK] || 0} of ${suites("all").length} datasets.`;
+}
+
+function draw() {
+  hideTip();
+  const full = charted().filter(k => index(k) != null);
+  bars($("mini-index"), full.map(k => ({ k, v: index(k) })), { fmt: fmtIdx, max: 100, height: 200 });
+  bars($("mini-latency"), full.filter(k => R[k].latency_ms).map(k => ({ k, v: R[k].latency_ms.p50 })), { fmt: fmtMs, lower: true, height: 200 });
+  bars($("mini-cost"), full.filter(k => per1k(k) != null).map(k => ({ k, v: per1k(k) })), { fmt: fmtUsd, lower: true, height: 200 });
+
+  const setName = { all: "all 16 datasets", English: `the ${suites("English").length} English datasets`, Arabic: `the ${suites("Arabic").length} Arabic datasets` }[indexSet];
+  $("index-title").textContent = indexSet === "all" ? "All datasets" : `${indexSet} datasets`;
+  $("index-sub").textContent = `Mean accuracy across ${setName}, equal weight per dataset. Higher is better.`;
+  bars($("chart-index"), charted().filter(k => index(k, indexSet) != null).map(k => ({ k, v: index(k, indexSet) })), { fmt: fmtIdx, max: 100, height: 300, labelKey: "label" });
+
+  scatter($("chart-vs-latency"), full.filter(k => R[k].latency_ms).map(k => ({ k, x: R[k].latency_ms.p50, y: index(k) })),
+    { xFmt: fmtMs, xLabel: "Median latency per call", note: "Needs at least two models with latency." });
+  scatter($("chart-vs-cost"), full.filter(k => per1k(k) != null).map(k => ({ k, x: per1k(k), y: index(k) })),
+    { xFmt: fmtUsd, xLabel: "USD per 1,000 calls", note: "Needs at least two priced models." });
+
+  bars($("chart-ece"), full.map(k => ({ k, v: 100 * R[k].all.ece })), { fmt: fmtPct, lower: true, labelKey: "label" });
+  bars($("chart-latency"), full.filter(k => R[k].latency_ms).map(k => ({ k, v: R[k].latency_ms.p50, w: R[k].latency_ms.p95 })), { fmt: fmtMs, lower: true, labelKey: "label" });
+  bars($("chart-run-cost"), full.filter(k => R[k].cost?.usd != null).map(k => ({ k, v: R[k].cost.usd })), { fmt: fmtUsd, lower: true, labelKey: "label" });
+  bars($("chart-tokens"), full.filter(k => R[k].cost?.calls).map(k => ({ k, v: R[k].cost.input_tokens / R[k].cost.calls })), { fmt: v => Math.round(v).toLocaleString("en"), lower: true, labelKey: "label" });
+
+  // One shared calibration axis for every dataset chart, rounded up to the next 10 points and never below 50.
+  const eceMax = Math.max(50, 10 * Math.ceil(10 * Math.max(...suites("all").flatMap(s => charted().map(k => val(k, s, "ece") ?? 0)))));
+  let html = "";
+  for (const lang of M.languages) {
+    const ss = suites(lang);
+    if (!ss.length) continue;
+    html += `<p class="group-title">${lang}</p><div class="multiples">` + ss.map(s => `<div class="card"><h3>${esc(M.suites[s].label)}</h3><p class="sub">${esc(M.suites[s].task)}, n=${R[charted().find(k => val(k, s) != null)]["suite:" + s].n}</p><div data-suite="${s}"></div></div>`).join("") + "</div>";
+  }
+  $("multiples").innerHTML = html;
+  document.querySelectorAll("#multiples [data-suite]").forEach(el => {
+    const s = el.dataset.suite;
+    bars(el, charted().filter(k => val(k, s) != null).map(k => ({ k, v: 100 * val(k, s, metric) })),
+      metric === "acc" ? { fmt: fmtIdx, max: 100, height: 190 } : { fmt: fmtPct, lower: true, height: 190, max: eceMax });
+  });
+}
+
+function renderBoard() {
+  const all = suites("all").length;
+  const rows = runs().map(k => ({ k, m: M.models[k], r: R[k], cover: Object.keys(R[k]).filter(x => x.startsWith("suite:")).length, idx: index(k) }));
+  const byIdx = (a, b) => (b.idx ?? b.r.all.acc * 100) - (a.idx ?? a.r.all.acc * 100);
+  const line = x => {
+    const c = per1k(x.k);
+    return `<tr class="${x.m.chart === false ? "dim" : ""}" title="${esc(x.m.slug)}: ${esc(x.m.latency)}, run ${date(x.m.run)}${x.m.note ? ". " + esc(x.m.note) : ""}">
+      <td><div class="model"><i style="background:${color(x.k)}"></i><span><b>${esc(x.m.label)}</b><small>${esc(x.m.maker)}, ${esc(x.m.access)}, ${date(x.m.run)}</small></span></div></td>
+      <td data-label="Index">${x.idx != null ? fmtIdx(x.idx) : '<span class="na">–</span>'}</td>
+      <td data-label="Accuracy">${(100 * x.r.all.acc).toFixed(1)}%</td>
+      <td data-label="Calibration error">${fmtPct(100 * x.r.all.ece)}</td>
+      <td data-label="Median latency">${x.r.latency_ms ? fmtMs(x.r.latency_ms.p50) : '<span class="na">–</span>'}</td>
+      <td data-label="Cost per 1,000 calls">${c != null ? fmtUsd(c) : `<span class="na">${x.m.access.startsWith("Open weights") ? "Local" : "Not reported"}</span>`}</td>
+      <td data-label="Datasets">${x.cover} of ${all}</td></tr>`;
+  };
+  const group = (rs, title) => rs.length ? `<tr class="group"><td colspan="7">${title}</td></tr>` + rs.map(line).join("") : "";
+  const cur = rows.filter(x => x.m.chart !== false);
+  $("board").querySelector("tbody").innerHTML =
+    cur.filter(x => x.cover === all).sort(byIdx).map(line).join("") +
+    group(cur.filter(x => x.cover < all).sort(byIdx), "Arabic datasets only") +
+    group(rows.filter(x => x.m.chart === false), "Earlier runs of the same models, kept for reference");
+}
+
+function renderMatrix() {
+  const ks = runs();
+  const ranked = charted();  // the earlier reference run is listed but never marked as a winner
+  $("matrix").innerHTML = `<thead><tr><th scope="col">Dataset</th>${ks.map(k => `<th scope="col">${esc(M.models[k].label)}${M.models[k].chart === false ? " (Sept)" : ""}</th>`).join("")}</tr></thead><tbody>` +
+    suites("all").map(s => {
+      const vs = ranked.map(k => val(k, s, metric)).filter(v => v != null);
+      const best = metric === "acc" ? Math.max(...vs) : Math.min(...vs);
+      return `<tr><td>${esc(M.suites[s].label)} <span class="na">${M.suites[s].lang}</span></td>${ks.map(k => {
+        const v = val(k, s, metric);
+        return v == null ? '<td class="na">–</td>' : `<td class="${v === best && ranked.includes(k) ? "win" : ""}">${(100 * v).toFixed(1)}${metric === "ece" ? "%" : ""}</td>`;
+      }).join("")}</tr>`;
+    }).join("") + "</tbody>";
+}
+
+function tabs(id, onPick) {
+  $(id).querySelectorAll("button").forEach(b => b.onclick = () => {
+    $(id).querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    onPick(b);
+  });
+}
+tabs("index-tabs", b => { indexSet = b.dataset.set; draw(); });
+tabs("metric-tabs", b => { metric = b.dataset.metric; draw(); renderMatrix(); });
+let rz;
+window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => R && draw(), 120); });
+</script>
+</body>
+</html>

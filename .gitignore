@@ -12,3 +12,5 @@ bench/
 laya/
 laya_ref/
 models/
+# local preview of the results site
+_site/

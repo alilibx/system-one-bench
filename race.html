@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Decisions Race</title>
+<title>System One Bench race</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
   --ink: #0d1522; --tarmac: #152033; --tarmac-2: #1c2a42; --line: #2b3b57;
   --chalk: #e6ecf5; --dim: #8797b3;
-  --challenger: #f2a541; --jev: #5cc8e8; --right: #4cc38a; --wrong: #ef5b5b;
-  --display: "Big Shoulders Display", "Arial Narrow", sans-serif;
+  --challenger: #e5703f; --jev: #4b93ea; --right: #4cc38a; --wrong: #ef5b5b;
+  --display: "Bricolage Grotesque", system-ui, sans-serif;
   --body: "IBM Plex Sans", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
 }
@@ -20,15 +20,17 @@ body { margin: 0; background: var(--ink); color: var(--chalk); font: 15px/1.45 v
 .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
 
 header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
-h1 { font: 800 clamp(34px, 5vw, 56px)/0.9 var(--display); letter-spacing: 0.01em; text-transform: uppercase; margin: 0; }
+h1 { font: 700 clamp(34px, 5vw, 56px)/1 var(--display); letter-spacing: -0.025em; margin: 0; }
 h1 .l { color: var(--challenger); } h1 .j { color: var(--jev); } h1 .v { color: var(--dim); font-weight: 600; }
+.mark { display: inline-flex; align-items: center; gap: 8px; font: 800 16px/1 var(--display); color: var(--dim); text-decoration: none; margin: 0 0 12px; }
+.mark:hover { color: var(--chalk); }
 .sub { color: var(--dim); margin: 6px 0 0; max-width: 56ch; }
 
 .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
 label { display: grid; gap: 4px; font: 500 11px var(--mono); color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; }
 select, input { background: var(--tarmac); color: var(--chalk); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; font: 14px var(--body); min-width: 0; }
 input[type=number] { width: 84px; }
-button#go { font: 800 20px var(--display); text-transform: uppercase; letter-spacing: 0.06em; background: var(--chalk); color: var(--ink);
+button#go { font: 700 18px var(--display); background: var(--chalk); color: var(--ink);
   border: 0; border-radius: 6px; padding: 9px 22px; cursor: pointer; }
 button#go:disabled { opacity: 0.5; cursor: progress; }
 :focus-visible { outline: 2px solid var(--jev); outline-offset: 2px; }
@@ -40,7 +42,7 @@ button#go:disabled { opacity: 0.5; cursor: progress; }
 .lane { background: var(--tarmac); border: 1px solid var(--line); border-left: 6px solid var(--c); border-radius: 8px; padding: 14px 16px 16px; margin-bottom: 14px; position: relative; }
 .lane.challenger { --c: var(--challenger); } .lane.jev { --c: var(--jev); }
 .lane-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-.name { font: 800 30px/1 var(--display); text-transform: uppercase; color: var(--c); }
+.name { font: 700 28px/1.05 var(--display); letter-spacing: -0.015em; color: var(--c); }
 .where { font: 12px var(--mono); color: var(--dim); }
 
 /* Photo-finish strip: one cell per case, filled in the order it finished. */
@@ -62,7 +64,7 @@ button#go:disabled { opacity: 0.5; cursor: progress; }
 .verdict { font: 600 17px var(--body); margin: 4px 0 22px; min-height: 1.5em; }
 
 .feeds { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.feed h2 { font: 800 16px var(--display); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 8px; color: var(--c); }
+.feed h2 { font: 700 17px var(--display); margin: 0 0 8px; color: var(--c); }
 .feed.challenger { --c: var(--challenger); } .feed.jev { --c: var(--jev); }
 .feeds > div, .feed li > span { min-width: 0; }
 .feed ol { list-style: none; margin: 0; padding: 0; max-height: 360px; overflow: hidden; }
@@ -88,6 +90,7 @@ button#go:disabled { opacity: 0.5; cursor: progress; }
 <div class="wrap">
   <header>
     <div>
+      <a class="mark" href="https://systemonebench.dev/"><svg width="22" height="22" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="7" width="24" height="12" rx="6" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="10" width="13" height="6" rx="3" fill="currentColor"/></svg>System One Bench live race</a>
       <h1><span class="l" id="h1-challenger">OpenAI</span> <span class="v">vs</span> <span class="j">Jev</span></h1>
       <p class="sub">Same cases, same questions, live. Both lanes get byte-identical requests. Green means the answer matched the dataset's label.</p>
     </div>
