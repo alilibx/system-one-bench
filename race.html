@@ -147,8 +147,13 @@ function renderPicker() {
   $("picker").querySelectorAll(".chip").forEach(b => b.onclick = () => { picked.has(b.dataset.k) ? picked.delete(b.dataset.k) : picked.add(b.dataset.k); remember(); renderPicker(); });
   $("all").onclick = () => { picked = new Set(RACERS.filter(r => r.ready).map(r => r.key)); remember(); renderPicker(); };
   $("none").onclick = () => { picked.clear(); remember(); renderPicker(); };
-  $("title").textContent = picked.size === 2 ? [...picked].map(k => RACERS.find(r => r.key === k).label).join(" vs ") : picked.size > 2 ? `${picked.size} models, one race` : "Everything vs everything";
-  if (!es || es.readyState === 2) $("go").disabled = picked.size === 0;
+  if (!es || es.readyState === 2) { setTitle([...picked]); $("go").disabled = picked.size === 0; }
+}
+
+function setTitle(keys) {
+  const name = k => RACERS.find(r => r.key === k).label;
+  $("title").textContent = keys.length === 0 ? "Everything vs everything" : keys.length === 1 ? name(keys[0])
+    : keys.length === 2 ? keys.map(name).join(" vs ") : `${keys.length} models, one race`;
 }
 
 function fresh() { return { done: 0, right: 0, total: 0, ms: [], finishedAt: null, errors: 0, cost: 0, priced: 0 }; }
@@ -175,6 +180,7 @@ function renderStandings() {
 function tick() {
   $("clock").textContent = fmt(performance.now() - t0);
   Object.keys(S).forEach(k => { if (!S[k].finishedAt) laneStats(k); });
+  renderStandings();  // batched here rather than on every answer
 }
 
 function onItem(d) {
@@ -196,7 +202,7 @@ function onItem(d) {
   li.querySelector(".txt").textContent = cases[d.i].text;
   ol.prepend(li);
   while (ol.children.length > 14) ol.lastElementChild.remove();
-  laneStats(d.model); renderStandings();
+  laneStats(d.model);
 }
 
 function onDone(d) {
@@ -234,6 +240,7 @@ $("go").onclick = () => {
       <div><div class="strip" id="strip-${r.key}">${'<div class="cell"></div>'.repeat(cases.length)}</div><div class="rail"><i id="rail-${r.key}"></i></div></div>
       <div class="stats" id="stats-${r.key}"></div></section>`).join("");
     d.racers.forEach(r => { S[r.key] = fresh(); laneStats(r.key); });
+    setTitle(d.racers.map(r => r.key));
     renderStandings();
     $("meta").textContent = `${d.n} cases · ${d.suite} · ${d.racers.length} racers · ${d.api_concurrency} in flight per model`;
     t0 = performance.now(); timer = setInterval(tick, 50);

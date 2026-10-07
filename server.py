@@ -174,6 +174,9 @@ async def race(racers: str = "jev,openai", suite: str = "mixed", n: int = Query(
     unknown = [k for k in keys if k not in RACERS]
     if unknown or not keys or len(keys) > MAX_RACERS:
         return JSONResponse({"error": f"pick 1 to {MAX_RACERS} racers from {sorted(RACERS)}; unknown: {unknown}"}, status_code=422)
+    no_key = [k for k in keys if not public(k)["ready"]]
+    if no_key:
+        return JSONResponse({"error": f"no API key in the server environment for {no_key}"}, status_code=422)
     pool = {"mixed": CASES, "arabic": ARABIC}.get(suite) or [c for c in CASES if c["suite"] == suite]
     pool = pool[:]
     random.Random(seed).shuffle(pool)
