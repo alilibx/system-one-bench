@@ -20,7 +20,9 @@ Both API models are called at `POST https://openrouter.ai/api/alpha/decisions`, 
 ## Results site
 
 `site/` is a static page that reads `results.json` and `site/meta.json` (display names, makers, run dates, and dataset
-descriptions). `.github/workflows/pages.yml` publishes it to GitHub Pages on every push to `main` that touches
+descriptions). Its layout follows [Artificial Analysis](https://artificialanalysis.ai/): a headline **System One Index** (mean
+accuracy across datasets, equal weight per dataset, 0 to 100, with English and Arabic sub-indexes), index-against-latency
+and index-against-cost scatters with a Pareto line, calibration, latency and cost bar charts, and one bar chart per dataset. `.github/workflows/pages.yml` publishes it to GitHub Pages on every push to `main` that touches
 `results.json` or `site/`, so re-running `score.py` and merging is all it takes to update it. When you add a model, give
 it an entry in `site/meta.json`. To preview locally:
 
