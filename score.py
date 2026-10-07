@@ -5,6 +5,8 @@ Metrics: accuracy, macro-F1, NLL, Brier, top-label ECE (10 bins), confidence AUR
 probability separate right from wrong), selective accuracy at 50% coverage, score MAE, KL from soft gold.
 A failed call or missing answer counts as wrong, with a uniform distribution.
 
+API cost (usage.cost, USD) and token counts are summed per model when the predictions carry them.
+
 Usage: python score.py preds_laya.jsonl preds_jev.jsonl ...  -> results.json + printed tables
 """
 import json
@@ -103,14 +105,18 @@ def load(path):
                          "y": gold_idx(q, g), "yhat": int(p.argmax()), "conf": float(p.max()),
                          "gd": np.array(g["dist"]) / sum(g["dist"]) if g.get("dist") and c["suite"] == "typed-decisions" else None})
     lat = [r["ms"] for r in preds.values() if r.get("ms") is not None and "error" not in r]
-    return rows, lat
+    usage = [r["usage"] for r in preds.values() if r.get("usage")]
+    priced = [u["cost"] for u in usage if u.get("cost") is not None]  # the TypeSafe API reports tokens but no cost
+    cost = {"usd": round(sum(priced), 4) if priced else None, "input_tokens": sum(u.get("input_tokens") or 0 for u in usage),
+            "output_tokens": sum(u.get("output_tokens") or 0 for u in usage), "calls": len(usage)} if usage else None
+    return rows, lat, cost
 
 
 if __name__ == "__main__":
     results = {}
     for path in sys.argv[1:]:
         name = path.removeprefix("preds_").removesuffix(".jsonl")
-        rows, lat = load(path)
+        rows, lat, cost = load(path)
         by = defaultdict(list)
         for r in rows:
             by[("suite", r["suite"])].append(r)
@@ -119,6 +125,7 @@ if __name__ == "__main__":
                 by[("workflow", r["workflow"])].append(r)
         results[name] = {f"{k}:{v}": metrics(rs) for (k, v), rs in sorted(by.items())}
         results[name]["all"] = metrics(rows)
+        results[name]["cost"] = cost
         results[name]["latency_ms"] = {"p50": round(float(np.percentile(lat, 50)), 1), "p95": round(float(np.percentile(lat, 95)), 1)} if lat else None
     json.dump(results, open("results.json", "w"), indent=1)
     keys = sorted({k for v in results.values() for k in v if k.startswith("suite:")})
@@ -130,3 +137,6 @@ if __name__ == "__main__":
             m = res.get(k)
             if m:
                 print(name.ljust(28) + "".join(str(m.get(c, "")).rjust(13) for c in cols))
+    print("\n## cost and latency")
+    for name, res in results.items():
+        print(name.ljust(28), res["cost"], res["latency_ms"])
