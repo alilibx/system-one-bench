@@ -53,7 +53,7 @@ button#go:disabled { opacity: 0.5; cursor: progress; }
 .rail { height: 4px; background: var(--tarmac-2); border-radius: 2px; overflow: hidden; }
 .rail i { display: block; height: 100%; width: 0; background: var(--c); transition: width 160ms linear; }
 
-.stats { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 10px; margin-top: 14px; }
 .stat b { display: block; font: 500 22px/1.1 var(--mono); font-variant-numeric: tabular-nums; }
 .stat span { font: 11px var(--mono); color: var(--dim); text-transform: uppercase; letter-spacing: 0.06em; }
 .flag { position: absolute; right: 16px; top: 14px; font-variant-numeric: tabular-nums; font: 800 14px var(--display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); background: var(--c); padding: 3px 8px; border-radius: 4px; opacity: 0; }
@@ -77,7 +77,6 @@ button#go:disabled { opacity: 0.5; cursor: progress; }
 .err { color: var(--wrong); font: 13px var(--mono); }
 
 @media (max-width: 760px) {
-  .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .feeds { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -128,7 +127,8 @@ button#go:disabled { opacity: 0.5; cursor: progress; }
 <script>
 const $ = id => document.getElementById(id);
 const MODELS = ["challenger", "jev"];
-let es, timer, t0, S, cases, challengers = {}, jevReady = false;
+let es, timer, t0, S, cases, challengers = {}, jevReady = false, localLane = false;
+const esc = t => String(t).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[ch]);
 
 fetch("/api/suites").then(r => r.json()).then(d => {
   $("suite").add(new Option(`Arabic, all suites (${d.arabic})`, "arabic"));
@@ -140,11 +140,16 @@ fetch("/api/suites").then(r => r.json()).then(d => {
   pick();
 });
 
-function pick() {
-  const c = challengers[$("challenger").value];
+function label(c) {
   $("h1-challenger").textContent = c.label.replace(/ Decisions$/, "");
   $("name-challenger").textContent = c.label; $("where-challenger").textContent = c.where;
   $("feed-title-challenger").textContent = c.label + " answers";
+}
+
+function pick() {
+  const c = challengers[$("challenger").value];
+  if (!c) return;
+  if (!$("go").disabled) label(c);  // a running race keeps the labels of the challenger it started with
   const missing = !jevReady ? "Jev" : !c.ready ? c.label : null;
   $("meta").innerHTML = missing ? `<span class="err">No API key for ${missing} in the server environment. Set OPENROUTER_API_KEY and restart the server.</span>`
     : "Pick a dataset and start the race.";
@@ -170,7 +175,7 @@ function renderStats(m) {
     [isFinite(median(s.ms)) ? median(s.ms).toFixed(0) + " ms" : "–", "median"],
     [s.done ? (s.done / (elapsed / 1000)).toFixed(2) + "/s" : "–", "cases per sec"],
     [s.finishedAt ? fmt(s.finishedAt) : fmt(elapsed), s.finishedAt ? "total time" : "running"],
-    [s.priced ? usd(s.cost) : (s.done ? "local" : "–"), "cost"],
+    [s.priced ? usd(s.cost) : (m === "challenger" && localLane ? "local" : "–"), "cost"],
   ];
   $("stats-" + m).innerHTML = rows.map(([b, l]) => `<div class="stat"><b>${b}</b><span>${l}</span></div>`).join("");
   $("rail-" + m).style.width = (100 * s.done / n) + "%";
@@ -196,7 +201,7 @@ function onItem(d) {
   if (ol.firstElementChild?.classList.contains("empty")) ol.innerHTML = "";
   const li = document.createElement("li");
   li.className = d.correct === d.total ? "ok" : "bad";
-  const lbl = d.error ? `<span class="err">${d.error}</span>` :
+  const lbl = d.error ? `<span class="err">${esc(d.error)}</span>` :
     d.pred.map((p, k) => p === d.gold[k] ? p : `${p} ≠ ${d.gold[k]}`).join(" · ");
   li.innerHTML = `<span class="mark">${d.correct === d.total ? "✓" : "✗"}</span>
     <span><span class="txt" dir="auto"></span><span class="lbl">${c.suite} · ${lbl}</span></span><span class="ms">${d.error ? "–" : d.ms.toFixed(0) + " ms"}</span>`;
@@ -241,7 +246,8 @@ $("go").onclick = () => {
   es = new EventSource("/api/race?" + qs);
   es.addEventListener("start", e => {
     const d = JSON.parse(e.data); cases = d.cases;
-        MODELS.forEach(m => { $("strip-" + m).innerHTML = '<div class="cell"></div>'.repeat(cases.length); renderStats(m); });
+    label(d.challenger); localLane = d.challenger.local;
+    MODELS.forEach(m => { $("strip-" + m).innerHTML = '<div class="cell"></div>'.repeat(cases.length); renderStats(m); });
     $("meta").textContent = `${d.n} cases · ${d.suite} · API parallel ${d.api_concurrency}`;
     t0 = performance.now(); timer = setInterval(tick, 50);
   });

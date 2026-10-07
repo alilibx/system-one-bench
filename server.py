@@ -122,7 +122,11 @@ async def api_call(client, lane, case):
     body = {"model": lane["model"], "state": case["state"], "questions": case["questions"]}
     for attempt in range(6):
         t0 = time.perf_counter()
-        r = await client.post(lane["url"], json=body)
+        try:
+            r = await client.post(lane["url"], json=body)
+        except httpx.TransportError:  # dropped connection or timeout: retry like a 5xx
+            await asyncio.sleep(2 ** attempt)
+            continue
         ms = (time.perf_counter() - t0) * 1000
         if r.status_code == 200:
             d = r.json()
@@ -130,7 +134,7 @@ async def api_call(client, lane, case):
         if r.status_code not in (408, 429, 500, 502, 503, 529):
             raise RuntimeError(f"{lane['model']} returned {r.status_code}: {r.text[:200]}")
         await asyncio.sleep(2 ** attempt)
-    raise RuntimeError(f"{lane['model']} kept returning rate-limit or overload errors")
+    raise RuntimeError(f"{lane['model']} kept failing with transport, rate-limit or overload errors")
 
 
 @app.get("/")
@@ -195,7 +199,7 @@ async def race(suite: str = "mixed", n: int = Query(50, ge=1, le=5000), api_conc
 
     async def stream():
         start = {"n": len(picked), "suite": suite, "api_concurrency": api_concurrency,
-                 "challenger": {"label": ch["label"], "where": ch["where"]},
+                 "challenger": {"label": ch["label"], "where": ch["where"], "local": not ch.get("api")},
                  "cases": [{"id": c["id"], "suite": c["suite"], "text": preview(c["state"])} for c in picked]}
         yield f"event: start\ndata: {json.dumps(start, ensure_ascii=False)}\n\n"
         lanes = [run_api("challenger", ch) if ch.get("api") else run_laya("challenger"), run_api("jev", JEV)]

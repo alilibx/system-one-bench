@@ -315,7 +315,7 @@
    "soft_acc": 0.3487
   },
   "cost": {
-   "usd": 0,
+   "usd": null,
    "input_tokens": 1003736,
    "output_tokens": 0,
    "calls": 3250
@@ -447,7 +447,7 @@
    "acc_at_50cov": 0.8622
   },
   "cost": {
-   "usd": 0,
+   "usd": null,
    "input_tokens": 206423,
    "output_tokens": 0,
    "calls": 1350
@@ -579,7 +579,7 @@
    "acc_at_50cov": 0.8504
   },
   "cost": {
-   "usd": 0,
+   "usd": null,
    "input_tokens": 206423,
    "output_tokens": 0,
    "calls": 1350
@@ -905,7 +905,7 @@
    "soft_acc": 0.5836
   },
   "cost": {
-   "usd": 0,
+   "usd": null,
    "input_tokens": 2157638,
    "output_tokens": 374716,
    "calls": 3250

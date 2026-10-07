@@ -106,7 +106,8 @@ def load(path):
                          "gd": np.array(g["dist"]) / sum(g["dist"]) if g.get("dist") and c["suite"] == "typed-decisions" else None})
     lat = [r["ms"] for r in preds.values() if r.get("ms") is not None and "error" not in r]
     usage = [r["usage"] for r in preds.values() if r.get("usage")]
-    cost = {"usd": round(sum(u.get("cost") or 0 for u in usage), 4), "input_tokens": sum(u.get("input_tokens") or 0 for u in usage),
+    priced = [u["cost"] for u in usage if u.get("cost") is not None]  # the TypeSafe API reports tokens but no cost
+    cost = {"usd": round(sum(priced), 4) if priced else None, "input_tokens": sum(u.get("input_tokens") or 0 for u in usage),
             "output_tokens": sum(u.get("output_tokens") or 0 for u in usage), "calls": len(usage)} if usage else None
     return rows, lat, cost
 
