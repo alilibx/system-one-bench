@@ -107,6 +107,14 @@ details table { margin-top: 12px; font-size: 14px; }
 details td, details th { padding: 7px 10px; }
 details td.win { font-weight: 600; }
 
+.road { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.road ul { list-style: none; margin: 0; padding: 0; }
+.road li { padding: 12px 0; border-top: 1px solid var(--rule); }
+.road li:first-child { border-top: 0; padding-top: 4px; }
+.road li b { display: block; font-weight: 600; }
+.road li code { display: block; color: var(--ink-2); font-size: 12.5px; margin: 2px 0 4px; overflow-wrap: anywhere; }
+.road li span { color: var(--ink-2); font-size: 14px; }
+.road .count { color: var(--muted); font-size: 13.5px; margin: 4px 0 10px; }
 .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
 .cols h3 { font: 700 18px var(--display); margin: 0 0 8px; }
 .cols p, .cols li { color: var(--ink-2); }
@@ -117,7 +125,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
 
 @media (max-width: 1000px) { .multiples { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 860px) {
-  .trio, .pair, .cols { grid-template-columns: 1fr; }
+  .trio, .pair, .cols, .road { grid-template-columns: 1fr; }
   .multiples { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 560px) {
@@ -141,7 +149,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
       </svg>
       System One Bench
     </a>
-    <nav><a href="#index">Index</a><a href="#datasets">Datasets</a><a href="#method">Method</a><a href="https://github.com/alilibx/system-one-bench">GitHub</a></nav>
+    <nav><a href="#index">Index</a><a href="#datasets">Datasets</a><a href="#roadmap">Roadmap</a><a href="#method">Method</a><a href="https://github.com/alilibx/system-one-bench">GitHub</a></nav>
   </header>
 
   <section class="hero" aria-live="polite">
@@ -213,6 +221,12 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
       <th scope="col">Model</th><th scope="col">Index</th><th scope="col">Accuracy</th><th scope="col">Calibration error</th>
       <th scope="col">Median latency</th><th scope="col">Cost per 1,000 calls</th><th scope="col">Datasets</th>
     </tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <section class="section" id="roadmap">
+    <h2>Roadmap</h2>
+    <p class="note">Models we plan to add. Vendors publish their own scores for several of these; none appear on this page until they've run on System One Bench like every other model.</p>
+    <div class="road" id="road"></div>
   </section>
 
   <section class="section" id="method">
@@ -375,7 +389,7 @@ function render() {
   $("foot-updated").textContent = `Last run ${date(updated())}`;
   $("legend").innerHTML = [...new Set(charted().map(k => M.models[k].series))].map(sr => `<li><i style="background:var(--s${sr}, var(--muted))"></i>${esc(M.series[sr] || M.models[charted().find(k => M.models[k].series === sr)].maker)}</li>`).join("");
   if (unlisted().length) $("leaderboard").insertAdjacentHTML("beforeend", `<p class="na">Not shown: ${unlisted().map(esc).join(", ")}. Add an entry to site/meta.json to include a run.</p>`);
-  draw(); renderBoard(); renderMatrix();
+  draw(); renderBoard(); renderMatrix(); renderRoadmap();
   if (!topK) { $("headline").textContent = "No model has run every dataset yet."; return; }
   const wins = {};
   for (const s of suites("all")) {
@@ -459,6 +473,11 @@ function renderMatrix() {
         return v == null ? '<td class="na">–</td>' : `<td class="${v === best && ranked.includes(k) ? "win" : ""}">${(100 * v).toFixed(1)}${metric === "ece" ? "%" : ""}</td>`;
       }).join("")}</tr>`;
     }).join("") + "</tbody>";
+}
+
+function renderRoadmap() {
+  $("road").innerHTML = (M.roadmap || []).map(g => `<div class="card"><h3>${esc(g.title)}</h3><p class="count">${g.items.length} ${g.items.length === 1 ? "entry" : "entries"}</p><ul>${
+    g.items.map(i => `<li><b>${esc(i.name)}</b><code>${esc(i.access)}</code><span>${esc(i.note)}</span></li>`).join("")}</ul></div>`).join("");
 }
 
 function tabs(id, onPick) {
