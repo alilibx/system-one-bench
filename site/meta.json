@@ -154,5 +154,102 @@
       "task": "Is this passage relevant, yes/no",
       "lang": "Arabic"
     }
-  }
+  },
+  "roadmap": [
+    {
+      "title": "Runs today on OpenRouter's Decisions API",
+      "items": [
+        {
+          "name": "Perplexity Decider V1 27B",
+          "access": "perplexity/pplx-decider-v1-27b",
+          "note": "$0.04 per 1M input tokens. Open weights (Apache-2.0); answers all three question types and reads images."
+        },
+        {
+          "name": "Liquid AI d1",
+          "access": "liquid/d1",
+          "note": "$0.04 per 1M input tokens. 65K context."
+        },
+        {
+          "name": "Cloudflare Clef and Clef Flash",
+          "access": "cloudflare/clef, cloudflare/clef-flash",
+          "note": "$0.24 and $0.09 per 1M input tokens. Open weights (27B and 9B), so they can run both hosted and locally."
+        },
+        {
+          "name": "Upstage Solar Decide",
+          "access": "upstage/solar-decide",
+          "note": "$0.05 per 1M input tokens. 524K context, for a long-state track."
+        },
+        {
+          "name": "Inception Mercury Decide",
+          "access": "inception/mercury-decide:free",
+          "note": "Free. A diffusion model, so mainly a latency test."
+        },
+        {
+          "name": "Kev 4B",
+          "access": "jaredpalmer/kev-4b",
+          "note": "$0.042 per 1M input tokens. English only, 8K context, open weights."
+        },
+        {
+          "name": "Together Tev1 4B Experimental",
+          "access": "togethercomputer/tev1-4b-experimental",
+          "note": "Choice questions only (2 to 24 options), so it runs on a subset."
+        },
+        {
+          "name": "Respan Span-01 and Span-01 Lite",
+          "access": "respan/span-01, respan/span-01-lite:free",
+          "note": "Yes/no questions only, aimed at judging conversations."
+        }
+      ]
+    },
+    {
+      "title": "Needs a small adapter",
+      "items": [
+        {
+          "name": "Fastino GLiDE",
+          "access": "api.fastino.ai/v1/systemone",
+          "note": "Same request shape on Fastino's own API, so only the base URL and key change. $0.15 per 1M input tokens."
+        },
+        {
+          "name": "Fastino GLiNER2.5-Decide and multi-Decide",
+          "access": "fastino/GLiNER2.5-Decide, fastino/GLiNER2.5-multi-Decide",
+          "note": "Open weights on Hugging Face. 340M open-weight models; the multi version is multilingual."
+        },
+        {
+          "name": "Laya Multilingual",
+          "access": "convaiinnovations/laya-multilingual",
+          "note": "Open weights on Hugging Face. The base model of both Arabic fine-tunes, so the fair control for them."
+        },
+        {
+          "name": "vLLM Semantic Router Decision-2.0",
+          "access": "vllm-sr/Decision-2.0-{Kai-0.6B … Vega-27B}",
+          "note": "Open weights on Hugging Face. Six sizes from 0.6B to 27B: a model-size sweep on one recipe."
+        },
+        {
+          "name": "Plain chat-model baselines",
+          "access": "openai/gpt-6-luna, qwen/qwen3.5-9b",
+          "note": "The same base models as Luna Decisions and Clef Flash, prompted for JSON. Shows what decision training adds."
+        },
+        {
+          "name": "GLiClass Multilang",
+          "access": "knowledgator/gliclass-multilang-mini",
+          "note": "Open weights on Hugging Face. Small zero-shot classifier trained on 20 languages including Arabic: a cheap multilingual floor."
+        }
+      ]
+    },
+    {
+      "title": "Watching",
+      "items": [
+        {
+          "name": "Community distills",
+          "access": "",
+          "note": "Unofficial open models trained to imitate decision models: JEV-9B, GEV-26B-Decide, the Mapika decider family and wfzyx/von. Worth a run once they have model cards and licences."
+        },
+        {
+          "name": "Other leaderboards",
+          "access": "",
+          "note": "JevBench and Decision Index publish decision-model results to cross-check ours against."
+        }
+      ]
+    }
+  ]
 }

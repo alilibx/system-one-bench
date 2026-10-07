@@ -32,6 +32,12 @@ The site is served at systemonebench.dev: the domain's DNS (Vercel) points the a
 mkdir -p _site && cp site/* results.json _site/ && python3 -m http.server 8062 -d _site
 ```
 
+## Roadmap
+
+The roadmap lives in `site/meta.json` and is published at [systemonebench.dev/#roadmap](https://systemonebench.dev/#roadmap).
+As of 2026-10-07 it lists 8 models that run today on OpenRouter's Decisions API, 6 that need a small adapter, and 2 entries
+on a watch list. Several vendors publish their own scores; none go on the site until they've run here like every other model.
+
 ## Live race
 
 ```bash
