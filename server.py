@@ -1,6 +1,6 @@
 """System One Bench live race: TypeSafe Jev vs a challenger on the same labelled cases.
 
-Challengers: OpenAI's GPT-6 Luna Decisions (OpenRouter Decisions API), and, with LAYA=1, Laya running locally.
+Challengers: every model on OpenRouter's Decisions API (OpenAI Decisions by default), and, with LAYA=1, Laya running locally.
 
 Run:  OPENROUTER_API_KEY=<your key> .venv/bin/python server.py
       OPENROUTER_API_KEY=kerstel://global/OPENROUTER_API_KEY ks run -- .venv/bin/python server.py
@@ -56,9 +56,14 @@ CASES = [json.loads(l) for l in open(os.path.join(HERE, "cases.jsonl"))]
 SUITES = sorted({c["suite"] for c in CASES})
 ARABIC = [c for c in CASES if c["suite"] == "xnli_ar" or c["suite"].startswith("ar_")]
 
-# API challengers answer over HTTP with the same request body as Jev.
-CHALLENGERS = {"openai": {"label": "OpenAI Decisions", "where": f"openrouter.ai · {OPENAI_MODEL}", "api": True,
-                          "url": DECISIONS_URL, "model": OPENAI_MODEL, "key": "OPENROUTER_API_KEY"}}
+# API challengers answer over HTTP with the same request body as Jev: every model on OpenRouter's Decisions API.
+API_CHALLENGERS = {"openai": ("OpenAI Decisions", OPENAI_MODEL), "pplx": ("Perplexity Decider", "perplexity/pplx-decider-v1-27b"),
+                   "liquid": ("Liquid AI d1", "liquid/d1"), "clef": ("Cloudflare Clef", "cloudflare/clef"),
+                   "clef-flash": ("Cloudflare Clef Flash", "cloudflare/clef-flash"), "mercury": ("Inception Mercury", "inception/mercury-decide:free"),
+                   "kev": ("Kev 4B", "jaredpalmer/kev-4b"), "tev1": ("Together Tev1", "togethercomputer/tev1-4b-experimental"),
+                   "solar": ("Upstage Solar", "upstage/solar-decide")}
+CHALLENGERS = {k: {"label": label, "where": f"openrouter.ai · {model}", "api": True, "url": DECISIONS_URL, "model": model, "key": "OPENROUTER_API_KEY"}
+               for k, (label, model) in API_CHALLENGERS.items()}
 
 # Laya is opt-in: it needs torch and the checkpoints in the HF cache, and takes a while to load.
 router, agents = None, {}

@@ -14,7 +14,7 @@
   color-scheme: light;
   --page: #f4f6f9; --surface: #ffffff; --ink: #121a2b; --ink-2: #4a5468; --muted: #6f7889;
   --rule: #dfe3ea; --grid: #e9ecf1; --axis: #c3c9d3; --hover: #eef1f6; --good: rgba(27, 175, 122, 0.08);
-  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --s6: #008300; --s7: #4a3aa7; --s8: #e34948; --s9: #8a93a3;
   --display: "Bricolage Grotesque", system-ui, sans-serif;
   --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
@@ -23,14 +23,14 @@
     color-scheme: dark;
     --page: #0c121d; --surface: #131b29; --ink: #eef2f8; --ink-2: #b6bfce; --muted: #8b95a7;
     --rule: #263043; --grid: #1d2636; --axis: #3a465c; --hover: #1a2334; --good: rgba(25, 158, 112, 0.12);
-    --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767; --s9: #6f7889;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
   --page: #0c121d; --surface: #131b29; --ink: #eef2f8; --ink-2: #b6bfce; --muted: #8b95a7;
   --rule: #263043; --grid: #1d2636; --axis: #3a465c; --hover: #1a2334; --good: rgba(25, 158, 112, 0.12);
-  --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767; --s9: #6f7889;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--page); color: var(--ink); font: 16px/1.55 var(--body); -webkit-font-smoothing: antialiased; }
@@ -48,7 +48,8 @@ code { font: 0.9em ui-monospace, "SF Mono", Menlo, monospace; }
 .hero { padding: 48px 0 8px; }
 .hero h1 { font: 700 clamp(32px, 5vw, 54px)/1.03 var(--display); letter-spacing: -0.025em; margin: 0 0 14px; max-width: 20ch; text-wrap: balance; }
 .lede { max-width: 68ch; color: var(--ink-2); margin: 0 0 6px; font-size: 17px; }
-.stamp { color: var(--muted); font-size: 14px; margin: 0 0 28px; }
+.stamp { color: var(--muted); font-size: 14px; margin: 0 0 14px; }
+.living { max-width: 68ch; margin: 0 0 28px; padding: 10px 14px; border-left: 3px solid var(--s1); background: var(--surface); border-radius: 0 8px 8px 0; color: var(--ink-2); font-size: 14.5px; }
 
 /* Cards hold one chart each: a title, what is measured and which way is better, then the chart. */
 .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 20px 20px 16px; min-width: 0; }
@@ -156,12 +157,13 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
     <h1 id="headline">Loading the latest results.</h1>
     <p class="lede">System One models read a situation and answer typed questions in one fast call: yes or no, pick one option, or score a level, each with probabilities. Every model gets the same cases and the same request body, scored against each dataset's labels.</p>
     <p class="stamp" id="stamp"></p>
+    <p class="living">System One Bench is a living benchmark: we keep adding models as they're released, and every new model runs the same cases. See the <a href="#roadmap">roadmap</a> for what's next.</p>
   </section>
 
   <div class="trio">
-    <div class="card"><h3>System One Index</h3><p class="sub">Mean accuracy across all 16 datasets. Higher is better.</p><div id="mini-index"></div></div>
-    <div class="card"><h3>Latency</h3><p class="sub">Median time per call, in milliseconds. APIs with 8 calls in flight; Laya locally, one at a time. Lower is better.</p><div id="mini-latency"></div></div>
-    <div class="card"><h3>Cost</h3><p class="sub">USD per 1,000 calls, as billed by the API. Lower is better.</p><div id="mini-cost"></div></div>
+    <div class="card"><h3>System One Index</h3><p class="sub">Mean accuracy across all 16 datasets, top 5. Higher is better.</p><div id="mini-index"></div></div>
+    <div class="card"><h3>Latency</h3><p class="sub">Median time per call in milliseconds, fastest 5. APIs through OpenRouter with 6 to 8 calls in flight; Laya locally, one at a time. Lower is better.</p><div id="mini-latency"></div></div>
+    <div class="card"><h3>Cost</h3><p class="sub">USD per 1,000 calls, as billed by the API, cheapest 5. Lower is better.</p><div id="mini-cost"></div></div>
   </div>
 
   <section class="section" id="index">
@@ -184,7 +186,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
     <h2>Accuracy against speed and cost</h2>
     <p class="note">The shaded corner is the most attractive: more accurate, and faster or cheaper. The line joins the models that nothing else beats on both measures.</p>
     <div class="pair">
-      <div class="card"><h3>Index against latency</h3><p class="sub">System One Index (all datasets) against median latency per call. API models measured through OpenRouter with 8 calls in flight; Laya on a local Apple M5 GPU, so its latency excludes any network.</p><div id="chart-vs-latency"></div></div>
+      <div class="card"><h3>Index against latency</h3><p class="sub">System One Index (all datasets) against median latency per call. API models measured through OpenRouter with 6 to 8 calls in flight; Laya on a local Apple M5 GPU, so its latency excludes any network.</p><div id="chart-vs-latency"></div></div>
       <div class="card"><h3>Index against cost</h3><p class="sub">System One Index (all datasets) against USD per 1,000 calls. Local models have no per-call price.</p><div id="chart-vs-cost"></div></div>
     </div>
   </section>
@@ -219,7 +221,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
     <p class="note">Every model run with its overall numbers. Overall accuracy here counts every question, so the 5-question typed-decisions dataset weighs more than in the index.</p>
     <div class="table-wrap"><table id="board"><thead><tr>
       <th scope="col">Model</th><th scope="col">Index</th><th scope="col">Accuracy</th><th scope="col">Calibration error</th>
-      <th scope="col">Median latency</th><th scope="col">Cost per 1,000 calls</th><th scope="col">Datasets</th>
+      <th scope="col">Median latency</th><th scope="col">Cost per 1,000 calls</th><th scope="col">Failed answers</th><th scope="col">Datasets</th>
     </tr></thead><tbody></tbody></table></div>
   </section>
 
@@ -239,7 +241,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
           <li>Accuracy compares the most likely answer with the dataset's label. A failed call counts as wrong.</li>
           <li>Calibration error is top-label ECE over 10 bins. Log loss, Brier score and more are in <a href="results.json">results.json</a>.</li>
           <li>Cost is the summed <code>usage.cost</code> the API reports.</li>
-          <li>API latency was measured with 8 requests in flight through OpenRouter; Laya ran locally on an Apple M5 GPU, one call at a time.</li>
+          <li>API latency was measured through OpenRouter with 8 requests in flight for Jev and GPT-6 Luna Decisions and 6 for the rest (Solar Decide finished at 24 because it's slow on long states); Laya ran locally on an Apple M5 GPU, one call at a time.</li>
           <li>Nothing was tuned on test data. Some open-weight fine-tunes trained on related data; the repo README lists which.</li>
         </ul>
       </div>
@@ -319,10 +321,12 @@ function niceTicks(hi, n) {
 }
 
 // Vertical bars, best first, value above each bar, name under it. Bars are 4px-rounded at the data end only.
-function bars(el, items, { fmt, lower = false, height = 230, max, labelKey = "short", note } = {}) {
+function bars(el, items, opts = {}) {
+  const { fmt, lower = false, height = 230, max, labelKey = "short", note, limit } = opts;
   if (!items.length) { el.innerHTML = `<p class="na">${note || "No data for these models."}</p>`; return; }
-  items = items.slice().sort((a, b) => lower ? a.v - b.v : b.v - a.v);
+  items = items.slice().sort((a, b) => lower ? a.v - b.v : b.v - a.v).slice(0, limit ?? items.length);
   const w = Math.max(el.clientWidth, 200), top = 22, bottom = 40, plotH = height - top - bottom;
+  if (w / items.length < 64) return hbars(el, items, opts);
   const hi = max ?? Math.max(...items.map(d => Math.max(d.v, d.w ?? 0))) * 1.12;
   const slot = w / items.length, bw = Math.min(64, slot * 0.62), y = v => top + plotH * (1 - v / hi);
   // Full names only when every one fits its slot (about 7px per character at 12.5px); otherwise short names.
@@ -342,6 +346,30 @@ function bars(el, items, { fmt, lower = false, height = 230, max, labelKey = "sh
       ${d.w != null ? `<text x="${x0 + bw + 6}" y="${yt + 4}" font-size="13" font-weight="600" fill="var(--ink)">${fmt(d.v)}</text>`
         : `<text x="${cx}" y="${yt - 7}" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)">${fmt(d.v)}</text>`}
       <text x="${cx}" y="${y(0) + 18}" text-anchor="middle" font-size="12.5" fill="var(--ink-2)">${esc(m[key])}</text>
+    </g>`;
+  });
+  el.innerHTML = s + "</svg>";
+  wireTips(el);
+}
+
+// Horizontal bars for charts with more models than vertical slots can label: name, bar, value. Items arrive sorted.
+function hbars(el, items, { fmt, max }) {
+  const w = Math.max(el.clientWidth, 200), rowH = 22, gap = 7, valW = 64;
+  const nameW = Math.min(150, Math.max(...items.map(d => M.models[d.k].short.length)) * 7.4 + 10);
+  const h = items.length * (rowH + gap), x0 = nameW, x1 = w - valW;
+  const hi = max ?? Math.max(...items.map(d => Math.max(d.v, d.w ?? 0))) * 1.05;
+  const X = v => x0 + (x1 - x0) * Math.min(v, hi) / hi;
+  let s = `<svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(items.map(d => `${M.models[d.k].label} ${fmt(d.v)}`).join(", "))}">`;
+  items.forEach((d, i) => {
+    const m = M.models[d.k], y = i * (rowH + gap), xe = X(d.v), r = Math.min(4, (xe - x0) / 2);
+    const tipHtml = `<b>${esc(m.label)}</b><span>${esc(m.maker)}, ${esc(m.access)}</span><span>${fmt(d.v)}${d.w != null ? `, 95th percentile ${fmt(d.w)}` : ""}</span>`;
+    s += `<g class="bar" tabindex="0" data-tip="${esc(tipHtml)}">
+      <rect x="0" y="${y - 2}" width="${w}" height="${rowH + 4}" fill="transparent"/>
+      <text x="${nameW - 10}" y="${y + rowH / 2 + 4.5}" text-anchor="end" font-size="12.5" fill="var(--ink-2)">${esc(m.short)}</text>
+      <rect x="${x0}" y="${y + 3}" width="${x1 - x0}" height="${rowH - 6}" rx="3" fill="var(--grid)"/>
+      <path d="M${x0} ${y + 3}H${xe - r}Q${xe} ${y + 3} ${xe} ${y + 3 + r}V${y + rowH - 3 - r}Q${xe} ${y + rowH - 3} ${xe - r} ${y + rowH - 3}H${x0}Z" fill="${color(d.k)}"/>
+      ${d.w != null ? `<line x1="${xe}" x2="${X(d.w)}" y1="${y + rowH / 2}" y2="${y + rowH / 2}" stroke="var(--muted)"/><line x1="${X(d.w)}" x2="${X(d.w)}" y1="${y + 5}" y2="${y + rowH - 5}" stroke="var(--muted)" stroke-width="2"/>` : ""}
+      <text x="${w}" y="${y + rowH / 2 + 4.5}" text-anchor="end" font-size="13" font-weight="600" fill="var(--ink)">${fmt(d.v)}</text>
     </g>`;
   });
   el.innerHTML = s + "</svg>";
@@ -368,19 +396,25 @@ function scatter(el, pts, { xFmt, xLabel, note }) {
   s += `<text x="${(L + w - Rt) / 2}" y="${h - 6}" text-anchor="middle" font-size="12.5" fill="var(--ink-2)">${xLabel}</text>`;
   s += `<text x="${L + 8}" y="${T + 16}" font-size="12" fill="var(--ink-2)">Most attractive</text>`;
   if (front.length > 1) s += `<polyline points="${front.map(p => `${X(p.x)},${Y(p.y)}`).join(" ")}" fill="none" stroke="var(--ink-2)" stroke-width="2" stroke-dasharray="5 4"/>`;
-  pts.forEach(p => {
-    const m = M.models[p.k], cx = X(p.x), cy = Y(p.y), right = cx > w - 120;
+  const placed = pts.map(p => ({ x0: X(p.x) - 9, x1: X(p.x) + 9, y0: Y(p.y) - 9, y1: Y(p.y) + 9 }));  // dots block labels too
+  const hit = b => placed.some(o => b.x0 < o.x1 && b.x1 > o.x0 && b.y0 < o.y1 && b.y1 > o.y0);
+  pts.slice().sort((a, b) => b.y - a.y).forEach(p => {
+    const m = M.models[p.k], cx = X(p.x), cy = Y(p.y), tw = m.short.length * 7.6 + 4;
+    const spots = [[cx + 12, cy + 4, "start"], [cx - 12, cy + 4, "end"], [cx - tw / 2, cy - 13, "start"], [cx - tw / 2, cy + 22, "start"]];
+    const spot = spots.map(([x, y, a]) => ({ x, y, a, b: a === "end" ? { x0: x - tw, x1: x, y0: y - 12, y1: y + 3 } : { x0: x, x1: x + tw, y0: y - 12, y1: y + 3 } }))
+      .find(o => o.b.x0 >= L && o.b.x1 <= w - 2 && o.b.y0 >= T && !hit(o.b));
+    if (spot) placed.push(spot.b);
     const tipHtml = `<b>${esc(m.label)}</b><span>Index ${p.y.toFixed(1)}</span><span>${xFmt(p.x)}</span>`;
     s += `<g class="pt" tabindex="0" data-tip="${esc(tipHtml)}"><circle cx="${cx}" cy="${cy}" r="14" fill="transparent"/>
       <circle cx="${cx}" cy="${cy}" r="7" fill="${color(p.k)}" stroke="var(--surface)" stroke-width="2"/>
-      <text x="${cx + (right ? -12 : 12)}" y="${cy + 4}" text-anchor="${right ? "end" : "start"}" font-size="13" font-weight="600" fill="var(--ink)" stroke="var(--surface)" stroke-width="4" style="paint-order:stroke">${esc(m.short)}</text></g>`;
+      ${spot ? `<text x="${spot.x}" y="${spot.y}" text-anchor="${spot.a}" font-size="13" font-weight="600" fill="var(--ink)" stroke="var(--surface)" stroke-width="4" style="paint-order:stroke">${esc(m.short)}</text>` : ""}</g>`;
   });
   el.innerHTML = s + "</svg>";
   wireTips(el);
 }
 
 // ---------- page ----------
-const fmtIdx = v => v.toFixed(1), fmtMs = v => Math.round(v) + " ms", fmtUsd = v => "$" + (v < 1 ? v.toFixed(3) : v.toFixed(2)), fmtPct = v => v.toFixed(1) + "%";
+const fmtIdx = v => v.toFixed(1), fmtMs = v => Math.round(v) + " ms", fmtUsd = v => v === 0 ? "Free" : "$" + (v < 1 ? v.toFixed(3) : v.toFixed(2)), fmtPct = v => v.toFixed(1) + "%";
 
 function render() {
   const full = charted().filter(k => index(k) != null);
@@ -397,15 +431,15 @@ function render() {
     vs.filter(k => val(k, s) === best).forEach(k => wins[k] = (wins[k] || 0) + 1);
   }
   const t = M.models[topK];
-  $("headline").textContent = `${t.label} leads the System One Index at ${fmtIdx(index(topK))}, and wins ${wins[topK] || 0} of ${suites("all").length} datasets.`;
+  $("headline").textContent = `${t.maker} ${t.label} leads the System One Index at ${fmtIdx(index(topK))}, and wins ${wins[topK] || 0} of ${suites("all").length} datasets.`;
 }
 
 function draw() {
   hideTip();
   const full = charted().filter(k => index(k) != null);
-  bars($("mini-index"), full.map(k => ({ k, v: index(k) })), { fmt: fmtIdx, max: 100, height: 200 });
-  bars($("mini-latency"), full.filter(k => R[k].latency_ms).map(k => ({ k, v: R[k].latency_ms.p50 })), { fmt: fmtMs, lower: true, height: 200 });
-  bars($("mini-cost"), full.filter(k => per1k(k) != null).map(k => ({ k, v: per1k(k) })), { fmt: fmtUsd, lower: true, height: 200 });
+  bars($("mini-index"), full.map(k => ({ k, v: index(k) })), { fmt: fmtIdx, max: 100, height: 200, limit: 5 });
+  bars($("mini-latency"), full.filter(k => R[k].latency_ms).map(k => ({ k, v: R[k].latency_ms.p50 })), { fmt: fmtMs, lower: true, height: 200, limit: 5 });
+  bars($("mini-cost"), full.filter(k => per1k(k) != null).map(k => ({ k, v: per1k(k) })), { fmt: fmtUsd, lower: true, height: 200, limit: 5 });
 
   const setName = { all: "all 16 datasets", English: `the ${suites("English").length} English datasets`, Arabic: `the ${suites("Arabic").length} Arabic datasets` }[indexSet];
   $("index-title").textContent = indexSet === "all" ? "All datasets" : `${indexSet} datasets`;
@@ -451,13 +485,14 @@ function renderBoard() {
       <td data-label="Calibration error">${fmtPct(100 * x.r.all.ece)}</td>
       <td data-label="Median latency">${x.r.latency_ms ? fmtMs(x.r.latency_ms.p50) : '<span class="na">–</span>'}</td>
       <td data-label="Cost per 1,000 calls">${c != null ? fmtUsd(c) : `<span class="na">${x.m.access.startsWith("Open weights") ? "Local" : "Not reported"}</span>`}</td>
+      <td data-label="Failed answers">${x.r.all.failed ? x.r.all.failed.toLocaleString("en") : "0"}</td>
       <td data-label="Datasets">${x.cover} of ${all}</td></tr>`;
   };
-  const group = (rs, title) => rs.length ? `<tr class="group"><td colspan="7">${title}</td></tr>` + rs.map(line).join("") : "";
+  const group = (rs, title) => rs.length ? `<tr class="group"><td colspan="8">${title}</td></tr>` + rs.map(line).join("") : "";
   const cur = rows.filter(x => x.m.chart !== false);
   $("board").querySelector("tbody").innerHTML =
     cur.filter(x => x.cover === all).sort(byIdx).map(line).join("") +
-    group(cur.filter(x => x.cover < all).sort(byIdx), "Arabic datasets only") +
+    group(cur.filter(x => x.cover < all).sort(byIdx), "Ran only some of the datasets") +
     group(rows.filter(x => x.m.chart === false), "Earlier runs of the same models, kept for reference");
 }
 
