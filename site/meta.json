@@ -2,7 +2,13 @@
   "series": {
     "1": "TypeSafe",
     "2": "OpenAI",
-    "3": "Laya, open weights"
+    "3": "Laya, open weights",
+    "4": "Perplexity",
+    "5": "Cloudflare",
+    "6": "Liquid AI",
+    "7": "Inception",
+    "8": "Upstage",
+    "9": "Other makers"
   },
   "models": {
     "or_jev": {
@@ -54,6 +60,89 @@
       "series": 3,
       "latency": "Apple M5 GPU, one at a time",
       "short": "ara-rag"
+    },
+    "pplx": {
+      "label": "Decider V1 27B",
+      "maker": "Perplexity",
+      "access": "OpenRouter API",
+      "slug": "perplexity/pplx-decider-v1-27b",
+      "series": 4,
+      "short": "Decider",
+      "run": "2026-10-07",
+      "latency": "API, 6 in flight"
+    },
+    "liquid_d1": {
+      "label": "d1",
+      "maker": "Liquid AI",
+      "access": "OpenRouter API",
+      "slug": "liquid/d1",
+      "series": 6,
+      "short": "d1",
+      "run": "2026-10-07",
+      "latency": "API, 6 in flight"
+    },
+    "clef": {
+      "label": "Clef",
+      "maker": "Cloudflare",
+      "access": "OpenRouter API",
+      "slug": "cloudflare/clef",
+      "series": 5,
+      "short": "Clef",
+      "run": "2026-10-07",
+      "latency": "API, 6 in flight"
+    },
+    "clef_flash": {
+      "label": "Clef Flash",
+      "maker": "Cloudflare",
+      "access": "OpenRouter API",
+      "slug": "cloudflare/clef-flash",
+      "series": 5,
+      "short": "Clef Flash",
+      "run": "2026-10-07",
+      "latency": "API, 6 in flight"
+    },
+    "solar": {
+      "label": "Solar Decide",
+      "maker": "Upstage",
+      "access": "OpenRouter API",
+      "slug": "upstage/solar-decide",
+      "series": 8,
+      "short": "Solar",
+      "run": "2026-10-07",
+      "latency": "API, 6 then 24 in flight",
+      "note": "Accepts at most 26 options per question, so all 200 Banking77 cases (77 options) failed and count as wrong."
+    },
+    "mercury": {
+      "label": "Mercury Decide",
+      "maker": "Inception",
+      "access": "OpenRouter API (free tier)",
+      "slug": "inception/mercury-decide:free",
+      "series": 7,
+      "short": "Mercury",
+      "run": "2026-10-07",
+      "latency": "API, 6 in flight",
+      "note": "Run on OpenRouter's free tier, so its cost is $0."
+    },
+    "kev": {
+      "label": "Kev 4B",
+      "maker": "Jared Palmer",
+      "access": "OpenRouter API",
+      "slug": "jaredpalmer/kev-4b",
+      "series": 9,
+      "short": "Kev",
+      "run": "2026-10-07",
+      "latency": "API, 6 in flight"
+    },
+    "tev1": {
+      "label": "Tev1 4B Experimental",
+      "maker": "Together AI",
+      "access": "OpenRouter API",
+      "slug": "togethercomputer/tev1-4b-experimental",
+      "series": 9,
+      "short": "Tev1",
+      "run": "2026-10-07",
+      "latency": "API, 6 in flight",
+      "note": "Accepts at most 20 options per question, so all 200 Banking77 cases (77 options) failed and count as wrong."
     },
     "jev": {
       "label": "Jev 1.13",
@@ -157,47 +246,12 @@
   },
   "roadmap": [
     {
-      "title": "Runs today on OpenRouter's Decisions API",
+      "title": "Next",
       "items": [
-        {
-          "name": "Perplexity Decider V1 27B",
-          "access": "perplexity/pplx-decider-v1-27b",
-          "note": "$0.04 per 1M input tokens. Open weights (Apache-2.0); answers all three question types and reads images."
-        },
-        {
-          "name": "Liquid AI d1",
-          "access": "liquid/d1",
-          "note": "$0.04 per 1M input tokens. 65K context."
-        },
-        {
-          "name": "Cloudflare Clef and Clef Flash",
-          "access": "cloudflare/clef, cloudflare/clef-flash",
-          "note": "$0.24 and $0.09 per 1M input tokens. Open weights (27B and 9B), so they can run both hosted and locally."
-        },
-        {
-          "name": "Upstage Solar Decide",
-          "access": "upstage/solar-decide",
-          "note": "$0.05 per 1M input tokens. 524K context, for a long-state track."
-        },
-        {
-          "name": "Inception Mercury Decide",
-          "access": "inception/mercury-decide:free",
-          "note": "Free. A diffusion model, so mainly a latency test."
-        },
-        {
-          "name": "Kev 4B",
-          "access": "jaredpalmer/kev-4b",
-          "note": "$0.042 per 1M input tokens. English only, 8K context, open weights."
-        },
-        {
-          "name": "Together Tev1 4B Experimental",
-          "access": "togethercomputer/tev1-4b-experimental",
-          "note": "Choice questions only (2 to 24 options), so it runs on a subset."
-        },
         {
           "name": "Respan Span-01 and Span-01 Lite",
           "access": "respan/span-01, respan/span-01-lite:free",
-          "note": "Yes/no questions only, aimed at judging conversations."
+          "note": "Only accepts a conversation (a list of chat messages) as the state and answers yes/no questions, so it needs a conversation track of its own."
         }
       ]
     },

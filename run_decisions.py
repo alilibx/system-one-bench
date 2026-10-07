@@ -65,6 +65,7 @@ async def main():
                     r = await call(client, a.model, c)
                     f.write(json.dumps({"id": c["id"], "suite": c["suite"], "nq": len(c["questions"]), "ms": r.get("ms"),
                                         "error": r.get("error")}) + "\n")
+                    f.flush()
             print("latency probe done")
         sem = asyncio.Semaphore(a.concurrency)
         n = 0

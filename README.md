@@ -17,6 +17,9 @@ Both API models are called at `POST https://openrouter.ai/api/alpha/decisions`, 
 
 **Latest results: [systemonebench.dev](https://systemonebench.dev/)**
 
+System One Bench is a living benchmark: we keep adding models as they're released, and every new model runs the same
+cases through the same scorer. The [roadmap](#roadmap) lists what's next.
+
 ## Results site
 
 `site/` is a static page that reads `results.json` and `site/meta.json` (display names, makers, run dates, and dataset
@@ -76,6 +79,36 @@ export OPENROUTER_API_KEY=<your key>
 .venv/bin/python run_laya.py --variant ara-rag    # Wouze/laya-ara-rag, Arabic suites only
 TYPESAFE_API_KEY=<your key> .venv/bin/python run_jev.py
 ```
+
+## Round 2: eleven models (2026-10-07)
+
+Eight more models from OpenRouter's Decisions API, run the same day as Jev and GPT-6 Luna Decisions, all 3,250 cases.
+The index is the mean accuracy across the 16 datasets, every dataset weighted equally. API latency is the median per call
+through OpenRouter (8 calls in flight for Jev and GPT-6 Luna Decisions, 6 for the rest, Solar Decide finishing at 24);
+Laya ran locally on an Apple M5 GPU.
+
+| Model | Maker | Index | Calibration error | Median latency | Cost per 1,000 calls |
+|---|---|---|---|---|---|
+| **Decider V1 27B** | Perplexity | 83.3 | 5.6% | 528 ms | $0.019 |
+| d1 | Liquid AI | 82.7 | 2.9% | 659 ms | $0.015 |
+| Mercury Decide | Inception | 82.4 | 13.1% | 490 ms | free tier |
+| Clef | Cloudflare | 81.6 | 2.2% | 706 ms | $0.116 |
+| Clef Flash | Cloudflare | 80.3 | 3.5% | 534 ms | $0.044 |
+| Jev 1.13 | TypeSafe | 79.0 | 6.1% | 372 ms | $0.028 |
+| Kev 4B | Jared Palmer | 76.8 | 5.1% | 899 ms | $0.010 |
+| GPT-6 Luna Decisions | OpenAI | 76.0 | 9.8% | 363 ms | $0.040 |
+| Tev1 4B Experimental | Together AI | 71.5 | 5.3% | 518 ms | $0.019 |
+| Solar Decide | Upstage | 68.8 | 20.3% | 1,231 ms | $0.042 |
+| Laya Router | Convai Innovations | 60.4 | 20.0% | 75 ms | local |
+
+- Five models beat Jev 1.13 on the index, led by Perplexity Decider V1 27B (83.3) and Liquid AI d1 (82.7). The top five
+  are within 3 points of each other.
+- Cloudflare Clef and Liquid AI d1 are the best calibrated (2.2% and 2.9% calibration error); Mercury Decide is accurate
+  but overconfident (13.1%).
+- Jev 1.13 and GPT-6 Luna Decisions remain the fastest API models (about 370 ms median). Kev 4B is the cheapest paid model.
+- Together Tev1 accepts at most 20 options per question and Upstage Solar Decide at most 26, so each fails all 200
+  Banking77 cases (77 options); failures count as wrong. Respan Span-01 only accepts conversations and wasn't run.
+- Every price above is what OpenRouter billed; Mercury Decide ran on the free tier.
 
 ## Jev vs OpenAI Decisions (2026-10-07)
 
