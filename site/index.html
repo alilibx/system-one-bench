@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>System One Bench</title>
+<link rel="canonical" href="https://systemonebench.dev/">
 <meta name="description" content="Independent accuracy, calibration, latency and cost results for System One decision models on 16 labelled datasets in English, French and Arabic.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -151,7 +152,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
 
   <div class="trio">
     <div class="card"><h3>System One Index</h3><p class="sub">Mean accuracy across all 16 datasets. Higher is better.</p><div id="mini-index"></div></div>
-    <div class="card"><h3>Latency</h3><p class="sub">Median time per call, in milliseconds. Lower is better.</p><div id="mini-latency"></div></div>
+    <div class="card"><h3>Latency</h3><p class="sub">Median time per call, in milliseconds. APIs with 8 calls in flight; Laya locally, one at a time. Lower is better.</p><div id="mini-latency"></div></div>
     <div class="card"><h3>Cost</h3><p class="sub">USD per 1,000 calls, as billed by the API. Lower is better.</p><div id="mini-cost"></div></div>
   </div>
 
@@ -175,7 +176,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
     <h2>Accuracy against speed and cost</h2>
     <p class="note">The shaded corner is the most attractive: more accurate, and faster or cheaper. The line joins the models that nothing else beats on both measures.</p>
     <div class="pair">
-      <div class="card"><h3>Index against latency</h3><p class="sub">System One Index (all datasets) against median latency per call.</p><div id="chart-vs-latency"></div></div>
+      <div class="card"><h3>Index against latency</h3><p class="sub">System One Index (all datasets) against median latency per call. API models measured through OpenRouter with 8 calls in flight; Laya on a local Apple M5 GPU, so its latency excludes any network.</p><div id="chart-vs-latency"></div></div>
       <div class="card"><h3>Index against cost</h3><p class="sub">System One Index (all datasets) against USD per 1,000 calls. Local models have no per-call price.</p><div id="chart-vs-cost"></div></div>
     </div>
   </section>
@@ -251,7 +252,6 @@ python score.py preds_or_jev.jsonl preds_luna.jsonl</pre>
 const $ = id => document.getElementById(id);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const date = s => new Date(s + "T12:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-const MAKERS = { 1: "TypeSafe", 2: "OpenAI", 3: "Laya, open weights" };
 let R, M, indexSet = "all", metric = "acc";
 
 Promise.all([fetch("results.json").then(r => r.json()), fetch("meta.json").then(r => r.json())])
@@ -263,6 +263,9 @@ Promise.all([fetch("results.json").then(r => r.json()), fetch("meta.json").then(
 
 // ---------- data ----------
 const runs = () => Object.keys(M.models).filter(k => R[k]);
+const unlisted = () => Object.keys(R).filter(k => !M.models[k]);
+// The newest run date stands for the whole page, so a new run only needs its meta.json entry updated.
+const updated = () => runs().map(k => M.models[k].run).sort().at(-1);
 const charted = () => runs().filter(k => M.models[k].chart !== false);
 const suites = set => Object.keys(M.suites).filter(s => set === "all" || M.suites[s].lang === set);
 const val = (k, s, key = "acc") => R[k]?.["suite:" + s]?.[key];
@@ -272,7 +275,7 @@ function index(k, set = "all") {
   return 100 * ss.reduce((a, s) => a + val(k, s), 0) / ss.length;
 }
 const per1k = k => R[k].cost && R[k].cost.usd != null ? 1000 * R[k].cost.usd / R[k].cost.calls : null;
-const color = k => `var(--s${M.models[k].series})`;
+const color = k => `var(--s${M.models[k].series}, var(--muted))`;
 
 // ---------- tooltip ----------
 const tip = $("tip");
@@ -368,6 +371,12 @@ const fmtIdx = v => v.toFixed(1), fmtMs = v => Math.round(v) + " ms", fmtUsd = v
 function render() {
   const full = charted().filter(k => index(k) != null);
   const topK = full.slice().sort((a, b) => index(b) - index(a))[0];
+  $("stamp").textContent = `Updated ${date(updated())}. ${runs().length} model runs across ${suites("all").length} datasets.`;
+  $("foot-updated").textContent = `Last run ${date(updated())}`;
+  $("legend").innerHTML = [...new Set(charted().map(k => M.models[k].series))].map(sr => `<li><i style="background:var(--s${sr}, var(--muted))"></i>${esc(M.series[sr] || M.models[charted().find(k => M.models[k].series === sr)].maker)}</li>`).join("");
+  if (unlisted().length) $("leaderboard").insertAdjacentHTML("beforeend", `<p class="na">Not shown: ${unlisted().map(esc).join(", ")}. Add an entry to site/meta.json to include a run.</p>`);
+  draw(); renderBoard(); renderMatrix();
+  if (!topK) { $("headline").textContent = "No model has run every dataset yet."; return; }
   const wins = {};
   for (const s of suites("all")) {
     const vs = charted().filter(k => val(k, s) != null), best = Math.max(...vs.map(k => val(k, s)));
@@ -375,12 +384,6 @@ function render() {
   }
   const t = M.models[topK];
   $("headline").textContent = `${t.label} leads the System One Index at ${fmtIdx(index(topK))}, and wins ${wins[topK] || 0} of ${suites("all").length} datasets.`;
-  $("stamp").textContent = `Updated ${date(M.updated)}. ${runs().length} model runs across 16 datasets and 3,250 cases.`;
-  $("foot-updated").textContent = `Last run ${date(M.updated)}`;
-  $("legend").innerHTML = [...new Set(charted().map(k => M.models[k].series))].map(sr => `<li><i style="background:var(--s${sr})"></i>${MAKERS[sr]}</li>`).join("");
-  draw();
-  renderBoard();
-  renderMatrix();
 }
 
 function draw() {
@@ -405,6 +408,8 @@ function draw() {
   bars($("chart-run-cost"), full.filter(k => R[k].cost?.usd != null).map(k => ({ k, v: R[k].cost.usd })), { fmt: fmtUsd, lower: true, labelKey: "label" });
   bars($("chart-tokens"), full.filter(k => R[k].cost?.calls).map(k => ({ k, v: R[k].cost.input_tokens / R[k].cost.calls })), { fmt: v => Math.round(v).toLocaleString("en"), lower: true, labelKey: "label" });
 
+  // One shared calibration axis for every dataset chart, rounded up to the next 10 points and never below 50.
+  const eceMax = Math.max(50, 10 * Math.ceil(10 * Math.max(...suites("all").flatMap(s => charted().map(k => val(k, s, "ece") ?? 0)))));
   let html = "";
   for (const lang of M.languages) {
     const ss = suites(lang);
@@ -415,7 +420,7 @@ function draw() {
   document.querySelectorAll("#multiples [data-suite]").forEach(el => {
     const s = el.dataset.suite;
     bars(el, charted().filter(k => val(k, s) != null).map(k => ({ k, v: 100 * val(k, s, metric) })),
-      metric === "acc" ? { fmt: fmtIdx, max: 100, height: 190 } : { fmt: fmtPct, lower: true, height: 190, max: 50 });
+      metric === "acc" ? { fmt: fmtIdx, max: 100, height: 190 } : { fmt: fmtPct, lower: true, height: 190, max: eceMax });
   });
 }
 
@@ -444,13 +449,14 @@ function renderBoard() {
 
 function renderMatrix() {
   const ks = runs();
+  const ranked = charted();  // the earlier reference run is listed but never marked as a winner
   $("matrix").innerHTML = `<thead><tr><th scope="col">Dataset</th>${ks.map(k => `<th scope="col">${esc(M.models[k].label)}${M.models[k].chart === false ? " (Sept)" : ""}</th>`).join("")}</tr></thead><tbody>` +
     suites("all").map(s => {
-      const vs = ks.map(k => val(k, s, metric)).filter(v => v != null);
+      const vs = ranked.map(k => val(k, s, metric)).filter(v => v != null);
       const best = metric === "acc" ? Math.max(...vs) : Math.min(...vs);
       return `<tr><td>${esc(M.suites[s].label)} <span class="na">${M.suites[s].lang}</span></td>${ks.map(k => {
         const v = val(k, s, metric);
-        return v == null ? '<td class="na">–</td>' : `<td class="${v === best ? "win" : ""}">${(100 * v).toFixed(1)}${metric === "ece" ? "%" : ""}</td>`;
+        return v == null ? '<td class="na">–</td>' : `<td class="${v === best && ranked.includes(k) ? "win" : ""}">${(100 * v).toFixed(1)}${metric === "ece" ? "%" : ""}</td>`;
       }).join("")}</tr>`;
     }).join("") + "</tbody>";
 }

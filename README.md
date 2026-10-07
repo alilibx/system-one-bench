@@ -15,7 +15,7 @@ Models covered so far:
 
 Both API models are called at `POST https://openrouter.ai/api/alpha/decisions`, so they share one gateway.
 
-**Latest results: [alilibx.github.io/system-one-bench](https://alilibx.github.io/system-one-bench/)**
+**Latest results: [systemonebench.dev](https://systemonebench.dev/)**
 
 ## Results site
 
@@ -23,8 +23,10 @@ Both API models are called at `POST https://openrouter.ai/api/alpha/decisions`, 
 descriptions). Its layout follows [Artificial Analysis](https://artificialanalysis.ai/): a headline **System One Index** (mean
 accuracy across datasets, equal weight per dataset, 0 to 100, with English and Arabic sub-indexes), index-against-latency
 and index-against-cost scatters with a Pareto line, calibration, latency and cost bar charts, and one bar chart per dataset. `.github/workflows/pages.yml` publishes it to GitHub Pages on every push to `main` that touches
-`results.json` or `site/`, so re-running `score.py` and merging is all it takes to update it. When you add a model, give
-it an entry in `site/meta.json`. To preview locally:
+`results.json` or `site/`, so re-running `score.py` and merging updates it. Each run needs an entry in `site/meta.json` with its run
+date; the newest run date becomes the page's "Updated" date, and runs without an entry are listed as not shown.
+The site is served at systemonebench.dev: the domain's DNS (Vercel) points the apex at GitHub Pages' A records and
+`www` at `alilibx.github.io`. To preview locally:
 
 ```bash
 mkdir -p _site && cp site/* results.json _site/ && python3 -m http.server 8062 -d _site

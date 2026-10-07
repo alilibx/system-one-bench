@@ -1,5 +1,9 @@
 {
-  "updated": "2026-10-07",
+  "series": {
+    "1": "TypeSafe",
+    "2": "OpenAI",
+    "3": "Laya, open weights"
+  },
   "models": {
     "or_jev": {
       "label": "Jev 1.13",
