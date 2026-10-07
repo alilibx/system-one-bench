@@ -9,8 +9,9 @@
 <style>
 :root {
   --ink: #0d1522; --tarmac: #152033; --tarmac-2: #1c2a42; --line: #2b3b57;
-  --chalk: #e6ecf5; --dim: #8797b3;
-  --challenger: #e5703f; --jev: #4b93ea; --right: #4cc38a; --wrong: #ef5b5b;
+  --chalk: #e6ecf5; --dim: #8797b3; --right: #4cc38a; --wrong: #ef5b5b;
+  /* Maker colors, the same slots systemonebench.dev uses in dark mode. */
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767; --s9: #6f7889;
   --display: "Bricolage Grotesque", system-ui, sans-serif;
   --body: "IBM Plex Sans", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
@@ -18,246 +19,236 @@
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--ink); color: var(--chalk); font: 15px/1.45 var(--body); }
 .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
+:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
 
-header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
-h1 { font: 700 clamp(34px, 5vw, 56px)/1 var(--display); letter-spacing: -0.025em; margin: 0; }
-h1 .l { color: var(--challenger); } h1 .j { color: var(--jev); } h1 .v { color: var(--dim); font-weight: 600; }
 .mark { display: inline-flex; align-items: center; gap: 8px; font: 800 16px/1 var(--display); color: var(--dim); text-decoration: none; margin: 0 0 12px; }
 .mark:hover { color: var(--chalk); }
-.sub { color: var(--dim); margin: 6px 0 0; max-width: 56ch; }
+h1 { font: 700 clamp(34px, 5vw, 54px)/1 var(--display); letter-spacing: -0.025em; margin: 0; }
+.sub { color: var(--dim); margin: 8px 0 20px; max-width: 64ch; }
 
-.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+/* Racer picker: one toggle chip per model. */
+.picker { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; align-items: center; }
+.chip { display: inline-flex; align-items: center; gap: 8px; background: var(--tarmac); color: var(--dim); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px 6px 10px; font: 500 14px var(--body); cursor: pointer; }
+.chip i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); opacity: 0.45; }
+.chip[aria-pressed="true"] { color: var(--chalk); border-color: var(--c); background: var(--tarmac-2); }
+.chip[aria-pressed="true"] i { opacity: 1; }
+.chip:disabled { opacity: 0.4; cursor: not-allowed; }
+.link { background: none; border: 0; color: var(--dim); font: 500 13px var(--body); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; padding: 4px 6px; }
+.link:hover { color: var(--chalk); }
+
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-bottom: 18px; }
 label { display: grid; gap: 4px; font: 500 11px var(--mono); color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; }
 select, input { background: var(--tarmac); color: var(--chalk); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; font: 14px var(--body); min-width: 0; }
 input[type=number] { width: 84px; }
-button#go { font: 700 18px var(--display); background: var(--chalk); color: var(--ink);
-  border: 0; border-radius: 6px; padding: 9px 22px; cursor: pointer; }
+button#go { font: 700 18px var(--display); background: var(--chalk); color: var(--ink); border: 0; border-radius: 6px; padding: 9px 22px; cursor: pointer; }
 button#go:disabled { opacity: 0.5; cursor: progress; }
-:focus-visible { outline: 2px solid var(--jev); outline-offset: 2px; }
 
-.clock { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 10px 0; margin-bottom: 18px; }
-.clock .t { font: 500 clamp(40px, 7vw, 72px)/1 var(--mono); font-variant-numeric: tabular-nums; }
+.clock { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 10px 0; margin-bottom: 14px; gap: 16px; }
+.clock .t { font: 500 clamp(36px, 6vw, 64px)/1 var(--mono); font-variant-numeric: tabular-nums; }
 .clock .meta { font: 13px var(--mono); color: var(--dim); text-align: right; }
 
-.lane { background: var(--tarmac); border: 1px solid var(--line); border-left: 6px solid var(--c); border-radius: 8px; padding: 14px 16px 16px; margin-bottom: 14px; position: relative; }
-.lane.challenger { --c: var(--challenger); } .lane.jev { --c: var(--jev); }
-.lane-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-.name { font: 700 28px/1.05 var(--display); letter-spacing: -0.015em; color: var(--c); }
-.where { font: 12px var(--mono); color: var(--dim); }
-
-/* Photo-finish strip: one cell per case, filled in the order it finished. */
-.strip { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 2px; height: 34px; margin: 12px 0 6px; position: relative; }
+/* Lanes: name, photo-finish strip, compact live stats. */
+.lane { display: grid; grid-template-columns: 210px 1fr 300px; gap: 14px; align-items: center; background: var(--tarmac); border: 1px solid var(--line);
+  border-left: 5px solid var(--c); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+.lane .name { font: 700 19px/1.1 var(--display); color: var(--c); }
+.lane .where { font: 11px var(--mono); color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lane .flag { display: inline-block; margin-left: 6px; font: 700 12px var(--body); color: var(--ink); background: var(--c); padding: 1px 6px; border-radius: 4px; vertical-align: 2px; }
+.strip { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 2px; height: 26px; }
 .cell { background: var(--tarmac-2); border-radius: 2px; transform-origin: bottom; }
 .cell.ok { background: var(--right); animation: drop 240ms ease-out; }
 .cell.part { background: linear-gradient(to top, var(--right) var(--f), var(--wrong) var(--f)); animation: drop 240ms ease-out; }
 .cell.bad { background: var(--wrong); animation: drop 240ms ease-out; }
 @keyframes drop { from { transform: scaleY(0.2); opacity: 0.3; } to { transform: none; opacity: 1; } }
-.rail { height: 4px; background: var(--tarmac-2); border-radius: 2px; overflow: hidden; }
+.rail { height: 3px; background: var(--tarmac-2); border-radius: 2px; overflow: hidden; margin-top: 5px; }
 .rail i { display: block; height: 100%; width: 0; background: var(--c); transition: width 160ms linear; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.stat b { display: block; font: 500 17px/1.1 var(--mono); font-variant-numeric: tabular-nums; }
+.stat span { font: 10px var(--mono); color: var(--dim); text-transform: uppercase; letter-spacing: 0.06em; }
 
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 10px; margin-top: 14px; }
-.stat b { display: block; font: 500 22px/1.1 var(--mono); font-variant-numeric: tabular-nums; }
-.stat span { font: 11px var(--mono); color: var(--dim); text-transform: uppercase; letter-spacing: 0.06em; }
-.flag { position: absolute; right: 16px; top: 14px; font-variant-numeric: tabular-nums; font: 800 14px var(--display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); background: var(--c); padding: 3px 8px; border-radius: 4px; opacity: 0; }
-.lane.finished .flag { opacity: 1; }
-
-.verdict { font: 600 17px var(--body); margin: 4px 0 22px; min-height: 1.5em; }
-
-.feeds { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.feed h2 { font: 700 17px var(--display); margin: 0 0 8px; color: var(--c); }
-.feed.challenger { --c: var(--challenger); } .feed.jev { --c: var(--jev); }
-.feeds > div, .feed li > span { min-width: 0; }
-.feed ol { list-style: none; margin: 0; padding: 0; max-height: 360px; overflow: hidden; }
-.feed li { display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; padding: 7px 0; border-top: 1px solid var(--line); font-size: 13px; animation: slide 200ms ease-out; }
-.feed .mark { font: 600 13px var(--mono); }
-.feed .ok .mark { color: var(--right); } .feed .bad .mark { color: var(--wrong); }
-.feed .txt { display: block; color: var(--chalk); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.verdict { font: 600 17px var(--body); margin: 16px 0 18px; min-height: 1.5em; }
+.below { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; align-items: start; }
+h2 { font: 700 18px var(--display); margin: 0 0 8px; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 14px; }
+th { font: 500 11px var(--mono); color: var(--dim); text-transform: uppercase; letter-spacing: 0.06em; text-align: right; padding: 0 8px 6px; }
+td { padding: 7px 8px; border-top: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; padding-left: 0; }
+td:first-child i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 8px; background: var(--c); }
+tr.lead td { font-weight: 600; }
+.feed ol { list-style: none; margin: 0; padding: 0; }
+.feed li { display: grid; grid-template-columns: 16px 1fr auto; gap: 8px; padding: 6px 0; border-top: 1px solid var(--line); font-size: 13px; animation: slide 200ms ease-out; }
+.feed .mark2 { font: 600 13px var(--mono); }
+.feed .ok .mark2 { color: var(--right); } .feed .bad .mark2 { color: var(--wrong); }
+.feed .txt { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .feed .lbl { color: var(--dim); font: 11px var(--mono); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.feed .ms { font: 12px var(--mono); color: var(--dim); font-variant-numeric: tabular-nums; }
+.feed .who { color: var(--c); font-weight: 600; }
+.feed .ms { font: 12px var(--mono); color: var(--dim); }
+.feed li > span { min-width: 0; }
 @keyframes slide { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 .empty { color: var(--dim); font-size: 13px; padding: 8px 0; }
 .err { color: var(--wrong); font: 13px var(--mono); }
 
-@media (max-width: 760px) {
-  .feeds { grid-template-columns: 1fr; }
+@media (max-width: 900px) {
+  .lane { grid-template-columns: 1fr; gap: 8px; }
+  .below { grid-template-columns: 1fr; }
 }
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; }
-}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div>
-      <a class="mark" href="https://systemonebench.dev/"><svg width="22" height="22" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="7" width="24" height="12" rx="6" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="10" width="13" height="6" rx="3" fill="currentColor"/></svg>System One Bench live race</a>
-      <h1><span class="l" id="h1-challenger">OpenAI</span> <span class="v">vs</span> <span class="j">Jev</span></h1>
-      <p class="sub">Same cases, same questions, live. Both lanes get byte-identical requests. Green means the answer matched the dataset's label.</p>
-    </div>
-    <div class="controls">
-      <label>Dataset <select id="suite"><option value="mixed">Mixed (all datasets)</option></select></label>
-      <label>Challenger <select id="challenger"><option value="openai">OpenAI Decisions</option></select></label>
-      <label>Cases <input id="n" type="number" min="1" max="5000" value="60"></label>
-      <label title="How many requests each API lane may have in flight at once">API parallel <select id="conc">
-        <option value="1">1 (fair)</option><option value="4">4</option><option value="8">8</option></select></label>
-      <label>Shuffle <input id="seed" type="number" value="0"></label>
-      <button id="go">Start race</button>
-    </div>
-  </header>
+  <a class="mark" href="https://systemonebench.dev/"><svg width="22" height="22" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="7" width="24" height="12" rx="6" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="10" width="13" height="6" rx="3" fill="currentColor"/></svg>System One Bench live race</a>
+  <h1 id="title">Everything vs everything</h1>
+  <p class="sub">Pick any models and race them on the same cases at the same time. Every lane gets byte-identical requests; green means the answer matched the dataset's label.</p>
 
-  <div class="clock"><div class="t" id="clock">0.000 s</div><div class="meta" id="meta">Pick a dataset and start the race.</div></div>
+  <div class="picker" id="picker" role="group" aria-label="Racers"></div>
+  <div class="controls">
+    <label>Dataset <select id="suite"><option value="mixed">Mixed (all datasets)</option></select></label>
+    <label>Cases <input id="n" type="number" min="1" max="5000" value="40"></label>
+    <label title="How many requests each API model may have in flight at once">Parallel per model <select id="conc">
+      <option value="1">1 (fair)</option><option value="4">4</option><option value="8">8</option></select></label>
+    <label>Shuffle <input id="seed" type="number" value="0"></label>
+    <button id="go">Start race</button>
+  </div>
 
-  <section class="lane challenger" id="lane-challenger">
-    <span class="flag" id="flag-challenger"></span>
-    <div class="lane-head"><div><div class="name" id="name-challenger">OpenAI Decisions</div><div class="where" id="where-challenger">openrouter.ai · openai/gpt-6-luna-decisions</div></div></div>
-    <div class="strip" id="strip-challenger"></div><div class="rail"><i id="rail-challenger"></i></div>
-    <div class="stats" id="stats-challenger"></div>
-  </section>
-  <section class="lane jev" id="lane-jev">
-    <span class="flag" id="flag-jev"></span>
-    <div class="lane-head"><div><div class="name">Jev</div><div class="where" id="where-jev"></div></div></div>
-    <div class="strip" id="strip-jev"></div><div class="rail"><i id="rail-jev"></i></div>
-    <div class="stats" id="stats-jev"></div>
-  </section>
+  <div class="clock"><div class="t" id="clock">0.000 s</div><div class="meta" id="meta">Pick your racers and start.</div></div>
+  <div id="lanes"></div>
+  <p class="verdict" id="verdict" aria-live="polite"></p>
 
-  <p class="verdict" id="verdict"></p>
-
-  <div class="feeds">
-    <div class="feed challenger"><h2 id="feed-title-challenger">OpenAI Decisions answers</h2><ol id="feed-challenger"><li class="empty">Answers appear here as they finish.</li></ol></div>
-    <div class="feed jev"><h2>Jev answers</h2><ol id="feed-jev"><li class="empty">Answers appear here as they finish.</li></ol></div>
+  <div class="below">
+    <div><h2>Standings</h2><table id="standings"><thead><tr><th scope="col">Model</th><th scope="col">Accuracy</th><th scope="col">Median</th><th scope="col">Finished</th><th scope="col">Cost</th></tr></thead><tbody></tbody></table></div>
+    <div class="feed"><h2>Latest answers</h2><ol id="feed"><li class="empty">Answers from every lane appear here as they finish.</li></ol></div>
   </div>
 </div>
 <script>
 const $ = id => document.getElementById(id);
-const MODELS = ["challenger", "jev"];
-let es, timer, t0, S, cases, challengers = {}, jevReady = false, localLane = false;
-const esc = t => String(t).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[ch]);
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const fmt = ms => (ms / 1000).toFixed(3) + " s";
+const pct = x => isFinite(x) ? (100 * x).toFixed(1) + "%" : "–";
+const usd = x => x === 0 ? "Free" : "$" + (x < 0.01 ? x.toFixed(5) : x.toFixed(3));
+const median = a => { if (!a.length) return NaN; const s = [...a].sort((x, y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+let RACERS = [], picked = new Set(), es, timer, t0, S = {}, order = [], cases = [], local = {};
+
+const saved = (() => { try { return JSON.parse(localStorage.getItem("racers") || "null"); } catch { return null; } })();
+const remember = () => { try { localStorage.setItem("racers", JSON.stringify([...picked])); } catch {} };
 
 fetch("/api/suites").then(r => r.json()).then(d => {
-  $("suite").add(new Option(`Arabic, all suites (${d.arabic})`, "arabic"));
+  $("suite").add(new Option(`Arabic, all datasets (${d.arabic})`, "arabic"));
   for (const [s, n] of Object.entries(d.suites)) $("suite").add(new Option(`${s} (${n})`, s));
-  $("challenger").innerHTML = "";
-  for (const [k, c] of Object.entries(d.challengers)) $("challenger").add(new Option(c.label, k));
-  $("where-jev").textContent = d.jev.where;
-  challengers = d.challengers; jevReady = d.jev.ready;
-  pick();
+  RACERS = d.racers;
+  const ready = RACERS.filter(r => r.ready).map(r => r.key);
+  picked = new Set((saved || ready).filter(k => ready.includes(k)));
+  renderPicker();
+  if (!ready.length) $("meta").innerHTML = '<span class="err">No API key in the server environment. Set OPENROUTER_API_KEY and restart the server.</span>';
 });
 
-function label(c) {
-  $("h1-challenger").textContent = c.label.replace(/ Decisions$/, "");
-  $("name-challenger").textContent = c.label; $("where-challenger").textContent = c.where;
-  $("feed-title-challenger").textContent = c.label + " answers";
+function renderPicker() {
+  $("picker").innerHTML = RACERS.map(r => `<button type="button" class="chip" style="--c:var(--s${r.series}, var(--s9))" data-k="${r.key}" aria-pressed="${picked.has(r.key)}" ${r.ready ? "" : "disabled"} title="${esc(r.maker)} · ${esc(r.where)}${r.ready ? "" : " (no API key)"}"><i></i>${esc(r.label)}</button>`).join("")
+    + `<button type="button" class="link" id="all">All</button><button type="button" class="link" id="none">Clear</button>`;
+  $("picker").querySelectorAll(".chip").forEach(b => b.onclick = () => { picked.has(b.dataset.k) ? picked.delete(b.dataset.k) : picked.add(b.dataset.k); remember(); renderPicker(); });
+  $("all").onclick = () => { picked = new Set(RACERS.filter(r => r.ready).map(r => r.key)); remember(); renderPicker(); };
+  $("none").onclick = () => { picked.clear(); remember(); renderPicker(); };
+  if (!es || es.readyState === 2) { setTitle([...picked]); $("go").disabled = picked.size === 0; }
 }
 
-function pick() {
-  const c = challengers[$("challenger").value];
-  if (!c) return;
-  if (!$("go").disabled) label(c);  // a running race keeps the labels of the challenger it started with
-  const missing = !jevReady ? "Jev" : !c.ready ? c.label : null;
-  $("meta").innerHTML = missing ? `<span class="err">No API key for ${missing} in the server environment. Set OPENROUTER_API_KEY and restart the server.</span>`
-    : "Pick a dataset and start the race.";
+function setTitle(keys) {
+  const name = k => RACERS.find(r => r.key === k).label;
+  $("title").textContent = keys.length === 0 ? "Everything vs everything" : keys.length === 1 ? name(keys[0])
+    : keys.length === 2 ? keys.map(name).join(" vs ") : `${keys.length} models, one race`;
 }
-$("challenger").onchange = pick;
 
-function fresh() {
-  return { done: 0, right: 0, total: 0, ms: [], finishedAt: null, errors: 0, cost: 0, priced: 0 };
+function fresh() { return { done: 0, right: 0, total: 0, ms: [], finishedAt: null, errors: 0, cost: 0, priced: 0 }; }
+
+function laneStats(k) {
+  const s = S[k], elapsed = s.finishedAt ?? (performance.now() - t0);
+  const rows = [[pct(s.right / s.total), "accuracy"], [isFinite(median(s.ms)) ? median(s.ms).toFixed(0) + " ms" : "–", "median"],
+    [s.finishedAt ? fmt(s.finishedAt) : `${s.done}/${cases.length}`, s.finishedAt ? "finished" : "done"],
+    [s.priced ? usd(s.cost) : (local[k] ? "local" : "–"), "cost"]];
+  $("stats-" + k).innerHTML = rows.map(([b, l]) => `<div class="stat"><b>${b}</b><span>${l}</span></div>`).join("");
+  $("rail-" + k).style.width = (100 * s.done / cases.length) + "%";
 }
-const fmt = ms => (ms / 1000).toFixed(3) + " s";
-const usd = x => "$" + (x < 0.01 ? x.toFixed(5) : x.toFixed(3));
-const pct = x => isFinite(x) ? (100 * x).toFixed(1) + "%" : "–";
-const median = a => { if (!a.length) return NaN; const s = [...a].sort((x, y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 
-function renderStats(m) {
-  const s = S[m], n = cases.length;
-  const avg = s.ms.length ? s.ms.reduce((a, b) => a + b, 0) / s.ms.length : NaN;
-  const elapsed = s.finishedAt ?? (performance.now() - t0);
-  const rows = [
-    [`${s.done}/${n}`, "cases done"],
-    [pct(s.right / s.total), "accuracy"],
-    [isFinite(avg) ? avg.toFixed(0) + " ms" : "–", "avg per case"],
-    [isFinite(median(s.ms)) ? median(s.ms).toFixed(0) + " ms" : "–", "median"],
-    [s.done ? (s.done / (elapsed / 1000)).toFixed(2) + "/s" : "–", "cases per sec"],
-    [s.finishedAt ? fmt(s.finishedAt) : fmt(elapsed), s.finishedAt ? "total time" : "running"],
-    [s.priced ? usd(s.cost) : (m === "challenger" && localLane ? "local" : "–"), "cost"],
-  ];
-  $("stats-" + m).innerHTML = rows.map(([b, l]) => `<div class="stat"><b>${b}</b><span>${l}</span></div>`).join("");
-  $("rail-" + m).style.width = (100 * s.done / n) + "%";
+function renderStandings() {
+  const ks = Object.keys(S).sort((a, b) => (S[b].total ? S[b].right / S[b].total : -1) - (S[a].total ? S[a].right / S[a].total : -1));
+  $("standings").querySelector("tbody").innerHTML = ks.map((k, i) => {
+    const s = S[k], r = RACERS.find(x => x.key === k);
+    return `<tr class="${i === 0 && s.total ? "lead" : ""}" style="--c:var(--s${r.series}, var(--s9))"><td><i></i>${esc(r.label)}</td><td>${pct(s.right / s.total)}</td>
+      <td>${isFinite(median(s.ms)) ? median(s.ms).toFixed(0) + " ms" : "–"}</td><td>${s.finishedAt ? `P${order.indexOf(k) + 1} · ${fmt(s.finishedAt)}` : "–"}</td>
+      <td>${s.priced ? usd(s.cost) : (local[k] ? "local" : "–")}</td></tr>`;
+  }).join("");
 }
 
 function tick() {
   $("clock").textContent = fmt(performance.now() - t0);
-  MODELS.forEach(m => { if (!S[m].finishedAt) renderStats(m); });
+  Object.keys(S).forEach(k => { if (!S[k].finishedAt) laneStats(k); });
+  renderStandings();  // batched here rather than on every answer
 }
 
 function onItem(d) {
-  const s = S[d.model];
+  const s = S[d.model], r = RACERS.find(x => x.key === d.model);
   s.done++; s.right += d.correct; s.total += d.total;
   if (d.error) s.errors++; else s.ms.push(d.ms);
   if (d.cost != null) { s.cost += d.cost; s.priced++; }
   const cell = $("strip-" + d.model).children[s.done - 1];
-  if (d.correct === d.total) cell.className = "cell ok";
-  else if (d.correct === 0) cell.className = "cell bad";
-  else { cell.className = "cell part"; cell.style.setProperty("--f", (100 * d.correct / d.total) + "%"); }
+  cell.className = d.correct === d.total ? "cell ok" : d.correct === 0 ? "cell bad" : "cell part";
+  if (d.correct && d.correct < d.total) cell.style.setProperty("--f", (100 * d.correct / d.total) + "%");
   cell.title = `${d.id}: ${d.correct}/${d.total} right, ${d.ms} ms`;
-
-  const c = cases[d.i], ol = $("feed-" + d.model);
+  const ol = $("feed");
   if (ol.firstElementChild?.classList.contains("empty")) ol.innerHTML = "";
   const li = document.createElement("li");
   li.className = d.correct === d.total ? "ok" : "bad";
-  const lbl = d.error ? `<span class="err">${esc(d.error)}</span>` :
-    d.pred.map((p, k) => p === d.gold[k] ? p : `${p} ≠ ${d.gold[k]}`).join(" · ");
-  li.innerHTML = `<span class="mark">${d.correct === d.total ? "✓" : "✗"}</span>
-    <span><span class="txt" dir="auto"></span><span class="lbl">${c.suite} · ${lbl}</span></span><span class="ms">${d.error ? "–" : d.ms.toFixed(0) + " ms"}</span>`;
-  li.querySelector(".txt").textContent = c.text;
+  li.style.setProperty("--c", `var(--s${r.series}, var(--s9))`);
+  const lbl = d.error ? `<span class="err">${esc(d.error)}</span>` : d.pred.map((p, k) => p === d.gold[k] ? esc(p) : `${esc(p)} ≠ ${esc(d.gold[k])}`).join(" · ");
+  li.innerHTML = `<span class="mark2">${d.correct === d.total ? "✓" : "✗"}</span><span><span class="txt" dir="auto"></span><span class="lbl"><span class="who">${esc(r.label)}</span> · ${lbl}</span></span><span class="ms">${d.error ? "–" : d.ms.toFixed(0) + " ms"}</span>`;
+  li.querySelector(".txt").textContent = cases[d.i].text;
   ol.prepend(li);
   while (ol.children.length > 14) ol.lastElementChild.remove();
-  renderStats(d.model);
+  laneStats(d.model);
 }
 
 function onDone(d) {
-  S[d.model].finishedAt = d.t;
-  $("lane-" + d.model).classList.add("finished");
-  renderStats(d.model);
-  const other = MODELS.find(m => m !== d.model);
-  $("flag-" + d.model).textContent = `${S[other].finishedAt ? "P2" : "P1"} · ${fmt(d.t)}`;
-  if (!S[other].finishedAt) return;
+  S[d.model].finishedAt = d.t; order.push(d.model);
+  $("flag-" + d.model).textContent = `P${order.length}`; $("flag-" + d.model).hidden = false;
+  laneStats(d.model); renderStandings();
+  if (order.length < Object.keys(S).length) return;
   clearInterval(timer); es.close(); $("go").disabled = false; $("go").textContent = "Race again";
-  const [a, b] = MODELS.map(m => S[m]);
-  const L = $("name-challenger").textContent;
-  const fast = a.finishedAt < b.finishedAt ? L : "Jev";
-  const ratio = Math.max(a.finishedAt, b.finishedAt) / Math.min(a.finishedAt, b.finishedAt);
-  const accL = a.right / a.total, accJ = b.right / b.total;
-  const more = Math.abs(accL - accJ) < 0.005 ? "Both scored the same accuracy" :
-    `${accL > accJ ? L : "Jev"} was more accurate by ${(100 * Math.abs(accL - accJ)).toFixed(1)} points`;
-  const speed = ratio < 1.05 ? "Both finished at almost the same time." : `${fast} finished ${ratio.toFixed(1)}× faster.`;
-  const cost = a.priced && b.priced ? ` Cost: ${L} ${usd(a.cost)} vs Jev ${usd(b.cost)}.` : "";
-  $("verdict").textContent = `${speed} ${more} (${L} ${pct(accL)} vs Jev ${pct(accJ)}).${cost}`;
-  $("clock").textContent = fmt(Math.max(a.finishedAt, b.finishedAt));
+  const ks = Object.keys(S), name = k => RACERS.find(x => x.key === k).label;
+  const acc = k => S[k].right / S[k].total;
+  // Ties share the title: everyone within half a point of the best accuracy, or at the lowest cost.
+  const list = xs => xs.length < 3 ? xs.join(" and ") : `${xs.slice(0, -1).join(", ")} and ${xs.at(-1)}`;
+  const top = Math.max(...ks.map(acc)), best = ks.filter(k => top - acc(k) < 0.005);
+  const priced = ks.filter(k => S[k].priced), low = Math.min(...priced.map(k => S[k].cost)), cheap = priced.filter(k => S[k].cost === low);
+  $("verdict").textContent = ks.length === 1 ? `${name(ks[0])} scored ${pct(acc(ks[0]))} in ${fmt(S[ks[0]].finishedAt)}.`
+    : `Fastest: ${name(order[0])} (${fmt(S[order[0]].finishedAt)}). Most accurate: ${list(best.map(name))} (${pct(top)}).${cheap.length ? ` Cheapest: ${list(cheap.map(name))} (${usd(low)}).` : ""}`;
+  $("clock").textContent = fmt(Math.max(...ks.map(k => S[k].finishedAt)));
 }
 
 $("go").onclick = () => {
+  if (!picked.size) return;
   if (es) es.close();
   clearInterval(timer);
-  S = { challenger: fresh(), jev: fresh() };
-  MODELS.forEach(m => {
-    $("lane-" + m).classList.remove("finished"); $("flag-" + m).textContent = "";
-    $("feed-" + m).innerHTML = '<li class="empty">Waiting for the first answer.</li>';
-  });
-  $("verdict").textContent = "";
+  S = {}; order = []; $("verdict").textContent = "";
+  $("feed").innerHTML = '<li class="empty">Waiting for the first answer.</li>';
   $("go").disabled = true; $("go").textContent = "Racing…";
-  const qs = new URLSearchParams({ suite: $("suite").value, n: $("n").value, api_concurrency: $("conc").value, seed: $("seed").value, challenger: $("challenger").value });
+  const keys = RACERS.filter(r => picked.has(r.key)).map(r => r.key);
+  const qs = new URLSearchParams({ racers: keys.join(","), suite: $("suite").value, n: $("n").value, api_concurrency: $("conc").value, seed: $("seed").value });
   es = new EventSource("/api/race?" + qs);
   es.addEventListener("start", e => {
     const d = JSON.parse(e.data); cases = d.cases;
-    label(d.challenger); localLane = d.challenger.local;
-    MODELS.forEach(m => { $("strip-" + m).innerHTML = '<div class="cell"></div>'.repeat(cases.length); renderStats(m); });
-    $("meta").textContent = `${d.n} cases · ${d.suite} · API parallel ${d.api_concurrency}`;
+    local = Object.fromEntries(d.racers.map(r => [r.key, r.where.startsWith("local")]));
+    $("lanes").innerHTML = d.racers.map(r => `<section class="lane" style="--c:var(--s${r.series}, var(--s9))">
+      <div><div class="name">${esc(r.label)}<span class="flag" id="flag-${r.key}" hidden></span></div><div class="where" title="${esc(r.where)}">${esc(r.maker)} · ${esc(r.where)}</div></div>
+      <div><div class="strip" id="strip-${r.key}">${'<div class="cell"></div>'.repeat(cases.length)}</div><div class="rail"><i id="rail-${r.key}"></i></div></div>
+      <div class="stats" id="stats-${r.key}"></div></section>`).join("");
+    d.racers.forEach(r => { S[r.key] = fresh(); laneStats(r.key); });
+    setTitle(d.racers.map(r => r.key));
+    renderStandings();
+    $("meta").textContent = `${d.n} cases · ${d.suite} · ${d.racers.length} racers · ${d.api_concurrency} in flight per model`;
     t0 = performance.now(); timer = setInterval(tick, 50);
   });
   es.addEventListener("item", e => onItem(JSON.parse(e.data)));
   es.addEventListener("done", e => onDone(JSON.parse(e.data)));
   es.onerror = () => {
-    if (S.challenger.finishedAt && S.jev.finishedAt) return;
+    if (Object.keys(S).length && order.length === Object.keys(S).length) return;
     es.close(); clearInterval(timer); $("go").disabled = false; $("go").textContent = "Start race";
     $("verdict").innerHTML = '<span class="err">Lost the connection to the race server. Check that server.py is still running, then start again.</span>';
   };
