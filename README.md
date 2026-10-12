@@ -11,14 +11,18 @@ Models covered so far:
 |---|---|---|---|
 | Jev 1.13 (`typesafe/jev-1.13`) | TypeSafe | OpenRouter Decisions API, or the TypeSafe API | all |
 | GPT-6 Luna Decisions (`openai/gpt-6-luna-decisions`) | OpenAI | OpenRouter Decisions API | 2026-10-07 |
-| Decider V1 27B (`perplexity/pplx-decider-v1-27b`) | Perplexity | OpenRouter Decisions API | 2026-10-07 |
+| Decider V1.1 27B (`perplexity/pplx-decider-v1.1-27b`) | Perplexity | OpenRouter Decisions API | 2026-10-12 |
+| Decider V1 27B (`perplexity/pplx-decider-v1-27b`), retired | Perplexity | OpenRouter Decisions API, no longer served | 2026-10-07 |
 | d1 (`liquid/d1`) | Liquid AI | OpenRouter Decisions API | 2026-10-07 |
 | Clef and Clef Flash (`cloudflare/clef`, `cloudflare/clef-flash`) | Cloudflare | OpenRouter Decisions API | 2026-10-07 |
+| Clef Omni (`cloudflare/clef-omni`) | Cloudflare | OpenRouter Decisions API | 2026-10-12 |
 | Solar Decide (`upstage/solar-decide`) | Upstage | OpenRouter Decisions API | 2026-10-07 |
+| Solar Decide Flash (`upstage/solar-decide-flash`) | Upstage | OpenRouter Decisions API | 2026-10-12 |
 | Mercury Decide (`inception/mercury-decide:free`) | Inception | OpenRouter Decisions API, free tier | 2026-10-07 |
 | Kev 4B (`jaredpalmer/kev-4b`) | Jared Palmer | OpenRouter Decisions API | 2026-10-07 |
 | Tev1 4B Experimental (`togethercomputer/tev1-4b-experimental`) | Together AI | OpenRouter Decisions API | 2026-10-07 |
 | Microsoft-Decision-1 (`microsoft/microsoft-decision-1`) | Microsoft | OpenRouter Decisions API | 2026-10-12 |
+| Drex v1.5 (`nace-ai/drex-v1.5`) | Nace AI | OpenRouter Decisions API | 2026-10-12 |
 | [Laya](https://huggingface.co/convaiinnovations/laya) and its Arabic fine-tunes | Convai Innovations, Wouze | open weights, locally on Apple MPS | 2026-09-23, 2026-09-25 |
 
 Every API model is called at `POST https://openrouter.ai/api/alpha/decisions`, so they all share one gateway.
@@ -46,8 +50,11 @@ mkdir -p _site && cp site/* results.json _site/ && python3 -m http.server 8062 -
 ## Roadmap
 
 The roadmap lives in `site/meta.json` and is published at [systemonebench.dev/#roadmap](https://systemonebench.dev/#roadmap).
-As of 2026-10-12 it lists 1 model on OpenRouter's Decisions API that needs a conversation track, 6 that need a small
-adapter, and 2 entries on a watch list. Everything that runs as-is on the Decisions API has been benchmarked. Several vendors publish their own scores; none go on the site until they've run here like every other model.
+As of 2026-10-12 it lists 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
+Decision, Hanzo Kai 1, meraGPT Decider 1), 7 open-weight families to run locally (including Liquid AI's d1-3B and
+d1-omni-600M and the Kev size sweep), 2 entries that need a track of their own, and 3 on a watch list. Everything that
+runs as-is on OpenRouter's Decisions API has been benchmarked. Several vendors publish their own scores; none go on the
+site until they've run here like every other model.
 
 ## Live race
 
@@ -85,7 +92,8 @@ To rebuild the published file, pass every run:
 ```bash
 .venv/bin/python score.py preds_laya_router.jsonl preds_laya_ara.jsonl preds_laya_ara-rag.jsonl preds_jev.jsonl \
   preds_or_jev.jsonl preds_luna.jsonl preds_pplx.jsonl preds_liquid_d1.jsonl preds_clef.jsonl preds_clef_flash.jsonl \
-  preds_solar.jsonl preds_mercury.jsonl preds_kev.jsonl preds_tev1.jsonl preds_msft_d1.jsonl
+  preds_solar.jsonl preds_mercury.jsonl preds_kev.jsonl preds_tev1.jsonl preds_msft_d1.jsonl preds_pplx_v11.jsonl \
+  preds_clef_omni.jsonl preds_drex.jsonl preds_solar_flash.jsonl
 ```
 
 `run_decisions.py` is resumable: re-running it retries only the cases that failed. Laya and direct-TypeSafe runs:
@@ -96,6 +104,29 @@ To rebuild the published file, pass every run:
 .venv/bin/python run_laya.py --variant ara-rag    # Wouze/laya-ara-rag, Arabic suites only
 TYPESAFE_API_KEY=<your key> .venv/bin/python run_jev.py
 ```
+
+## Round 4: four more models from OpenRouter (2026-10-12)
+
+Four decision models that appeared on OpenRouter's Decisions API since round 2, run on all 3,250 cases with 8 calls in
+flight: Perplexity Decider V1.1 27B, Cloudflare Clef Omni, Nace AI Drex v1.5 and Upstage Solar Decide Flash. Perplexity
+retired Decider V1 27B (its slug now returns 404), so V1.1 replaces it on the charts and in the live race; the V1 run is
+kept for reference.
+
+| Model | Maker | Index | English | Arabic | Calibration error | Median latency | Cost per 1,000 calls |
+|---|---|---|---|---|---|---|---|
+| **Decider V1.1 27B** | Perplexity | **83.4** | 81.1 | **85.0** | 5.7% | 678 ms | **$0.009** |
+| Clef Omni | Cloudflare | 79.7 | 78.6 | 80.5 | 3.4% | 544 ms | $0.074 |
+| Drex v1.5 | Nace AI | 77.6 | 77.6 | 77.0 | 10.8% | 608 ms | $0.010 |
+| Solar Decide Flash | Upstage | 63.6 | 61.3 | 66.5 | 14.4% | 908 ms | $0.042 |
+
+- Decider V1.1 matches V1 on accuracy (83.4 against 83.3) and still leads the index, at half V1's price per token. It's
+  now also the cheapest paid model. It's slower: 785 ms one call at a time, against 352 ms for V1.
+- Clef Omni, Cloudflare's model that also reads audio and video, places 7th, between Clef Flash and Jev, and is well
+  calibrated (3.4%).
+- Drex v1.5 costs about the same as Microsoft-Decision-1 and Kev 4B and places 9th, but its confidence runs high
+  (10.8% calibration error).
+- Solar Decide Flash has Solar Decide's 26-option limit, so it fails all 200 Banking77 cases; those count as wrong. It
+  bills the same as Solar Decide.
 
 ## Round 3: Microsoft-Decision-1 (2026-10-12)
 
