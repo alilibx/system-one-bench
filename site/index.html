@@ -398,6 +398,8 @@ function scatter(el, pts, { xFmt, xLabel, note }) {
   if (front.length > 1) s += `<polyline points="${front.map(p => `${X(p.x)},${Y(p.y)}`).join(" ")}" fill="none" stroke="var(--ink-2)" stroke-width="2" stroke-dasharray="5 4"/>`;
   const placed = pts.map(p => ({ x0: X(p.x) - 9, x1: X(p.x) + 9, y0: Y(p.y) - 9, y1: Y(p.y) + 9 }));  // dots block labels too
   const hit = b => placed.some(o => b.x0 < o.x1 && b.x1 > o.x0 && b.y0 < o.y1 && b.y1 > o.y0);
+  const leads = [];  // leader lines already drawn; later labels must not cover them
+  const crosses = (l, b) => Array.from({ length: 9 }, (_, i) => [l.x1 + (l.x2 - l.x1) * i / 8, l.y1 + (l.y2 - l.y1) * i / 8]).some(([x, y]) => x > b.x0 && x < b.x1 && y > b.y0 && y < b.y1);
   pts.slice().sort((a, b) => b.y - a.y).forEach(p => {
     const m = M.models[p.k], cx = X(p.x), cy = Y(p.y), tw = m.short.length * 7.6 + 4;
     const spots = [[cx + 12, cy + 4, "start"], [cx - 12, cy + 4, "end"], [cx - tw / 2, cy - 13, "start"], [cx - tw / 2, cy + 22, "start"]]
@@ -412,8 +414,9 @@ function scatter(el, pts, { xFmt, xLabel, note }) {
     const nearSeg = ({ x1, y1, x2, y2 }, [qx, qy]) => { const dx = x2 - x1, dy = y2 - y1, t = Math.max(0, Math.min(1, ((qx - x1) * dx + (qy - y1) * dy) / (dx * dx + dy * dy))); return Math.hypot(x1 + t * dx - qx, y1 + t * dy - qy) < 10; };
     const clear = o => !o.lead || (!others.some(q => nearSeg(o.lead, q)) && !others.some(([qx, qy]) => qx > o.b.x0 - 9 && qx < o.b.x1 + 9 && qy > o.b.y0 - 9 && qy < o.b.y1 + 9));
     const spot = spots.map(o => ({ ...o, b: o.a === "end" ? { x0: o.x - tw, x1: o.x, y0: o.y - 12, y1: o.y + 3 } : { x0: o.x, x1: o.x + tw, y0: o.y - 12, y1: o.y + 3 } }))
-      .find(o => o.b.x0 >= L && o.b.x1 <= w - 2 && o.b.y0 >= T && o.b.y1 <= h - B && !hit(o.b) && clear(o));
+      .find(o => o.b.x0 >= L && o.b.x1 <= w - 2 && o.b.y0 >= T && (!o.lead || o.b.y1 <= h - B) && !hit(o.b) && !leads.some(l => crosses(l, o.b)) && clear(o));
     if (spot) placed.push(spot.b);
+    if (spot && spot.lead) leads.push(spot.lead);
     const lead = spot && spot.lead ? `<line x1="${spot.lead.x1}" y1="${spot.lead.y1}" x2="${spot.lead.x2}" y2="${spot.lead.y2}" stroke="var(--muted)" stroke-width="1"/>` : "";
     const tipHtml = `<b>${esc(m.label)}</b><span>Index ${p.y.toFixed(1)}</span><span>${xFmt(p.x)}</span>`;
     s += `<g class="pt" tabindex="0" data-tip="${esc(tipHtml)}"><circle cx="${cx}" cy="${cy}" r="14" fill="transparent"/>${lead}
@@ -504,13 +507,13 @@ function renderBoard() {
   $("board").querySelector("tbody").innerHTML =
     cur.filter(x => x.cover === all).sort(byIdx).map(line).join("") +
     group(cur.filter(x => x.cover < all).sort(byIdx), "Ran only some of the datasets") +
-    group(rows.filter(x => x.m.chart === false), "Earlier runs of the same models, kept for reference");
+    group(rows.filter(x => x.m.chart === false), "Earlier runs and retired models, kept for reference");
 }
 
 function renderMatrix() {
   const ks = runs();
   const ranked = charted();  // the earlier reference run is listed but never marked as a winner
-  $("matrix").innerHTML = `<thead><tr><th scope="col">Dataset</th>${ks.map(k => `<th scope="col">${esc(M.models[k].label)}${M.models[k].chart === false ? " (Sept)" : ""}</th>`).join("")}</tr></thead><tbody>` +
+  $("matrix").innerHTML = `<thead><tr><th scope="col">Dataset</th>${ks.map(k => `<th scope="col">${esc(M.models[k].label)}${M.models[k].chart === false ? ` (${esc(M.models[k].tag || "earlier run")})` : ""}</th>`).join("")}</tr></thead><tbody>` +
     suites("all").map(s => {
       const vs = ranked.map(k => val(k, s, metric)).filter(v => v != null);
       const best = metric === "acc" ? Math.max(...vs) : Math.min(...vs);

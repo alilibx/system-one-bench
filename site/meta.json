@@ -72,7 +72,8 @@
       "run": "2026-10-07",
       "latency": "API, 6 in flight",
       "chart": false,
-      "note": "Retired by Perplexity in October 2026 (OpenRouter now returns 404) and replaced by Decider V1.1 27B. Left out of the charts."
+      "note": "Retired by Perplexity in October 2026 (OpenRouter now returns 404) and replaced by Decider V1.1 27B. Left out of the charts.",
+      "tag": "retired"
     },
     "liquid_d1": {
       "label": "d1",
@@ -157,7 +158,8 @@
       "latency": "API, 8 in flight",
       "note": "Same model as the OpenRouter run, measured two weeks earlier. Left out of the charts.",
       "chart": false,
-      "short": "Jev (Sept)"
+      "short": "Jev (Sept)",
+      "tag": "Sept"
     },
     "msft_d1": {
       "label": "Microsoft-Decision-1",
