@@ -38,7 +38,10 @@ def pred_dist(q, ans):
     probs = ans.get("probabilities") or {}
     d = np.array([float(probs.get(o, 0.0)) for o in k])
     if d.sum() <= 0:  # fall back to the argmax when no distribution came back
-        d = np.array([1.0 if o == str(ans.get("choice")) else 0.0 for o in k])
+        top = ans.get("choice", ans.get("score"))
+        d = np.array([1.0 if o == str(top) else 0.0 for o in k])
+    if d.sum() <= 0:  # an answer we can't read counts as failed, like a missing one
+        return np.full(len(k), 1 / len(k)), False
     return d / d.sum(), True
 
 

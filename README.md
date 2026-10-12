@@ -51,8 +51,8 @@ mkdir -p _site && cp site/* results.json _site/ && python3 -m http.server 8062 -
 
 The roadmap lives in `site/meta.json` and is published at [systemonebench.dev/#roadmap](https://systemonebench.dev/#roadmap).
 As of 2026-10-12 it lists 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
-Decision, Hanzo Kai 1, meraGPT Decider 1), 7 open-weight families to run locally (including Liquid AI's d1-3B and
-d1-omni-600M and the Kev size sweep), 2 entries that need a track of their own, and 3 on a watch list. Everything that
+Decision, Hanzo Kai 1, meraGPT Decider 1), 6 open-weight families to run locally (including Liquid AI's d1-3B and
+d1-omni-600M, vLLM's d3 and the Kev size sweep), 2 entries that need a track of their own, and 3 on a watch list. Everything that
 runs as-is on OpenRouter's Decisions API has been benchmarked. Several vendors publish their own scores; none go on the
 site until they've run here like every other model.
 
@@ -96,6 +96,16 @@ To rebuild the published file, pass every run:
   preds_clef_omni.jsonl preds_drex.jsonl preds_solar_flash.jsonl
 ```
 
+Models on their vendor's own API take the same request body. `--provider fastino|celeris|hanzo|meragpt` sets the
+endpoint, model id and auth header, and reads the key from `FASTINO_API_KEY`, `CELERIS_API_KEY`, `HANZO_API_KEY` or
+`MERAGPT_API_KEY`. `--url` points the runner at any other endpoint that takes this body, such as a local server
+(`--key-env ""` when it needs no key):
+
+```bash
+CELERIS_API_KEY=kerstel://global/CELERIS_API_KEY ks run -- .venv/bin/python run_decisions.py --provider celeris --name celeris
+.venv/bin/python run_decisions.py --url http://localhost:8000/v1/systemone --key-env "" --model kev-9b --name kev_9b
+```
+
 `run_decisions.py` is resumable: re-running it retries only the cases that failed. Laya and direct-TypeSafe runs:
 
 ```bash
@@ -104,6 +114,39 @@ To rebuild the published file, pass every run:
 .venv/bin/python run_laya.py --variant ara-rag    # Wouze/laya-ara-rag, Arabic suites only
 TYPESAFE_API_KEY=<your key> .venv/bin/python run_jev.py
 ```
+
+## Open-weight models, run locally
+
+Most open decision models now run under llama.cpp, whose `llama-server` answers `POST /v1/systemone` with the same
+request and response shape as the APIs above, so `run_decisions.py --url` runs them unchanged. Kev and Laya need
+llama.cpp 0.6.0; Liquid AI's d1 needs build b11480 or later, and vLLM's d3 needs b11570 or later (12 October 2026), from
+the [GitHub releases](https://github.com/ggml-org/llama.cpp/releases) or `brew install --HEAD llama.cpp`.
+
+```bash
+llama-server -hf LiquidAI/d1-3B-GGUF:Q8_0 --no-mmproj --port 8080
+.venv/bin/python run_decisions.py --url http://localhost:8080/v1/systemone --key-env "" --model d1-3b --name d1_3b --concurrency 1
+```
+
+| Model | GGUF (Q8_0) | Size | Notes |
+|---|---|---|---|
+| Liquid AI d1-3B | `LiquidAI/d1-3B-GGUF` | 2.9 GB | LFM Open License; pass `--no-mmproj` for text only |
+| Liquid AI d1-omni-600M | `LiquidAI/d1-omni-600M-GGUF` | 0.4 GB | Add `-b 4096 -ub 4096` so a whole prompt fits in one batch |
+| Kev 0.8B, 4B, 9B | `ggml-org/Kev-{0.8B,4B,9B}-GGUF` | 0.8, 4.5, 9.5 GB | English only; Kev 4B is already on the board through OpenRouter |
+| vLLM d3 edge, lite, nano, mini, flash | `ggml-org/vllm-d3-{edge,lite,nano,mini,flash}-GGUF` | 0.8 to 9.5 GB | Decision 3.0, released 10 October 2026; `-ub` must hold the whole prompt |
+
+The other open models need their own runners:
+
+- **Hugging Face `system_one`:** d1 and the vLLM Decision-1.0 and 2.0 models load with `trust_remote_code` and answer
+  through `model.system_one(state, questions)`, the same shape. The project's `.venv` already has the transformers
+  version they need.
+- **`kev.serve`:** Kev 0.5B, 0.6B and 8B ship as LoRA adapters, served by [jaredpalmer/kev](https://github.com/jaredpalmer/kev)
+  on `/v1/systemone`. It needs Python 3.12 or 3.13.
+- **Adapters still to write:** GLiNER2.5-Decide and GLiClass answer label questions only, so noul and score map onto
+  labels. bekko-system-one takes its own input format, and its weights have no licence yet.
+
+A 24 GB Mac fits everything up to 9B at Q8. The 27B models (Kev 27B, d3 27B, Open-Jev 27B) and Open-Jev 9B, whose base
+model alone is 19 GB, need a bigger machine. Laya Multilingual is already covered: Laya Router sends every non-English
+state, Arabic and French included, to those same weights.
 
 ## Round 4: four more models from OpenRouter (2026-10-12)
 

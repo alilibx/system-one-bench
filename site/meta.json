@@ -349,14 +349,9 @@
           "note": "Open weights on Hugging Face. 340M open-weight models; the multi version is multilingual."
         },
         {
-          "name": "Laya Multilingual",
-          "access": "convaiinnovations/laya-multilingual",
-          "note": "Open weights on Hugging Face. The base model of both Arabic fine-tunes, so the fair control for them."
-        },
-        {
-          "name": "vLLM Semantic Router Decision-2.0",
-          "access": "vllm-sr/Decision-2.0-{Kai-0.6B … Vega-27B}",
-          "note": "Open weights on Hugging Face. Six sizes from 0.6B to 27B: a model-size sweep on one recipe."
+          "name": "vLLM Semantic Router d3 (Decision 3.0)",
+          "access": "vllm-sr/d3-{edge, lite, nano, mini, flash}, vllm-sr/d3",
+          "note": "Released 10 October 2026, superseding Decision-2.0. Apache 2.0, with GGUF builds that llama.cpp serves on /v1/systemone. Five sizes fit a 24 GB Mac; the 27B doesn't."
         },
         {
           "name": "GLiClass Multilang",
