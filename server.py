@@ -1,8 +1,8 @@
 """System One Bench live race: any set of decision models, racing on the same labelled cases at the same time.
 
 Racers: every model on OpenRouter's Decisions API (TypeSafe Jev, OpenAI GPT-6 Luna Decisions, Perplexity Decider,
-Liquid AI d1, Cloudflare Clef and Clef Flash, Inception Mercury, Upstage Solar, Kev 4B, Together Tev1), and, with
-LAYA=1, Laya running locally.
+Liquid AI d1, Cloudflare Clef and Clef Flash, Inception Mercury, Upstage Solar, Kev 4B, Together Tev1,
+Microsoft-Decision-1), and, with LAYA=1, Laya running locally.
 
 Run:  OPENROUTER_API_KEY=<your key> .venv/bin/python server.py
       OPENROUTER_API_KEY=kerstel://global/OPENROUTER_API_KEY ks run -- .venv/bin/python server.py
@@ -59,6 +59,7 @@ API_RACERS = [
     ("solar", "Solar Decide", "Upstage", "upstage/solar-decide", 8),
     ("kev", "Kev 4B", "Jared Palmer", "jaredpalmer/kev-4b", 9),
     ("tev1", "Tev1 4B", "Together AI", "togethercomputer/tev1-4b-experimental", 9),
+    ("microsoft", "Microsoft-Decision-1", "Microsoft", "microsoft/microsoft-decision-1", 10),
 ]
 RACERS = {k: {"label": label, "maker": maker, "where": f"openrouter.ai · {model}", "series": series, "api": True,
               "url": DECISIONS_URL, "model": model, "key": "OPENROUTER_API_KEY"}

@@ -14,7 +14,7 @@
   color-scheme: light;
   --page: #f4f6f9; --surface: #ffffff; --ink: #121a2b; --ink-2: #4a5468; --muted: #6f7889;
   --rule: #dfe3ea; --grid: #e9ecf1; --axis: #c3c9d3; --hover: #eef1f6; --good: rgba(27, 175, 122, 0.08);
-  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --s6: #008300; --s7: #4a3aa7; --s8: #e34948; --s9: #8a93a3;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --s6: #008300; --s7: #4a3aa7; --s8: #e34948; --s9: #8a93a3; --s10: #0b6e75;
   --display: "Bricolage Grotesque", system-ui, sans-serif;
   --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
@@ -23,14 +23,14 @@
     color-scheme: dark;
     --page: #0c121d; --surface: #131b29; --ink: #eef2f8; --ink-2: #b6bfce; --muted: #8b95a7;
     --rule: #263043; --grid: #1d2636; --axis: #3a465c; --hover: #1a2334; --good: rgba(25, 158, 112, 0.12);
-    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767; --s9: #6f7889;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767; --s9: #6f7889; --s10: #2fb3b5;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
   --page: #0c121d; --surface: #131b29; --ink: #eef2f8; --ink-2: #b6bfce; --muted: #8b95a7;
   --rule: #263043; --grid: #1d2636; --axis: #3a465c; --hover: #1a2334; --good: rgba(25, 158, 112, 0.12);
-  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767; --s9: #6f7889;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767; --s9: #6f7889; --s10: #2fb3b5;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--page); color: var(--ink); font: 16px/1.55 var(--body); -webkit-font-smoothing: antialiased; }
@@ -241,7 +241,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
           <li>Accuracy compares the most likely answer with the dataset's label. A failed call counts as wrong.</li>
           <li>Calibration error is top-label ECE over 10 bins. Log loss, Brier score and more are in <a href="results.json">results.json</a>.</li>
           <li>Cost is the summed <code>usage.cost</code> the API reports.</li>
-          <li>API latency was measured through OpenRouter with 8 requests in flight for Jev and GPT-6 Luna Decisions and 6 for the rest (Solar Decide finished at 24 because it's slow on long states); Laya ran locally on an Apple M5 GPU, one call at a time.</li>
+          <li>API latency was measured through OpenRouter with 8 requests in flight for Jev, GPT-6 Luna Decisions and Microsoft-Decision-1 and 6 for the rest (Solar Decide finished at 24 because it's slow on long states); Laya ran locally on an Apple M5 GPU, one call at a time.</li>
           <li>Nothing was tuned on test data. Some open-weight fine-tunes trained on related data; the repo README lists which.</li>
         </ul>
       </div>

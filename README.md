@@ -18,6 +18,7 @@ Models covered so far:
 | Mercury Decide (`inception/mercury-decide:free`) | Inception | OpenRouter Decisions API, free tier | 2026-10-07 |
 | Kev 4B (`jaredpalmer/kev-4b`) | Jared Palmer | OpenRouter Decisions API | 2026-10-07 |
 | Tev1 4B Experimental (`togethercomputer/tev1-4b-experimental`) | Together AI | OpenRouter Decisions API | 2026-10-07 |
+| Microsoft-Decision-1 (`microsoft/microsoft-decision-1`) | Microsoft | OpenRouter Decisions API | 2026-10-12 |
 | [Laya](https://huggingface.co/convaiinnovations/laya) and its Arabic fine-tunes | Convai Innovations, Wouze | open weights, locally on Apple MPS | 2026-09-23, 2026-09-25 |
 
 Every API model is called at `POST https://openrouter.ai/api/alpha/decisions`, so they all share one gateway.
@@ -86,6 +87,30 @@ export OPENROUTER_API_KEY=<your key>
 .venv/bin/python run_laya.py --variant ara-rag    # Wouze/laya-ara-rag, Arabic suites only
 TYPESAFE_API_KEY=<your key> .venv/bin/python run_jev.py
 ```
+
+## Round 3: Microsoft-Decision-1 (2026-10-12)
+
+Microsoft released Microsoft-Decision-1 on 2026-10-09: a decision model post-trained from Qwen3.5-9B, served on
+OpenRouter's Decisions API at $0.042 per 1M input tokens. It ran all 3,250 cases through the same gateway and scorer as
+round 2, 8 calls in flight, served as `microsoft/microsoft-decision-1-20261009`. Every call succeeded.
+
+| Model | Maker | Index | English | Arabic | Calibration error | Median latency | Cost per 1,000 calls |
+|---|---|---|---|---|---|---|---|
+| Decider V1 27B | Perplexity | **83.3** | 81.1 | **85.0** | 5.6% | 528 ms | $0.019 |
+| d1 | Liquid AI | 82.7 | 81.3 | 83.9 | 2.9% | 659 ms | $0.015 |
+| Mercury Decide | Inception | 82.4 | **83.7** | 80.8 | 13.1% | 490 ms | free tier |
+| **Microsoft-Decision-1** | Microsoft | 82.0 | 81.0 | 83.2 | 2.8% | 679 ms | $0.010 |
+| Clef | Cloudflare | 81.6 | 80.6 | 83.0 | **2.2%** | 706 ms | $0.116 |
+
+- Microsoft-Decision-1 places 4th of 12 on the System One Index, 1.3 points behind Perplexity Decider V1 27B. It's 3rd
+  on the Arabic index.
+- It's the second-best calibrated model (2.8% calibration error), behind Cloudflare Clef (2.2%).
+- It's the cheapest paid model at its accuracy: $0.034 for all 3,250 cases, about the same as Kev 4B, which scores
+  5.2 points lower.
+- It's the most accurate model on SST-5 (62.5%), typed-decisions (79.0%) and Arabic MIRACL pairs (91.0%). Its weakest
+  dataset is Emotion (57.0%, against Mercury Decide's 91.5%).
+- Median latency was 679 ms with 8 calls in flight and 613 ms one call at a time, both through OpenRouter and including
+  the network. Jev measured 365 ms one at a time from the same machine. Microsoft reports 85 ms p50 in its own test.
 
 ## Round 2: eleven models (2026-10-07)
 
