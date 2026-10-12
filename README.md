@@ -96,6 +96,16 @@ To rebuild the published file, pass every run:
   preds_clef_omni.jsonl preds_drex.jsonl preds_solar_flash.jsonl
 ```
 
+Models on their vendor's own API take the same request body. `--provider fastino|celeris|hanzo|meragpt` sets the
+endpoint, model id and auth header, and reads the key from `FASTINO_API_KEY`, `CELERIS_API_KEY`, `HANZO_API_KEY` or
+`MERAGPT_API_KEY`. `--url` points the runner at any other endpoint that takes this body, such as a local server
+(`--key-env ""` when it needs no key):
+
+```bash
+CELERIS_API_KEY=kerstel://global/CELERIS_API_KEY ks run -- .venv/bin/python run_decisions.py --provider celeris --name celeris
+.venv/bin/python run_decisions.py --url http://localhost:8000/v1/systemone --key-env "" --model kev-9b --name kev_9b
+```
+
 `run_decisions.py` is resumable: re-running it retries only the cases that failed. Laya and direct-TypeSafe runs:
 
 ```bash

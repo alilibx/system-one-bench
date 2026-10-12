@@ -1,10 +1,13 @@
-"""Send every case to a model on OpenRouter's Decisions API. Resumable: skips ids already in the output file.
+"""Send every case to a decision model. Resumable: skips ids already in the output file.
 
-The Decisions API serves TypeSafe Jev and OpenAI's GPT-6 Luna Decisions behind one endpoint with one request and
-response shape, so both models go through the same gateway.
+By default it calls OpenRouter's Decisions API, which serves most decision models behind one endpoint with one request
+and response shape. --provider points it at a vendor's own System One endpoint instead (same request body), and --url
+at any other one, such as a local server.
 
 Usage: OPENROUTER_API_KEY=... python run_decisions.py --model openai/gpt-6-luna-decisions --name luna
        OPENROUTER_API_KEY=kerstel://global/OPENROUTER_API_KEY ks run -- python run_decisions.py --model typesafe/jev-1.13 --name or_jev
+       CELERIS_API_KEY=kerstel://global/CELERIS_API_KEY ks run -- python run_decisions.py --provider celeris --name celeris
+       python run_decisions.py --url http://localhost:8000/v1/systemone --key-env "" --model kev-9b --name kev_9b
 Writes preds_<name>.jsonl and, once, latency_<name>.jsonl (one request in flight at a time).
 """
 import argparse
@@ -17,6 +20,13 @@ import time
 import httpx
 
 URL = os.environ.get("OPENROUTER_BASE_URL", "https://openrouter.ai") + "/api/alpha/decisions"
+# Vendors' own System One endpoints: (url, model, env var holding the key, auth header). Same request body as above.
+PROVIDERS = {
+    "fastino": ("https://api.fastino.ai/v1/systemone", "fastino/GLiDE", "FASTINO_API_KEY", "x-api-key"),
+    "celeris": ("https://inference.celeris.ai/celeris-1-decision/v1/systemone", "celeris-1-decision", "CELERIS_API_KEY", "bearer"),
+    "hanzo": ("https://api.hanzo.ai/v1/decisions", "kai", "HANZO_API_KEY", "bearer"),
+    "meragpt": ("https://meragpt.com/v1/systemone", "decider-1", "MERAGPT_API_KEY", "bearer"),
+}
 
 
 async def call(client, model, case):
@@ -41,19 +51,31 @@ async def call(client, model, case):
 
 
 async def main():
+    global URL
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", required=True, help="OpenRouter slug, e.g. openai/gpt-6-luna-decisions or typesafe/jev-1.13")
+    ap.add_argument("--model", help="model id, e.g. openai/gpt-6-luna-decisions; defaults to the provider's model")
+    ap.add_argument("--provider", choices=PROVIDERS, help="call a vendor's own endpoint instead of OpenRouter")
+    ap.add_argument("--url", help="any endpoint that takes the System One request body, e.g. a local server")
+    ap.add_argument("--key-env", help="env var holding the API key; empty for none (default OPENROUTER_API_KEY)")
+    ap.add_argument("--auth", choices=["bearer", "x-api-key"], help="how the key is sent (default bearer)")
     ap.add_argument("--name", required=True, help="short name for the output files")
     ap.add_argument("--concurrency", type=int, default=8)
     ap.add_argument("--sequential-latency", type=int, default=60, help="single-question cases timed one at a time")
     a = ap.parse_args()
+    url, model, key_env, auth = PROVIDERS.get(a.provider, (URL, None, "OPENROUTER_API_KEY", "bearer"))
+    URL, a.model, key_env, auth = a.url or url, a.model or model, a.key_env if a.key_env is not None else key_env, a.auth or auth
+    if not a.model:
+        ap.error("--model is required unless --provider sets it")
     out, lat_path = f"preds_{a.name}.jsonl", f"latency_{a.name}.jsonl"
     cases = [json.loads(l) for l in open("cases.jsonl")]
     done = set()
     if os.path.exists(out):
         done = {json.loads(l)["id"] for l in open(out) if "error" not in json.loads(l)}
     todo = [c for c in cases if c["id"] not in done]
-    headers = {"Authorization": f"Bearer {os.environ['OPENROUTER_API_KEY'].strip()}"}
+    headers = {}
+    if key_env:
+        k = os.environ[key_env].strip()
+        headers = {"X-API-Key": k} if auth == "x-api-key" else {"Authorization": f"Bearer {k}"}
     async with httpx.AsyncClient(headers=headers, timeout=60) as client:
         # Latency probe: one request in flight at a time, like a single interactive caller.
         if a.sequential_latency and not os.path.exists(lat_path):
