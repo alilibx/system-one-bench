@@ -68,9 +68,11 @@
       "access": "OpenRouter API",
       "slug": "perplexity/pplx-decider-v1-27b",
       "series": 4,
-      "short": "Decider",
+      "short": "Decider V1",
       "run": "2026-10-07",
-      "latency": "API, 6 in flight"
+      "latency": "API, 6 in flight",
+      "chart": false,
+      "note": "Retired by Perplexity in October 2026 (OpenRouter now returns 404) and replaced by Decider V1.1 27B. Left out of the charts."
     },
     "liquid_d1": {
       "label": "d1",
@@ -166,6 +168,46 @@
       "short": "Microsoft",
       "run": "2026-10-12",
       "latency": "API, 8 in flight"
+    },
+    "pplx_v11": {
+      "access": "OpenRouter API",
+      "run": "2026-10-12",
+      "latency": "API, 8 in flight",
+      "label": "Decider V1.1 27B",
+      "maker": "Perplexity",
+      "slug": "perplexity/pplx-decider-v1.1-27b",
+      "series": 4,
+      "short": "Decider"
+    },
+    "clef_omni": {
+      "access": "OpenRouter API",
+      "run": "2026-10-12",
+      "latency": "API, 8 in flight",
+      "label": "Clef Omni",
+      "maker": "Cloudflare",
+      "slug": "cloudflare/clef-omni",
+      "series": 5,
+      "short": "Clef Omni"
+    },
+    "solar_flash": {
+      "access": "OpenRouter API",
+      "run": "2026-10-12",
+      "latency": "API, 8 in flight",
+      "label": "Solar Decide Flash",
+      "maker": "Upstage",
+      "slug": "upstage/solar-decide-flash",
+      "series": 8,
+      "short": "Solar Flash"
+    },
+    "drex": {
+      "access": "OpenRouter API",
+      "run": "2026-10-12",
+      "latency": "API, 8 in flight",
+      "label": "Drex v1.5",
+      "maker": "Nace AI",
+      "slug": "nace-ai/drex-v1.5",
+      "series": 9,
+      "short": "Drex"
     }
   },
   "languages": [
@@ -257,22 +299,47 @@
   },
   "roadmap": [
     {
-      "title": "Next",
-      "items": [
-        {
-          "name": "Respan Span-01 and Span-01 Lite",
-          "access": "respan/span-01, respan/span-01-lite:free",
-          "note": "Only accepts a conversation (a list of chat messages) as the state and answers yes/no questions, so it needs a conversation track of its own."
-        }
-      ]
-    },
-    {
-      "title": "Needs a small adapter",
+      "title": "Next: own API, same request shape",
       "items": [
         {
           "name": "Fastino GLiDE",
           "access": "api.fastino.ai/v1/systemone",
           "note": "Same request shape on Fastino's own API, so only the base URL and key change. $0.15 per 1M input tokens."
+        },
+        {
+          "name": "Celeris-1 Decision",
+          "access": "inference.celeris.ai/celeris-1-decision/v1/systemone",
+          "note": "Released 8 October 2026. Implements the System One API, so only the base URL, key and model name change. Closed weights; $0.04 per 1M input tokens."
+        },
+        {
+          "name": "Hanzo Kai 1",
+          "access": "api.hanzo.ai/v1/decisions (model: kai)",
+          "note": "Uses the same request shape as OpenRouter's Decisions API, on Hanzo's own endpoint. Closed weights; $0.021 per 1M input tokens."
+        },
+        {
+          "name": "meraGPT Decider 1",
+          "access": "meragpt.com /v1/systemone (model: state-decider-1)",
+          "note": "Hosted since 22 September 2026. Requests are capped at 4,096 tokens and 10 options per question, so Banking77 and the long Arabic datasets would fail."
+        }
+      ]
+    },
+    {
+      "title": "Next: open weights, run locally",
+      "items": [
+        {
+          "name": "Liquid AI d1-3B and d1-omni-600M",
+          "access": "LiquidAI/d1-3B, LiquidAI/d1-omni-600M",
+          "note": "Released 7 October 2026: small open-weight versions of Liquid's d1, with GGUF builds. LFM Open License, which restricts commercial use above $10M revenue."
+        },
+        {
+          "name": "Kev size sweep",
+          "access": "jaredpalmer/kev-{0.5b, 0.6b, 0.8b, 8b, 9b, 27b}",
+          "note": "Apache 2.0. Kev 4B is already on the board; six more sizes from 0.5B to 27B show how one recipe scales."
+        },
+        {
+          "name": "Leading community open models",
+          "access": "ZefanCai/Open-Jev-9B, ZefanCai/Open-Jev-27B-v1.1, hotchpotch/bekko-system-one-v0-400m",
+          "note": "The top open models on the S1MB leaderboard (30 September 2026). bekko is 400M parameters; its training data overlaps the S1MB domains, so an independent test matters."
         },
         {
           "name": "Fastino GLiNER2.5-Decide and multi-Decide",
@@ -290,14 +357,24 @@
           "note": "Open weights on Hugging Face. Six sizes from 0.6B to 27B: a model-size sweep on one recipe."
         },
         {
-          "name": "Plain chat-model baselines",
-          "access": "openai/gpt-6-luna, qwen/qwen3.5-9b",
-          "note": "The same base models as Luna Decisions and Clef Flash, prompted for JSON. Shows what decision training adds."
-        },
-        {
           "name": "GLiClass Multilang",
           "access": "knowledgator/gliclass-multilang-mini",
           "note": "Open weights on Hugging Face. Small zero-shot classifier trained on 20 languages including Arabic: a cheap multilingual floor."
+        }
+      ]
+    },
+    {
+      "title": "Needs a track of its own",
+      "items": [
+        {
+          "name": "Respan Span-01 and Span-01 Lite",
+          "access": "respan/span-01, respan/span-01-lite:free",
+          "note": "Only accepts a conversation (a list of chat messages) as the state and answers yes/no questions, so it needs a conversation track of its own."
+        },
+        {
+          "name": "Plain chat-model baselines",
+          "access": "openai/gpt-6-luna, qwen/qwen3.5-9b",
+          "note": "The same base models as Luna Decisions and Clef Flash, prompted for JSON. Shows what decision training adds."
         }
       ]
     },
@@ -310,9 +387,14 @@
           "note": "Unofficial open models trained to imitate decision models: JEV-9B, GEV-26B-Decide, the Mapika decider family and wfzyx/von. Worth a run once they have model cards and licences."
         },
         {
+          "name": "Gated, non-commercial or out-of-scope models",
+          "access": "",
+          "note": "Surogate Rune 26B-A4B (gated weights), Torchcast Decision 27B (CC BY-NC 4.0), the fully open s1 on Gemma 4, and OpenThai-SystemOne (Thai, a language we don't test yet)."
+        },
+        {
           "name": "Other leaderboards",
           "access": "",
-          "note": "JevBench and Decision Index publish decision-model results to cross-check ours against."
+          "note": "S1MB, JevBench, Decision Index and BenchLM publish decision-model results to cross-check ours against."
         }
       ]
     }
