@@ -46,8 +46,8 @@ mkdir -p _site && cp site/* results.json _site/ && python3 -m http.server 8062 -
 ## Roadmap
 
 The roadmap lives in `site/meta.json` and is published at [systemonebench.dev/#roadmap](https://systemonebench.dev/#roadmap).
-As of 2026-10-07 it lists 8 models that run today on OpenRouter's Decisions API, 6 that need a small adapter, and 2 entries
-on a watch list. Several vendors publish their own scores; none go on the site until they've run here like every other model.
+As of 2026-10-12 it lists 1 model on OpenRouter's Decisions API that needs a conversation track, 6 that need a small
+adapter, and 2 entries on a watch list. Everything that runs as-is on the Decisions API has been benchmarked. Several vendors publish their own scores; none go on the site until they've run here like every other model.
 
 ## Live race
 
@@ -77,6 +77,15 @@ export OPENROUTER_API_KEY=<your key>
 .venv/bin/python run_decisions.py --model openai/gpt-6-luna-decisions --name luna   # -> preds_luna.jsonl
 .venv/bin/python run_decisions.py --model typesafe/jev-1.13 --name or_jev           # -> preds_or_jev.jsonl
 .venv/bin/python score.py preds_or_jev.jsonl preds_luna.jsonl                       # -> results.json
+```
+
+`score.py` rewrites `results.json` from only the files you pass, in that order, and the site lists models in that order.
+To rebuild the published file, pass every run:
+
+```bash
+.venv/bin/python score.py preds_laya_router.jsonl preds_laya_ara.jsonl preds_laya_ara-rag.jsonl preds_jev.jsonl \
+  preds_or_jev.jsonl preds_luna.jsonl preds_pplx.jsonl preds_liquid_d1.jsonl preds_clef.jsonl preds_clef_flash.jsonl \
+  preds_solar.jsonl preds_mercury.jsonl preds_kev.jsonl preds_tev1.jsonl preds_msft_d1.jsonl
 ```
 
 `run_decisions.py` is resumable: re-running it retries only the cases that failed. Laya and direct-TypeSafe runs:
@@ -110,7 +119,8 @@ round 2, 8 calls in flight, served as `microsoft/microsoft-decision-1-20261009`.
 - It's the most accurate model on SST-5 (62.5%), typed-decisions (79.0%) and Arabic MIRACL pairs (91.0%). Its weakest
   dataset is Emotion (57.0%, against Mercury Decide's 91.5%).
 - Median latency was 679 ms with 8 calls in flight and 613 ms one call at a time, both through OpenRouter and including
-  the network. Jev measured 365 ms one at a time from the same machine. Microsoft reports 85 ms p50 in its own test.
+  the network. Jev measured 365 ms one at a time from the same machine on 2026-10-07, so part of that gap may be the
+  day's network. Microsoft reports 85 ms p50 in its own test.
 
 ## Round 2: eleven models (2026-10-07)
 
