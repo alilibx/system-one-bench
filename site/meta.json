@@ -8,7 +8,8 @@
     "6": "Liquid AI",
     "7": "Inception",
     "8": "Upstage",
-    "9": "Other makers"
+    "9": "Other makers",
+    "10": "Microsoft"
   },
   "models": {
     "or_jev": {
@@ -155,6 +156,16 @@
       "note": "Same model as the OpenRouter run, measured two weeks earlier. Left out of the charts.",
       "chart": false,
       "short": "Jev (Sept)"
+    },
+    "msft_d1": {
+      "label": "Microsoft-Decision-1",
+      "maker": "Microsoft",
+      "access": "OpenRouter API",
+      "slug": "microsoft/microsoft-decision-1",
+      "series": 10,
+      "short": "Microsoft",
+      "run": "2026-10-12",
+      "latency": "API, 8 in flight"
     }
   },
   "languages": [
