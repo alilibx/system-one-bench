@@ -334,6 +334,11 @@
           "note": "Released 7 October 2026: small open-weight versions of Liquid's d1, with GGUF builds. LFM Open License, which restricts commercial use above $10M revenue."
         },
         {
+          "name": "Naluri-279M and Naluri-308M encoders",
+          "access": "jerichosiahaya/Naluri-279M-encoder, jerichosiahaya/Naluri-308M-encoder",
+          "note": "Multilingual encoders (XLM-R base and mmBERT-base) that score every option in one forward pass; serve.py in the Naluri repo answers POST /v1/systemone, so run_decisions.py --url runs them. CC BY-NC 4.0, and trained on the train splits of XNLI, MASSIVE and dair-ai/emotion."
+        },
+        {
           "name": "Kev size sweep",
           "access": "jaredpalmer/kev-{0.5b, 0.6b, 0.8b, 8b, 9b, 27b}",
           "note": "Apache 2.0. Kev 4B is already on the board; six more sizes from 0.5B to 27B show how one recipe scales."
