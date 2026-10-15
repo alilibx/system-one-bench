@@ -82,5 +82,6 @@ anyone can see what changed and when.
   version compare. **MINOR** is new results, a new track or a new site feature. **PATCH** is a fix that changes no
   score.
 - Merging to `main` runs `.github/workflows/release.yml`, which publishes every notes file that has no release yet, and
-  updates the notes of any release whose file changed.
+  updates the notes of any release whose file changed. The workflow's token can't tag an older commit whose workflow files differ
+  from `main`'s; when that happens the job lists the `git tag` commands to push yourself, then you run it again.
 - Credit outside contributors by GitHub handle in the notes.
