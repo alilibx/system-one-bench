@@ -1,10 +1,10 @@
-# Publishes the results site to GitHub Pages whenever results.json or the site changes on main.
+# Publishes the results site to GitHub Pages whenever the results or the site change on main.
 name: Publish results site
 
 on:
   push:
     branches: [main]
-    paths: [results.json, "site/**", .github/workflows/pages.yml]
+    paths: [results.json, results_vision.json, "site/**", .github/workflows/pages.yml]
   workflow_dispatch:
 
 permissions:
@@ -28,8 +28,8 @@ jobs:
         run: |
           mkdir _site
           cp site/* _site/
-          cp results.json _site/
-          python3 -c "import json; json.load(open('_site/results.json')); json.load(open('_site/meta.json'))"
+          cp results.json results_vision.json _site/
+          python3 -c "import json; [json.load(open(f'_site/{f}')) for f in ('results.json', 'results_vision.json', 'meta.json')]"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

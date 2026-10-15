@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>System One Bench</title>
 <link rel="canonical" href="https://systemonebench.dev/">
-<meta name="description" content="Independent accuracy, calibration, latency and cost results for System One decision models on 16 labelled datasets in English, French and Arabic.">
+<meta name="description" content="Independent accuracy, calibration, latency and cost results for System One decision models on 16 labelled datasets in English, French and Arabic, plus a vision track on 6 image datasets.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -55,6 +55,7 @@ code { font: 0.9em ui-monospace, "SF Mono", Menlo, monospace; }
 .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 20px 20px 16px; min-width: 0; }
 .card h3 { font: 700 20px/1.2 var(--display); letter-spacing: -0.01em; margin: 0; }
 .card .sub { color: var(--muted); font-size: 13.5px; margin: 4px 0 12px; }
+.card.stack { margin-top: 16px; }
 .trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .trio .card h3 { font-size: 18px; }
 
@@ -117,6 +118,7 @@ details td.win { font-weight: 600; }
 .road li span { color: var(--ink-2); font-size: 14px; }
 .road .count { color: var(--muted); font-size: 13.5px; margin: 4px 0 10px; }
 .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+.cols > *, .road > * { min-width: 0; }  /* let long code lines scroll instead of widening the page */
 .cols h3 { font: 700 18px var(--display); margin: 0 0 8px; }
 .cols p, .cols li { color: var(--ink-2); }
 .cols ul { padding-left: 18px; margin: 0; }
@@ -150,7 +152,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
       </svg>
       System One Bench
     </a>
-    <nav><a href="#index">Index</a><a href="#datasets">Datasets</a><a href="#roadmap">Roadmap</a><a href="#method">Method</a><a href="https://github.com/alilibx/system-one-bench">GitHub</a></nav>
+    <nav><a href="#index">Index</a><a href="#datasets">Datasets</a><a href="#vision">Vision</a><a href="#roadmap">Roadmap</a><a href="#method">Method</a><a href="https://github.com/alilibx/system-one-bench">GitHub</a></nav>
   </header>
 
   <section class="hero" aria-live="polite">
@@ -216,6 +218,17 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
     <details><summary>Show every dataset as a table</summary><div class="table-wrap"><table id="matrix"></table></div></details>
   </section>
 
+  <section class="section" id="vision" hidden>
+    <h2>Vision</h2>
+    <p class="note" id="vision-note"></p>
+    <div class="card"><h3>Vision Index</h3><p class="sub" id="vision-index-sub"></p><div id="chart-vision-index"></div></div>
+    <div class="card stack"><h3>Text against image</h3><p class="sub">Accuracy on the same 200 SST-2 reviews and 200 Arabic tweets, sent once as text and once as a picture of that text. The gap is what reading from pixels costs.</p><div class="table-wrap"><table id="vision-gap"></table></div></div>
+    <p class="group-title">By image dataset</p>
+    <div class="multiples" id="vision-multiples"></div>
+    <div class="card stack"><h3>Box questions</h3><p class="sub" id="box-sub"></p><div class="table-wrap"><table id="vision-box"></table></div></div>
+    <div class="card stack"><h3>Calibration, speed and cost with images</h3><p class="sub">Every image call on the 5 datasets above, plus Jev 1.14's 200 Box calls. Latency includes uploading the image through OpenRouter, with 8 calls in flight.</p><div class="table-wrap"><table id="vision-cost"></table></div></div>
+  </section>
+
   <section class="section" id="leaderboard">
     <h2>All runs</h2>
     <p class="note">Every model run with its overall numbers. Overall accuracy here counts every question, so the 5-question typed-decisions dataset weighs more than in the index.</p>
@@ -241,7 +254,8 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
           <li>Accuracy compares the most likely answer with the dataset's label. A failed call counts as wrong.</li>
           <li>Calibration error is top-label ECE over 10 bins. Log loss, Brier score and more are in <a href="results.json">results.json</a>.</li>
           <li>Cost is the summed <code>usage.cost</code> the API reports.</li>
-          <li>API latency was measured through OpenRouter with 8 requests in flight for Jev, GPT-6 Luna Decisions and the models added on 12 October, and 6 for the rest (Solar Decide finished at 24 because it's slow on long states); Laya ran locally on an Apple M5 GPU, one call at a time.</li>
+          <li>API latency was measured through OpenRouter with 8 requests in flight for Jev, GPT-6 Luna Decisions and the models added on 12 October, and 6 for the rest (Solar Decide finished at 24 because it's slow on long states); Laya ran locally on an Apple M5 GPU, one call at a time. Jev 1.14 and the vision track ran on 15 October from a cloud machine, whose network is faster to OpenRouter, so their latencies compare with each other but not with the earlier runs.</li>
+          <li>The vision track sends each image once, as a base64 PNG or JPEG in <code>state</code>, resized to fit every model's limits. Box answers count as right when they overlap the labelled box by at least half (IoU of 0.5 or more).</li>
           <li>Nothing was tuned on test data. Some open-weight fine-tunes trained on related data; the repo README lists which.</li>
         </ul>
       </div>
@@ -259,6 +273,7 @@ python score.py preds_or_jev.jsonl preds_luna.jsonl</pre>
   <footer>
     <span id="foot-updated"></span>
     <a href="results.json">Raw results (JSON)</a>
+    <a href="results_vision.json">Vision results (JSON)</a>
     <a href="https://github.com/alilibx/system-one-bench">github.com/alilibx/system-one-bench</a>
   </footer>
 </div>
@@ -268,10 +283,12 @@ python score.py preds_or_jev.jsonl preds_luna.jsonl</pre>
 const $ = id => document.getElementById(id);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const date = s => new Date(s + "T12:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-let R, M, indexSet = "all", metric = "acc";
+let R, M, V, indexSet = "all", metric = "acc";
 
-Promise.all([fetch("results.json").then(r => r.json()), fetch("meta.json").then(r => r.json())])
-  .then(([results, meta]) => { R = results; M = meta; render(); })
+// The vision results are optional: without them the page shows the text benchmark alone.
+const vision = fetch("results_vision.json").then(r => r.ok ? r.json() : null).catch(() => null);
+Promise.all([fetch("results.json").then(r => r.json()), fetch("meta.json").then(r => r.json()), vision])
+  .then(([results, meta, vis]) => { R = results; M = meta; V = vis; render(); })
   .catch(() => {
     $("headline").textContent = "The results didn't load.";
     $("index").insertAdjacentHTML("afterbegin", '<p class="error">This page reads results.json and meta.json from the same folder. Serve the folder over HTTP (for example <code>python -m http.server</code>) instead of opening the file directly.</p>');
@@ -292,6 +309,14 @@ function index(k, set = "all") {
 }
 const per1k = k => R[k].cost && R[k].cost.usd != null ? 1000 * R[k].cost.usd / R[k].cost.calls : null;
 const color = k => `var(--s${M.models[k].series}, var(--muted))`;
+const vsuites = () => Object.keys(M.vision?.suites || {});
+const vval = (k, s, key = "acc") => V?.[k]?.["suite:" + s]?.[key];
+const vruns = () => V ? Object.keys(M.models).filter(k => V[k] && M.models[k].chart !== false) : [];
+function vindex(k) {
+  const ss = vsuites();
+  if (!ss.length || ss.some(s => vval(k, s) == null)) return null;
+  return 100 * ss.reduce((a, s) => a + vval(k, s), 0) / ss.length;
+}
 
 // ---------- tooltip ----------
 const tip = $("tip");
@@ -437,7 +462,7 @@ function render() {
   $("foot-updated").textContent = `Last run ${date(updated())}`;
   $("legend").innerHTML = [...new Set(charted().map(k => M.models[k].series))].map(sr => `<li><i style="background:var(--s${sr}, var(--muted))"></i>${esc(M.series[sr] || M.models[charted().find(k => M.models[k].series === sr)].maker)}</li>`).join("");
   if (unlisted().length) $("leaderboard").insertAdjacentHTML("beforeend", `<p class="na">Not shown: ${unlisted().map(esc).join(", ")}. Add an entry to site/meta.json to include a run.</p>`);
-  draw(); renderBoard(); renderMatrix(); renderRoadmap();
+  draw(); renderBoard(); renderMatrix(); renderRoadmap(); renderVisionTables();
   if (!topK) { $("headline").textContent = "No model has run every dataset yet."; return; }
   const wins = {};
   for (const s of suites("all")) {
@@ -484,6 +509,55 @@ function draw() {
     bars(el, charted().filter(k => val(k, s) != null).map(k => ({ k, v: 100 * val(k, s, metric) })),
       metric === "acc" ? { fmt: fmtIdx, max: 100, height: 190 } : { fmt: fmtPct, lower: true, height: 190, max: eceMax });
   });
+  drawVision();
+}
+
+// ---------- vision ----------
+function drawVision() {
+  const ks = vruns();
+  $("vision").hidden = !ks.length;
+  if (!ks.length) return;
+  $("vision-index-sub").textContent = `Mean accuracy across the ${vsuites().length} image datasets, equal weight per dataset. Box questions are scored on their own, below. Higher is better.`;
+  bars($("chart-vision-index"), ks.filter(k => vindex(k) != null).map(k => ({ k, v: vindex(k) })), { fmt: fmtIdx, max: 100, height: 260, labelKey: "label" });
+  $("vision-multiples").innerHTML = vsuites().map(s => {
+    const n = vval(ks.find(k => vval(k, s) != null), s, "n");
+    return `<div class="card"><h3>${esc(M.vision.suites[s].label)}</h3><p class="sub">${esc(M.vision.suites[s].task)}, n=${n}</p><div data-vsuite="${s}"></div></div>`;
+  }).join("");
+  document.querySelectorAll("#vision-multiples [data-vsuite]").forEach(el => {
+    const s = el.dataset.vsuite;
+    bars(el, ks.filter(k => vval(k, s) != null).map(k => ({ k, v: 100 * vval(k, s) })), { fmt: fmtIdx, max: 100, height: 190 });
+  });
+}
+
+function renderVisionTables() {
+  const ks = vruns();
+  if (!ks.length) return;
+  const name = k => `<div class="model"><i style="background:${color(k)}"></i><span><b>${esc(M.models[k].label)}</b><small>${esc(M.models[k].maker)}</small></span></div>`;
+  const pct = v => v == null ? '<span class="na">–</span>' : (100 * v).toFixed(1);
+  const gap = (t, i) => {
+    if (t == null || i == null) return '<span class="na">–</span>';
+    const d = Math.round(1000 * (i - t)) / 10;
+    return d === 0 ? "0.0" : `${d > 0 ? "+" : "−"}${Math.abs(d).toFixed(1)}`;
+  };
+  const byIdx = ks.slice().sort((a, b) => (vindex(b) ?? 0) - (vindex(a) ?? 0));
+  const pairs = vsuites().filter(s => M.vision.suites[s].text);
+  $("vision-gap").innerHTML = `<thead><tr><th scope="col">Model</th>${pairs.map(s => `<th scope="col">${esc(M.vision.suites[s].short)}, text</th><th scope="col">As image</th><th scope="col">Gap</th>`).join("")}</tr></thead><tbody>` +
+    byIdx.map(k => `<tr><td>${name(k)}</td>${pairs.map(s => { const t = val(k, M.vision.suites[s].text), i = vval(k, s); return `<td>${pct(t)}</td><td>${pct(i)}</td><td>${gap(t, i)}</td>`; }).join("")}</tr>`).join("") + "</tbody>";
+
+  const boxSuites = Object.keys(M.vision.box || {});
+  const boxed = ks.filter(k => boxSuites.some(s => vval(k, s) != null));
+  $("box-sub").textContent = `${boxSuites.map(s => `${M.vision.box[s].label}: ${M.vision.box[s].task.toLowerCase()}`).join("; ")}. A box counts as right when it overlaps the labelled box by at least half (IoU of 0.5 or more). Only ${boxed.map(k => M.models[k].label).join(", ") || "no model yet"} answers Box questions; every other model rejects them.`;
+  $("vision-box").innerHTML = `<thead><tr><th scope="col">Model</th><th scope="col">Right (IoU ≥ 0.5)</th><th scope="col">Mean IoU</th><th scope="col">Mean confidence</th><th scope="col">Calibration error</th></tr></thead><tbody>` +
+    boxed.flatMap(k => boxSuites.filter(s => vval(k, s) != null).map(s => `<tr><td>${name(k)}</td><td>${pct(vval(k, s))}%</td><td>${vval(k, s, "mean_iou").toFixed(2)}</td><td>${pct(vval(k, s, "mean_conf"))}%</td><td>${fmtPct(100 * vval(k, s, "ece"))}</td></tr>`)).join("") + "</tbody>";
+
+  const vper1k = k => V[k].cost && V[k].cost.usd != null ? 1000 * V[k].cost.usd / V[k].cost.calls : null;
+  $("vision-cost").innerHTML = `<thead><tr><th scope="col">Model</th><th scope="col">Calibration error</th><th scope="col">Median latency</th><th scope="col">Per 1,000 calls</th><th scope="col">Input tokens per call</th></tr></thead><tbody>` +
+    byIdx.map(k => { const r = V[k], c = vper1k(k); return `<tr><td>${name(k)}</td><td>${r.all ? fmtPct(100 * r.all.ece) : "–"}</td><td>${r.latency_ms ? fmtMs(r.latency_ms.p50) : "–"}</td><td>${c != null ? fmtUsd(c) : '<span class="na">–</span>'}</td><td>${r.cost?.calls ? Math.round(r.cost.input_tokens / r.cost.calls).toLocaleString("en") : "–"}</td></tr>`; }).join("") + "</tbody>";
+
+  const none = (M.vision.no_image || []).filter(k => M.models[k]).map(k => M.models[k].label);
+  $("vision-note").textContent = `${ks.length} models on OpenRouter's Decisions API accept images, and run 5 image datasets in English and Arabic with the same request body. ` +
+    (none.length ? `${none.join(", ")} reject image input, so they have no vision score. ` : "") +
+    "The Vision Index is kept apart from the System One Index, so models without image input aren't penalised there.";
 }
 
 function renderBoard() {

@@ -9,9 +9,14 @@ Usage: OPENROUTER_API_KEY=... python run_decisions.py --model openai/gpt-6-luna-
        CELERIS_API_KEY=kerstel://global/CELERIS_API_KEY ks run -- python run_decisions.py --provider celeris --name celeris
        python run_decisions.py --url http://localhost:8000/v1/systemone --key-env "" --model kev-9b --name kev_9b
 Writes preds_<name>.jsonl and, once, latency_<name>.jsonl (one request in flight at a time).
+
+Image cases (build_images.py) run the same way: --cases image_cases.jsonl --out-dir vision. Their state holds
+{"image": path} items, sent as image_url parts with a base64 data URL. --suites limits a run to some suites, such as
+img_refcoco for the models that answer Box questions.
 """
 import argparse
 import asyncio
+import base64
 import json
 import os
 import random
@@ -41,8 +46,24 @@ def priced(usage, per_m):
     return usage
 
 
+MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp"}
+
+
+def with_images(x):
+    """Replace every {"image": path} with the image_url part the Decisions API reads, as a base64 data URL."""
+    if isinstance(x, dict) and set(x) == {"image"}:
+        with open(x["image"], "rb") as f:
+            data = base64.b64encode(f.read()).decode()
+        return {"type": "image_url", "image_url": {"url": f"data:{MIME[os.path.splitext(x['image'])[1]]};base64,{data}"}}
+    if isinstance(x, dict):
+        return {k: with_images(v) for k, v in x.items()}
+    if isinstance(x, list):
+        return [with_images(v) for v in x]
+    return x
+
+
 async def call(client, url, model, case, per_m=None):
-    body = {"model": model, "state": case["state"], "questions": case["questions"]}
+    body = {"model": model, "state": with_images(case["state"]), "questions": with_images(case["questions"])}
     for attempt in range(8):
         t0 = time.perf_counter()
         try:
@@ -55,7 +76,7 @@ async def call(client, url, model, case, per_m=None):
                 d = r.json()
                 return {"id": case["id"], "answers": d["answers"], "usage": priced(d.get("usage"), per_m), "model": d.get("model"),
                         "provider": d.get("provider"), "ms": ms}
-            if r.status_code not in (408, 429, 500, 502, 503, 529):
+            if r.status_code not in (408, 429, 500, 502, 503, 504, 529):
                 return {"id": case["id"], "error": f"{r.status_code} {r.text[:300]}", "ms": ms}
             err = f"{r.status_code}"
         await asyncio.sleep(min(30, 2 ** attempt) + random.random())
@@ -70,6 +91,9 @@ async def main():
     ap.add_argument("--key-env", help="env var holding the API key; empty for none (default OPENROUTER_API_KEY)")
     ap.add_argument("--auth", choices=["bearer", "x-api-key"], help="how the key is sent (default bearer)")
     ap.add_argument("--name", required=True, help="short name for the output files")
+    ap.add_argument("--cases", default="cases.jsonl", help="cases file, e.g. image_cases.jsonl")
+    ap.add_argument("--suites", help="comma-separated suites to run (default: every suite in the cases file)")
+    ap.add_argument("--out-dir", default=".", help="folder for the output files, e.g. vision")
     ap.add_argument("--concurrency", type=int, default=8)
     ap.add_argument("--sequential-latency", type=int, default=60, help="single-question cases timed one at a time")
     a = ap.parse_args()
@@ -83,8 +107,11 @@ async def main():
     if key_env and not os.environ.get(key_env):
         ap.error(f"{key_env} is not set: export it, wrap the command in `ks run --` with a kerstel:// reference, "
                  f"or pass --key-env \"\" for an endpoint without a key")
-    out, lat_path = f"preds_{a.name}.jsonl", f"latency_{a.name}.jsonl"
-    cases = [json.loads(l) for l in open("cases.jsonl")]
+    os.makedirs(a.out_dir, exist_ok=True)
+    out, lat_path = os.path.join(a.out_dir, f"preds_{a.name}.jsonl"), os.path.join(a.out_dir, f"latency_{a.name}.jsonl")
+    cases = [json.loads(l) for l in open(a.cases)]
+    if a.suites:
+        cases = [c for c in cases if c["suite"] in a.suites.split(",")]
     done = set()
     if os.path.exists(out):
         done = {json.loads(l)["id"] for l in open(out) if "error" not in json.loads(l)}
@@ -95,7 +122,7 @@ async def main():
         headers = {"X-API-Key": k} if auth == "x-api-key" else {"Authorization": f"Bearer {k}"}
     async with httpx.AsyncClient(headers=headers, timeout=60) as client:
         # Latency probe: one request in flight at a time, like a single interactive caller.
-        if a.sequential_latency and not os.path.exists(lat_path):
+        if a.sequential_latency and not os.path.exists(lat_path) and any(c["suite"] == "ag_news" for c in cases):
             probe = [c for c in cases if c["suite"] == "ag_news"][: a.sequential_latency]
             probe += [c for c in cases if c["suite"] == "typed-decisions"][: a.sequential_latency // 2]
             await call(client, url, model, probe[0], per_m)  # warm the connection

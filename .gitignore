@@ -14,3 +14,7 @@ laya_ref/
 models/
 # local preview of the results site
 _site/
+# image cases and vision runs (rebuild with build_images.py and run_decisions.py --cases image_cases.jsonl)
+images/
+fonts/
+vision/

@@ -3,12 +3,14 @@
 A benchmark for System One models: models that read a `state` and answer named questions with typed, probabilistic
 answers (`noul` yes/no, `choice`, and ordered `score`) in one fast call. Every model gets byte-identical `state` +
 `questions` bodies, and is scored on accuracy, calibration, latency, and cost across 16 labelled datasets (3,250 cases,
-4,850 decisions) in English, French, and Arabic. A live race runs two models side by side on the same cases.
+4,850 decisions) in English, French, and Arabic. A [vision track](#vision-track) adds 6 image datasets (1,200 cases) for
+the models that read images, including Box questions. A live race runs two models side by side on the same cases.
 
 Models covered so far:
 
 | Model | Maker | How it runs | Round |
 |---|---|---|---|
+| Jev 1.14 (`typesafe/jev-1.14`) | TypeSafe | OpenRouter Decisions API | 2026-10-15, text and vision |
 | Jev 1.13 (`typesafe/jev-1.13`) | TypeSafe | OpenRouter Decisions API, or the TypeSafe API | all |
 | GPT-6 Luna Decisions (`openai/gpt-6-luna-decisions`) | OpenAI | OpenRouter Decisions API | 2026-10-07 |
 | Decider V1.1 27B (`perplexity/pplx-decider-v1.1-27b`) | Perplexity | OpenRouter Decisions API | 2026-10-12 |
@@ -34,17 +36,17 @@ cases through the same scorer. The [roadmap](#roadmap) lists what's next.
 
 ## Results site
 
-`site/` is a static page that reads `results.json` and `site/meta.json` (display names, makers, run dates, and dataset
-descriptions). Its layout follows [Artificial Analysis](https://artificialanalysis.ai/): a headline **System One Index** (mean
+`site/` is a static page that reads `results.json`, `results_vision.json` and `site/meta.json` (display names, makers, run
+dates, dataset descriptions, and the vision track's datasets). Its layout follows [Artificial Analysis](https://artificialanalysis.ai/): a headline **System One Index** (mean
 accuracy across datasets, equal weight per dataset, 0 to 100, with English and Arabic sub-indexes), index-against-latency
 and index-against-cost scatters with a Pareto line, calibration, latency and cost bar charts, and one bar chart per dataset. `.github/workflows/pages.yml` publishes it to GitHub Pages on every push to `main` that touches
-`results.json` or `site/`, so re-running `score.py` and merging updates it. Each run needs an entry in `site/meta.json` with its run
+`results.json`, `results_vision.json` or `site/`, so re-running `score.py` and merging updates it. Each run needs an entry in `site/meta.json` with its run
 date; the newest run date becomes the page's "Updated" date, and runs without an entry are listed as not shown.
 The site is served at systemonebench.dev: the domain's DNS (Vercel) points the apex at GitHub Pages' A records and
 `www` at `alilibx.github.io`. To preview locally:
 
 ```bash
-mkdir -p _site && cp site/* results.json _site/ && python3 -m http.server 8062 -d _site
+mkdir -p _site && cp site/* results.json results_vision.json _site/ && python3 -m http.server 8062 -d _site
 ```
 
 ## Roadmap
@@ -87,13 +89,14 @@ export OPENROUTER_API_KEY=<your key>
 ```
 
 `score.py` rewrites `results.json` from only the files you pass, in that order, and the site lists models in that order.
-To rebuild the published file, pass every run:
+`--merge` instead keeps the runs already there and adds or replaces just the ones you pass, which is how Jev 1.14 joined
+(`score.py --merge preds_or_jev_14.jsonl`). To rebuild the published file, pass every run:
 
 ```bash
 .venv/bin/python score.py preds_laya_router.jsonl preds_laya_ara.jsonl preds_laya_ara-rag.jsonl preds_jev.jsonl \
   preds_or_jev.jsonl preds_luna.jsonl preds_pplx.jsonl preds_liquid_d1.jsonl preds_clef.jsonl preds_clef_flash.jsonl \
   preds_solar.jsonl preds_mercury.jsonl preds_kev.jsonl preds_tev1.jsonl preds_msft_d1.jsonl preds_pplx_v11.jsonl \
-  preds_clef_omni.jsonl preds_drex.jsonl preds_solar_flash.jsonl
+  preds_clef_omni.jsonl preds_drex.jsonl preds_solar_flash.jsonl preds_or_jev_14.jsonl
 ```
 
 Models on their vendor's own API take the same request body. `--provider fastino|celeris|hanzo|meragpt` sets the
@@ -114,6 +117,40 @@ CELERIS_API_KEY=kerstel://global/CELERIS_API_KEY ks run -- .venv/bin/python run_
 .venv/bin/python run_laya.py --variant ara-rag    # Wouze/laya-ara-rag, Arabic suites only
 TYPESAFE_API_KEY=<your key> .venv/bin/python run_jev.py
 ```
+
+## Vision track
+
+`build_images.py` builds 1,200 image cases (200 per dataset) into `image_cases.jsonl`, with the images under `images/`.
+A case's `state` holds `{"image": "images/<suite>/<n>.jpg"}`, and `run_decisions.py` sends it as an `image_url` part with a
+base64 data URL, the shape OpenRouter's Decisions API reads. Every image is rotated by its EXIF tag and resized to fit
+every model's limits: each side 280 to 1,568 px, at least 78,400 pixels, at most about 300 KB.
+
+| Dataset | Question | Source |
+|---|---|---|
+| SST-2, as an image | yes/no | The 200 SST-2 reviews from `cases.jsonl`, rendered in Noto Sans |
+| Arabic sentiment, as an image | 3 options | The 200 Arabic tweets from `cases.jsonl`, rendered in Noto Naskh Arabic |
+| Oxford-IIIT Pet | 37 options | `timm/oxford-iiit-pet` test, CC BY-SA 4.0 |
+| VQAv2 yes/no | yes/no | `lmms-lab/VQAv2` validation, first shard, one question per image, CC BY 4.0 |
+| CountBench | score, 2 to 10 | `vikhyatk/CountBenchQA` |
+| RefCOCO | box | `lmms-lab/RefCOCO` testA (people) and testB (objects), 100 each, one phrase per image |
+
+The two rendered datasets reuse the exact items of the text datasets, so the gap between them is what reading from
+pixels costs. Rendering Arabic needs Pillow with libraqm (`brew install libraqm` on macOS); the fonts are downloaded from
+Google Fonts into `fonts/`. The Box dataset only runs on models that answer Box questions, so pass `--suites` to the others:
+
+```bash
+.venv/bin/python build_images.py                  # needs cases.jsonl; -> image_cases.jsonl, images/
+V=img_sst2,img_ar_sentiment,img_pets,img_vqa_yesno,img_count
+.venv/bin/python run_decisions.py --cases image_cases.jsonl --out-dir vision --model typesafe/jev-1.14 --name or_jev_14
+.venv/bin/python run_decisions.py --cases image_cases.jsonl --out-dir vision --model openai/gpt-6-luna-decisions --name luna --suites $V
+.venv/bin/python score.py --cases image_cases.jsonl --out results_vision.json vision/preds_or_jev_14.jsonl vision/preds_or_jev.jsonl \
+  vision/preds_luna.jsonl vision/preds_pplx_v11.jsonl vision/preds_clef.jsonl vision/preds_clef_flash.jsonl \
+  vision/preds_clef_omni.jsonl vision/preds_mercury.jsonl
+```
+
+Box answers are scored by intersection over union with the labelled box: right when IoU is 0.5 or more, plus mean IoU,
+and calibration of the answer's `confidence` against being right. They're reported apart and stay out of the Vision
+Index, since only Jev 1.14 answers them. Run names match the text runs, so the site shows both under one name.
 
 ## Open-weight models, run locally
 
@@ -147,6 +184,66 @@ The other open models need their own runners:
 A 24 GB Mac fits everything up to 9B at Q8. The 27B models (Kev 27B, d3 27B, Open-Jev 27B) and Open-Jev 9B, whose base
 model alone is 19 GB, need a bigger machine. Laya Multilingual is already covered: Laya Router sends every non-English
 state, Arabic and French included, to those same weights.
+
+## Round 5: Jev 1.14 and the vision track (2026-10-15)
+
+TypeSafe released Jev 1.14 on 2026-10-14. It adds images, a Box question type that returns a bounding box, and a 262k
+context; TypeSafe marks all three as early features that aren't production-ready. This round runs Jev 1.14 on the text
+benchmark and starts a vision track for every model on OpenRouter's Decisions API that accepts images. Everything ran
+from a cloud machine, 8 calls in flight per model.
+
+**Text.** Jev 1.14 ran all 3,250 cases, served as `typesafe/jev-1.14`. It billed exactly the 2,157,160 input tokens of
+the Jev 1.13 run, which confirms the cases were rebuilt byte for byte.
+
+| Model | Index | English | Arabic | Calibration error | Cost per 1,000 calls |
+|---|---|---|---|---|---|
+| Jev 1.14 | **79.4** | **78.8** | **80.4** | **5.9%** | $0.028 |
+| Jev 1.13 | 79.0 | 78.5 | 79.9 | 6.1% | $0.028 |
+
+- Jev 1.14 is 0.4 points ahead of Jev 1.13 and places 8th of 16, just behind Clef Omni (79.7). Its gains are spread
+  thin (+2.5 on MASSIVE-ar scenario, +2.0 on XNLI Arabic); it drops 3 points on Arabic offensive language.
+- Same price as Jev 1.13, and the same speed: one call at a time from the cloud machine, Jev 1.14 took 136 ms median
+  and Jev 1.13 140 ms. Its 134 ms on the site is lower than earlier runs because of that machine's network, not the model.
+
+**Vision.** 8 models accept images; d1, Microsoft-Decision-1, Kev 4B, Tev1, Solar Decide, Solar Decide Flash and Drex
+return 400 ("does not accept image_url parts"). The Vision Index is the mean accuracy over 5 image datasets, kept apart
+from the System One Index.
+
+| Model | Vision Index | SST-2 image | Arabic sentiment image | Pets (37) | VQAv2 yes/no | CountBench | Calibration error | Median latency | Cost per 1,000 calls |
+|---|---|---|---|---|---|---|---|---|---|
+| **Jev 1.14** | **85.1** | 93.5 | 63.5 | **88.5** | 86.5 | 93.5 | 2.9% | **183 ms** | $0.046 |
+| Jev 1.13 | 83.9 | 94.5 | 59.0 | 83.5 | 88.0 | **94.5** | **2.8%** | 192 ms | $0.046 |
+| Decider V1.1 27B | 83.0 | **96.0** | 51.0 | 84.0 | **89.5** | **94.5** | 5.6% | 302 ms | $0.009 |
+| GPT-6 Luna Decisions | 81.6 | 88.5 | **67.0** | 87.0 | 80.5 | 85.0 | 5.3% | 221 ms | $0.047 |
+| Mercury Decide | 79.4 | 93.0 | 39.0 | 84.5 | 87.0 | 93.5 | 9.9% | 305 ms | free tier |
+| Clef | 78.1 | 95.5 | 35.0 | 82.5 | 87.5 | 90.0 | 3.6% | 502 ms | $0.138 |
+| Clef Flash | 78.0 | 95.5 | 33.5 | 85.0 | 88.0 | 88.0 | 9.4% | 429 ms | $0.022 |
+| Clef Omni | 72.2 | 89.5 | 28.5 | 88.0 | 87.0 | 68.0 | 20.6% | 274 ms | $0.086 |
+
+- Jev 1.14 leads the Vision Index by 1.2 points over Jev 1.13, mostly on pet breeds (+5.0) and the Arabic tweets
+  (+4.5). Both Jevs are the best calibrated on images.
+- Reading English from a picture costs little: every model is within 7.5 points of its text SST-2 score, and Decider,
+  Jev 1.13 and Clef Flash lose nothing. Reading Arabic from a picture costs a lot: 13 to 23.5 points on the same 200
+  tweets. GPT-6 Luna Decisions is best at it (67.0); the Clef models fall to near the 3-way floor.
+- Jev bills about 1,100 input tokens per image call, twice what the others count, but its price per token is lower, so
+  it costs the same as Luna. Decider V1.1 is again the cheapest paid model.
+- GPT-6 Luna Decisions returned a 502 on the same 2 cases on every retry (`img_sst2-187`, `img_vqa_yesno-105`); they
+  count as wrong.
+
+**Box questions** (Jev 1.14 only; Jev 1.13 and the others reject them). On 200 RefCOCO phrases, 100 about people
+(testA) and 100 about objects (testB):
+
+| | Right (IoU ≥ 0.5) | Mean IoU | Mean confidence | Calibration error | Confidence AUROC |
+|---|---|---|---|---|---|
+| People (testA) | 83.0% | 0.74 | 52.9% | 30.7% | 0.82 |
+| Objects (testB) | 74.0% | 0.67 | 43.4% | 30.6% | 0.77 |
+| **All** | **78.5%** | **0.70** | 48.2% | 30.3% | 0.80 |
+
+- Box answers are good but underconfident: right 78.5% of the time at an average stated confidence of 48%. The
+  confidence still ranks answers well (AUROC 0.80), so it works as a threshold, not as a probability.
+- A Box call takes 194 ms median, about the same as Jev's other image calls (182 ms).
+- Jev's image docs give 256 px as the shortest side it accepts, but it answered "Invalid image dimensions" for every
+  image with a side under 280 px. `build_images.py` keeps every side at 280 px or more.
 
 ## Round 4: four more models from OpenRouter (2026-10-12)
 
