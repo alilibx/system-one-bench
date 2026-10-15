@@ -301,6 +301,16 @@
   },
   "roadmap": [
     {
+      "title": "Next: on OpenRouter's Decisions API",
+      "items": [
+        {
+          "name": "Jev 1.14",
+          "access": "typesafe/jev-1.14",
+          "note": "Released 14 October 2026 as a preview; Jev 1.13 is still TypeSafe's stable release. Adds image input, a bounding-box question type and a 262K context window, none of which our text datasets use. Same price as Jev 1.13: $0.042 per 1M input tokens, output free."
+        }
+      ]
+    },
+    {
       "title": "Next: own API, same request shape",
       "items": [
         {

@@ -50,10 +50,12 @@ mkdir -p _site && cp site/* results.json _site/ && python3 -m http.server 8062 -
 ## Roadmap
 
 The roadmap lives in `site/meta.json` and is published at [systemonebench.dev/#roadmap](https://systemonebench.dev/#roadmap).
-As of 2026-10-12 it lists 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
+As of 2026-10-15 it lists Jev 1.14 (`typesafe/jev-1.14`, a TypeSafe preview released 2026-10-14) as next on
+OpenRouter's Decisions API, 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
 Decision, Hanzo Kai 1, meraGPT Decider 1), 6 open-weight families to run locally (including Liquid AI's d1-3B and
-d1-omni-600M, vLLM's d3 and the Kev size sweep), 2 entries that need a track of their own, and 3 on a watch list. Everything that
-runs as-is on OpenRouter's Decisions API has been benchmarked. Several vendors publish their own scores; none go on the
+d1-omni-600M, vLLM's d3 and the Kev size sweep), 2 entries that need a track of their own, and 3 on a watch list. Jev 1.14 is the
+only model on OpenRouter's Decisions API not yet benchmarked; it's already a lane in the live race (`jev-1.14`), and
+`run_decisions.py --model typesafe/jev-1.14 --name or_jev_114` runs it on every case. Several vendors publish their own scores; none go on the
 site until they've run here like every other model.
 
 ## Live race
