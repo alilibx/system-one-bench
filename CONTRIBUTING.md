@@ -70,3 +70,17 @@ rules.
 
 API keys live in the environment or a secrets manager (`kerstel://` references with `ks run`), never in a file in
 this repo.
+
+## 8. Every round gets a release
+
+Each round, new track or site change is a [GitHub release](https://github.com/alilibx/system-one-bench/releases), so
+anyone can see what changed and when.
+
+- Add `releases/vMAJOR.MINOR.PATCH.md` in the pull request that ships it, with a `title` and `date` in its front matter
+  (copy the newest file). Leave out `target`: the release is tagged at the commit that lands on `main`.
+- **MAJOR** is the benchmark data version: it goes up only when the cases change (rule 2), so scores within one major
+  version compare. **MINOR** is new results, a new track or a new site feature. **PATCH** is a fix that changes no
+  score.
+- Merging to `main` runs `.github/workflows/release.yml`, which publishes every notes file that has no release yet, and
+  updates the notes of any release whose file changed.
+- Credit outside contributors by GitHub handle in the notes.

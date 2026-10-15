@@ -1,0 +1,28 @@
+# Publishes a GitHub release for every notes file in releases/ that doesn't have one yet, and updates the notes of
+# releases whose file changed. Add releases/vX.Y.Z.md in the PR that ships a round; merging it publishes the release.
+name: Publish releases
+
+on:
+  push:
+    branches: [main]
+    paths: ["releases/**", .github/workflows/release.yml, .github/scripts/publish_releases.py]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: releases
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Publish releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/publish_releases.py

@@ -13,4 +13,5 @@ See [CONTRIBUTING.md](../blob/main/CONTRIBUTING.md). Tick what applies; explain 
 - [ ] Latency was timed from the same machine as the board's (or the note says it wasn't).
 - [ ] New runs were added with `score.py --merge`, so other runs are unchanged, and each has a `site/meta.json` entry.
 - [ ] The README has a round section for this change.
+- [ ] `releases/vX.Y.Z.md` describes this change (new results, track or site feature: next minor; fix: next patch).
 - [ ] If the data changed: this is a new benchmark version, `data.lock.json` was rewritten, and every model was rerun.
