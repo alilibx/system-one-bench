@@ -5,18 +5,30 @@ Metrics: accuracy, macro-F1, NLL, Brier, top-label ECE (10 bins), confidence AUR
 probability separate right from wrong), selective accuracy at 50% coverage, score MAE, KL from soft gold.
 A failed call or missing answer counts as wrong, with a uniform distribution.
 
+Box questions (image cases only) are scored by intersection over union with the gold box: accuracy is the share with
+IoU >= 0.5, plus mean IoU, and calibration compares the answer's confidence with that hit. They stay out of "all".
+
 API cost (usage.cost, USD) and token counts are summed per model when the predictions carry them.
 
+The cases file must match data.lock.json (--unverified skips the check), and each run records the frozen hash it was
+scored on as data_sha256.
+
 Usage: python score.py preds_laya.jsonl preds_jev.jsonl ...  -> results.json + printed tables
+       python score.py --merge preds_or_jev_114.jsonl            -> adds or replaces just these runs in results.json
+       python score.py --cases image_cases.jsonl --out results_vision.json vision/preds_*.jsonl
 """
+import argparse
 import json
-import sys
+import os
 from collections import defaultdict
 
 import numpy as np
 from sklearn.metrics import f1_score, roc_auc_score
 
-cases = {c["id"]: c for c in (json.loads(l) for l in open("cases.jsonl"))}
+import data_lock
+
+cases = {}
+BOX_HIT = 0.5
 
 
 def options(q):
@@ -50,6 +62,31 @@ def gold_idx(q, g):
     if q["type"] == "choice":
         return k.index(g["label"])
     return int(g["label"])
+
+
+def iou(a, b):
+    w = max(0.0, min(a["right"], b["right"]) - max(a["left"], b["left"]))
+    h = max(0.0, min(a["bottom"], b["bottom"]) - max(a["top"], b["top"]))
+    union = (a["right"] - a["left"]) * (a["bottom"] - a["top"]) + (b["right"] - b["left"]) * (b["bottom"] - b["top"]) - w * h
+    return w * h / union if union > 0 else 0.0
+
+
+def box_row(c, q, ans, g):
+    b = (ans or {}).get("box")
+    ok = isinstance(b, dict) and all(isinstance(b.get(k), (int, float)) for k in ("top", "bottom", "left", "right"))
+    v = iou(b, g["box"]) if ok else 0.0
+    return {"suite": c["suite"], "type": "box", "ok": ok, "iou": v, "hit": v >= BOX_HIT,
+            "conf": float(ans.get("confidence") or 0.0) if ok else 0.0}
+
+
+def box_metrics(rows):
+    hit = np.array([r["hit"] for r in rows], float)
+    conf = np.array([r["conf"] for r in rows])
+    out = {"n": len(rows), "failed": int(sum(not r["ok"] for r in rows)), "acc": hit.mean(),
+           "mean_iou": float(np.mean([r["iou"] for r in rows])), "ece": ece(conf, hit),
+           "mean_conf": float(conf.mean())}
+    out["conf_auroc"] = roc_auc_score(hit, conf) if 0 < hit.mean() < 1 else float("nan")
+    return {k: (round(float(v), 4) if isinstance(v, (float, np.floating)) else v) for k, v in out.items()}
 
 
 def ece(conf, correct, bins=10):
@@ -102,8 +139,11 @@ def load(path):
         pr = preds[cid]
         for qid, q in c["questions"].items():
             ans = (pr.get("answers") or {}).get(qid)
-            p, ok = pred_dist(q, ans)
             g = c["gold"][qid]
+            if q["type"] == "box":
+                rows.append(box_row(c, q, ans, g))
+                continue
+            p, ok = pred_dist(q, ans)
             rows.append({"suite": c["suite"], "workflow": c.get("workflow"), "type": q["type"], "qid": qid, "ok": ok, "p": p,
                          "y": gold_idx(q, g), "yhat": int(p.argmax()), "conf": float(p.max()),
                          "gd": np.array(g["dist"]) / sum(g["dist"]) if g.get("dist") and c["suite"] == "typed-decisions" else None})
@@ -116,23 +156,42 @@ def load(path):
 
 
 if __name__ == "__main__":
-    results = {}
-    for path in sys.argv[1:]:
-        name = path.removeprefix("preds_").removesuffix(".jsonl")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("preds", nargs="+")
+    ap.add_argument("--cases", default="cases.jsonl")
+    ap.add_argument("--out", default="results.json")
+    ap.add_argument("--merge", action="store_true", help="keep the runs already in --out and add or replace these")
+    ap.add_argument("--unverified", action="store_true", help="score even if the cases don't match data.lock.json")
+    a = ap.parse_args()
+    data_sha = None if a.unverified else data_lock.verified_sha(a.cases)
+    cases.update({c["id"]: c for c in (json.loads(l) for l in open(a.cases))})
+    results = json.load(open(a.out)) if a.merge and os.path.exists(a.out) else {}
+    for path in a.preds:
+        name = os.path.basename(path).removeprefix("preds_").removesuffix(".jsonl")
         rows, lat, cost = load(path)
+        boxes = [r for r in rows if r["type"] == "box"]
+        rows = [r for r in rows if r["type"] != "box"]
         by = defaultdict(list)
         for r in rows:
             by[("suite", r["suite"])].append(r)
             by[("type", r["type"])].append(r)
             if r["workflow"]:
                 by[("workflow", r["workflow"])].append(r)
-        results[name] = {f"{k}:{v}": metrics(rs) for (k, v), rs in sorted(by.items())}
-        results[name]["all"] = metrics(rows)
-        results[name]["cost"] = cost
-        results[name]["latency_ms"] = {"p50": round(float(np.percentile(lat, 50)), 1), "p95": round(float(np.percentile(lat, 95)), 1)} if lat else None
-    json.dump(results, open("results.json", "w"), indent=1)
+        res = {f"{k}:{v}": metrics(rs) for (k, v), rs in sorted(by.items())}
+        bys = defaultdict(list)
+        for r in boxes:
+            bys[r["suite"]].append(r)
+        res.update({f"suite:{k}": box_metrics(rs) for k, rs in sorted(bys.items())})
+        if boxes:
+            res["type:box"] = box_metrics(boxes)
+        res["all"] = metrics(rows) if rows else None
+        res["cost"] = cost
+        res["data_sha256"] = data_sha
+        res["latency_ms"] = {"p50": round(float(np.percentile(lat, 50)), 1), "p95": round(float(np.percentile(lat, 95)), 1)} if lat else None
+        results[name] = res
+    json.dump(results, open(a.out, "w"), indent=1)
     keys = sorted({k for v in results.values() for k in v if k.startswith("suite:")})
-    cols = ["acc", "macro_f1", "nll", "brier", "ece", "conf_auroc", "acc_at_50cov", "failed"]
+    cols = ["acc", "macro_f1", "nll", "brier", "ece", "conf_auroc", "acc_at_50cov", "mean_iou", "failed"]
     for k in keys + ["all"]:
         print(f"\n## {k}")
         print("model".ljust(28) + "".join(c.rjust(13) for c in cols))

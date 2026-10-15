@@ -1,0 +1,33 @@
+# Rebuilds the benchmark data from its pinned sources and checks it against data.lock.json, so a change to a build
+# script, or a source that moves or disappears upstream, can't silently change the cases new models run on.
+name: Check frozen data
+
+on:
+  pull_request:
+    paths: [build_suites.py, build_arabic.py, build_images.py, data_lock.py, data.lock.json, requirements-data.txt, "images/**", .github/workflows/data.yml]
+  schedule:
+    - cron: "17 6 * * 1"  # Mondays
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-data.txt
+      - run: pip install -r requirements-data.txt
+      - name: Rebuild the text and image cases
+        run: |
+          python build_suites.py
+          python build_arabic.py
+          python build_images.py
+      - name: Compare with data.lock.json
+        run: python data_lock.py

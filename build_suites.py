@@ -13,6 +13,23 @@ N = 200
 SEED = 0
 out = []
 
+# Every source is pinned to the commit it was frozen from, so an upstream edit can't change the cases.
+# data.lock.json holds the hashes of the result; check with data_lock.py.
+REVISIONS = {
+    "LocalLLaMA/typed-decisions": "7189f46b02248bd2569df7325c9df8e3b24e90a7",
+    "fancyzhx/ag_news": "eb185aade064a813bc0b7f42de02595523103ca4",
+    "dair-ai/emotion": "cab853a1dbdf4c42c2b3ef2173804746df8825fe",
+    "mteb/banking77": "18072d2685ea682290f7b8924d94c62acc19c0b2",
+    "SetFit/sst5": "e51bdcd8cd3a30da231967c1a249ba59361279a3",
+    "stanfordnlp/sst2": "8d51e7e4887a4caaa95b3fbebbf53c0490b58bbb",
+    "google/boolq": "35b264d03638db9f4ce671b711558bf7ff0f80d5",
+    "facebook/xnli": "b8dd5d7af51114dbda02c0e3f6133f332186418e",
+}
+
+
+def load(name, *args, **kw):
+    return load_dataset(name, *args, revision=REVISIONS[name], **kw)
+
 
 def sample(ds, n=N):
     idx = list(range(len(ds)))
@@ -28,7 +45,7 @@ def add(suite, i, state, qid, q, label, dist=None):
 
 
 # 1. typed-decisions (multi-question, soft gold). Full test split, 400 cases x 5 questions.
-td = load_dataset("LocalLLaMA/typed-decisions", "all", split="test")
+td = load("LocalLLaMA/typed-decisions", "all", split="test")
 for r in td:
     qs = json.loads(r["questions"])
     gold = json.loads(r["gold"])
@@ -51,7 +68,7 @@ for r in td:
                 "state": json.loads(r["state"]), "questions": qs, "gold": g})
 
 # 2. AG News, 4-way topic choice
-ag = load_dataset("fancyzhx/ag_news", split="test")
+ag = load("fancyzhx/ag_news", split="test")
 AG = {"world": "world news, politics, international affairs",
       "sports": "sports, athletes, games, competitions",
       "business": "business, economy, companies, markets, finance",
@@ -62,7 +79,7 @@ for i, r in enumerate(sample(ag)):
         {"type": "choice", "instructions": "What is the topic of `article`?", "criteria": AG}, agk[r["label"]])
 
 # 3. DAIR emotion, 6-way choice
-em = load_dataset("dair-ai/emotion", "split", split="test")
+em = load("dair-ai/emotion", "split", split="test")
 EM = {"sadness": "the writer feels sad, down, hurt, or lonely",
       "joy": "the writer feels happy, pleased, content, or excited",
       "love": "the writer feels love, affection, tenderness, or longing for someone",
@@ -76,7 +93,7 @@ for i, r in enumerate(sample(em)):
         emk[r["label"]])
 
 # 4. Banking77, 77-way intent choice (high cardinality)
-bk = load_dataset("mteb/banking77", split="test")
+bk = load("mteb/banking77", split="test")
 bnames = sorted({r["label_text"] for r in bk})
 BK = {n: n.replace("_", " ") for n in bnames}
 for i, r in enumerate(sample(bk)):
@@ -85,20 +102,20 @@ for i, r in enumerate(sample(bk)):
         r["label_text"])
 
 # 5. SST-5, 5-level sentiment score
-s5 = load_dataset("SetFit/sst5", split="test")
+s5 = load("SetFit/sst5", split="test")
 S5 = ["very negative review", "negative review", "neutral or mixed review", "positive review", "very positive review"]
 for i, r in enumerate(sample(s5)):
     add("sst5", i, {"review": r["text"]}, "sentiment",
         {"type": "score", "instructions": "How positive is the sentiment of `review`?", "criteria": S5}, int(r["label"]))
 
 # 6. SST-2, noul
-s2 = load_dataset("stanfordnlp/sst2", split="validation")
+s2 = load("stanfordnlp/sst2", split="validation")
 for i, r in enumerate(sample(s2)):
     add("sst2", i, {"review": r["sentence"]}, "positive",
         {"type": "noul", "instructions": "Does `review` express a positive opinion of the movie?"}, int(r["label"]))
 
 # 7. BoolQ, reading-comprehension noul
-bq = load_dataset("google/boolq", split="validation")
+bq = load("google/boolq", split="validation")
 for i, r in enumerate(sample(bq)):
     add("boolq", i, {"passage": r["passage"], "question": r["question"] + "?"}, "answer_yes",
         {"type": "noul", "instructions": "According to `passage`, is the answer to `question` yes?"}, int(r["answer"]))
@@ -109,7 +126,7 @@ NLI = {"entailment": "the hypothesis is definitely true given the premise",
        "contradiction": "the hypothesis is definitely false given the premise"}
 nk = list(NLI)
 for lang in ["en", "ar", "fr"]:
-    xn = load_dataset("facebook/xnli", lang, split="test")
+    xn = load("facebook/xnli", lang, split="test")
     for i, r in enumerate(sample(xn, 150)):
         add(f"xnli_{lang}", i, {"premise": r["premise"], "hypothesis": r["hypothesis"]}, "relation",
             {"type": "choice", "instructions": "How does `hypothesis` relate to `premise`?", "criteria": NLI}, nk[r["label"]])

@@ -406,5 +406,48 @@
         }
       ]
     }
-  ]
+  ],
+  "vision": {
+    "suites": {
+      "img_sst2": {
+        "label": "SST-2, as an image",
+        "task": "The 200 SST-2 reviews rendered as a picture, yes/no",
+        "text": "sst2",
+        "short": "SST-2"
+      },
+      "img_ar_sentiment": {
+        "label": "Arabic sentiment, as an image",
+        "task": "The 200 Arabic tweets rendered as a picture, 3 options",
+        "text": "ar_sentiment",
+        "short": "Arabic sentiment"
+      },
+      "img_pets": {
+        "label": "Oxford-IIIT Pet",
+        "task": "Cat or dog breed from a photo, 37 options"
+      },
+      "img_vqa_yesno": {
+        "label": "VQAv2 yes/no",
+        "task": "A yes/no question about a photo"
+      },
+      "img_count": {
+        "label": "CountBench",
+        "task": "How many objects, 2 to 10, as a 9-level score"
+      }
+    },
+    "box": {
+      "img_refcoco": {
+        "label": "RefCOCO",
+        "task": "Box the person or object a phrase describes, 100 people and 100 objects"
+      }
+    },
+    "no_image": [
+      "liquid_d1",
+      "msft_d1",
+      "kev",
+      "tev1",
+      "solar",
+      "solar_flash",
+      "drex"
+    ]
+  }
 }

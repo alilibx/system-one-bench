@@ -22,6 +22,20 @@ K_RERANK = 8
 PASSAGE_CHARS = 320
 out = []
 
+# Every source is pinned to the commit it was frozen from, so an upstream edit can't change the cases.
+# data.lock.json holds the hashes of the result; check with data_lock.py.
+REVISIONS = {
+    "SetFit/amazon_massive_scenario_ar-SA": "d82b73bba2083361552d155f31d25d3c8308adfd",
+    "SetFit/amazon_massive_intent_ar-SA": "88c4768ff44705c6aae8470250a67ae91de09af7",
+    "arbml/OSACT4_hatespeech": "2fe9f6399ba7f3b5228660d8a3d0eec3ef4197a1",
+    "mteb/tweet_sentiment_multilingual": "bceb37eb62681b42e4147d879384917969bb1674",
+    "mteb/MIRACLReranking": "ab6f54eff185a84bc1f6ab96b56bc7df87433228",
+}
+
+
+def load(name, *args, **kw):
+    return load_dataset(name, *args, revision=REVISIONS[name], **kw)
+
 
 def sample(ds, n=N, seed=SEED):
     idx = list(range(len(ds)))
@@ -39,7 +53,7 @@ def pretty(name):
 
 
 # MASSIVE scenario, 18-way
-sc = load_dataset("SetFit/amazon_massive_scenario_ar-SA", split="test")
+sc = load("SetFit/amazon_massive_scenario_ar-SA", split="test")
 scen = sorted({r["label_text"] for r in sc})
 SC = {s: pretty(s) for s in scen}
 for i, r in enumerate(sample(sc)):
@@ -48,7 +62,7 @@ for i, r in enumerate(sample(sc)):
         r["label_text"])
 
 # MASSIVE intent, 20 options: the gold intent plus 19 distractors drawn per case
-it = load_dataset("SetFit/amazon_massive_intent_ar-SA", split="test")
+it = load("SetFit/amazon_massive_intent_ar-SA", split="test")
 intents = sorted({r["label_text"] for r in it})
 rng = random.Random(SEED + 1)
 for i, r in enumerate(sample(it)):
@@ -59,14 +73,14 @@ for i, r in enumerate(sample(it)):
          "criteria": {o: pretty(o) for o in opts}}, r["label_text"])
 
 # OSACT4 subtask A, offensive language
-os4 = load_dataset("arbml/OSACT4_hatespeech", split="validation")
+os4 = load("arbml/OSACT4_hatespeech", split="validation")
 for i, r in enumerate(sample(os4)):
     add("ar_offensive", i, {"tweet": r["tweet"]}, "offensive",
         {"type": "noul", "instructions": "Is `tweet` (Arabic) offensive: does it contain insults, profanity, or attacks?"},
         int(r["offensive"] in ("OFF", 1, "1", True)))
 
 # Arabic tweet sentiment, 3-way
-ts = load_dataset("mteb/tweet_sentiment_multilingual", "arabic", split="test")
+ts = load("mteb/tweet_sentiment_multilingual", "arabic", split="test")
 names = ["negative", "neutral", "positive"]  # cardiffnlp label ids, stored as strings "0"/"1"/"2"
 SE = {"negative": "the writer expresses a negative opinion or feeling",
       "neutral": "no clear positive or negative opinion",
@@ -77,11 +91,11 @@ for i, r in enumerate(sample(ts)):
         names[int(r["label"])])
 
 # MIRACL-ar dev: listwise rerank and pairwise relevance
-queries = {r["_id"]: r["text"] for r in load_dataset("mteb/MIRACLReranking", "ar-queries", split="dev")}
+queries = {r["_id"]: r["text"] for r in load("mteb/MIRACLReranking", "ar-queries", split="dev")}
 qrels = defaultdict(dict)
-for r in load_dataset("mteb/MIRACLReranking", "ar-qrels", split="dev"):
+for r in load("mteb/MIRACLReranking", "ar-qrels", split="dev"):
     qrels[r["query-id"]][r["corpus-id"]] = r["score"]
-corpus = load_dataset("mteb/MIRACLReranking", "ar-corpus", split="dev")
+corpus = load("mteb/MIRACLReranking", "ar-corpus", split="dev")
 text = {r["_id"]: (r["title"] + ": " if r["title"] else "") + r["text"] for r in corpus}
 
 
