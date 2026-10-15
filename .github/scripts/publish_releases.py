@@ -10,8 +10,9 @@ Each releases/vX.Y.Z.md starts with a front matter block:
 
 Run by .github/workflows/release.yml with GH_TOKEN set. `--dry-run` prints what it would do.
 
-The workflow's token can't create a tag on a commit whose workflow files differ from main's (GitHub answers 403), which
-is the case for older commits. For those, push the tag yourself and run the workflow again: an existing tag is reused.
+The workflow's token can't publish a release on a commit whose workflow files differ from main's (GitHub answers 403,
+even when the tag already exists), which is the case for older commits. For those, run this script from a clone where
+`gh` is logged in as a maintainer: it skips releases that already exist.
 """
 import json
 import os
@@ -80,7 +81,7 @@ for path in files:
             gh("release", "create", tag, "--target", target, "--title", title, "--notes-file", f.name,
                f"--latest={'true' if tag == newest else 'false'}")
         except subprocess.CalledProcessError:
-            failed.append(f'git tag -a {tag} {target} -m "{title}" && git push origin {tag}')
+            failed.append(tag)
         continue
     live = json.loads(gh("release", "view", tag, "--json", "name,body", capture=True))
     if live["name"] != title or live["body"].strip() != body.strip():
@@ -90,6 +91,7 @@ for path in files:
         print(f"{tag}: up to date")
 
 if failed:
-    print("\nCouldn't create these tags with the workflow's token. Push them yourself, then run the workflow again:")
-    print("\n".join(failed))
+    print(f"\nThe workflow's token can't publish {', '.join(failed)}: their commits' workflow files differ from main's.")
+    print("Publish them from a clone where gh is logged in as a maintainer:")
+    print("  git pull && git fetch --tags && python3 .github/scripts/publish_releases.py")
     sys.exit(1)
