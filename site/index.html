@@ -256,6 +256,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
           <li>Cost is the summed <code>usage.cost</code> the API reports.</li>
           <li>API latency was measured through OpenRouter with 8 requests in flight for Jev, GPT-6 Luna Decisions and the models added on 12 October, and 6 for the rest (Solar Decide finished at 24 because it's slow on long states); Laya ran locally on an Apple M5 GPU, one call at a time. Jev 1.14 and the vision track ran on 15 October from a cloud machine, whose network is faster to OpenRouter, so their latencies compare with each other but not with the earlier runs.</li>
           <li>The vision track sends each image once, as a base64 PNG or JPEG in <code>state</code>, resized to fit every model's limits. Box answers count as right when they overlap the labelled box by at least half (IoU of 0.5 or more).</li>
+          <li>The data is frozen: <a href="https://github.com/alilibx/system-one-bench/blob/main/data.lock.json">data.lock.json</a> holds a SHA-256 for every dataset and image, every source is pinned to a fixed version, and runs are refused on data that doesn't match.</li>
           <li>Nothing was tuned on test data. Some open-weight fine-tunes trained on related data; the repo README lists which.</li>
         </ul>
       </div>

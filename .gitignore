@@ -14,7 +14,9 @@ laya_ref/
 models/
 # local preview of the results site
 _site/
-# image cases and vision runs (rebuild with build_images.py and run_decisions.py --cases image_cases.jsonl)
-images/
+# image cases and vision runs (rebuild with build_images.py; the rendered-text images are committed)
+images/*
+!images/img_sst2/
+!images/img_ar_sentiment/
 fonts/
 vision/

@@ -77,11 +77,45 @@ To add Laya lanes, start the server with `LAYA=1 OMP_NUM_THREADS=1 HF_HUB_OFFLIN
 `OMP_NUM_THREADS=1` avoids a libomp deadlock when several checkpoints load in one process. Without
 `OPENROUTER_API_KEY`, only Jev is available, through the TypeSafe API (`TYPESAFE_API_KEY`).
 
+## Frozen data
+
+Every model on the board has to see the same bytes, including models added months from now. So the data is frozen:
+
+- **`data.lock.json`** holds a SHA-256 for every suite: each case's `state`, `questions` and gold labels, and every
+  image file it points to. `python data_lock.py` checks the local `cases.jsonl` and `image_cases.jsonl` against it.
+- **`run_decisions.py` and `score.py` refuse cases that don't match** and name the suites that differ. Each run scored
+  since 15 October records the hash it ran on as `data_sha256` in the results. `--unverified` skips the check for
+  experiments that aren't for the board.
+- **Every source is pinned.** The build scripts load each Hugging Face dataset at a fixed commit, the fonts come from
+  fixed URLs checked by hash, and `requirements-data.txt` pins the libraries. Upstream does move: `lmms-lab` renamed
+  itself `lmms-lab-encoder`, and typed-decisions was edited on 14 October (its test split is unchanged).
+- **The rendered-text images are committed** (`images/img_sst2`, `images/img_ar_sentiment`, 6.4 MB). Text drawn by a
+  different Pillow comes out with different pixels (11.3 and 12.3 differ on all 400), so they can't be rebuilt
+  exactly. Photos rebuild byte for byte from the pinned sources, so they aren't committed.
+- **`.github/workflows/data.yml`** rebuilds everything from scratch and compares it with the lock on every pull request
+  that touches the data code, and every Monday, so a source that changes or disappears is caught before a model runs on it.
+
+The text cases have been the same since the first runs: rebuilt on 15 October, Jev 1.14 billed exactly the 2,157,160
+input tokens of Jev 1.13's run on 7 October.
+
+To add a model, build the data, check it, then run and score as below:
+
+```bash
+.venv/bin/pip install -r requirements-data.txt
+.venv/bin/python build_suites.py && .venv/bin/python build_arabic.py && .venv/bin/python build_images.py
+.venv/bin/python data_lock.py                     # cases.jsonl: matches ... image_cases.jsonl: matches
+```
+
+Changing a case, a prompt or a dataset makes a new benchmark version: rebuild, run `data_lock.py --write cases.jsonl
+image_cases.jsonl`, and rerun every model, since scores on different data don't compare. `build_images.py --rerender`
+redraws the committed text images for such a version.
+
 ## Full benchmark
 
 ```bash
 .venv/bin/python build_suites.py                  # -> cases.jsonl (2,050 cases, 3,650 decisions)
 .venv/bin/python build_arabic.py                  # appends 1,200 Arabic cases (4,850 decisions in all)
+.venv/bin/python data_lock.py                     # checks cases.jsonl against data.lock.json
 export OPENROUTER_API_KEY=<your key>
 .venv/bin/python run_decisions.py --model openai/gpt-6-luna-decisions --name luna   # -> preds_luna.jsonl
 .venv/bin/python run_decisions.py --model typesafe/jev-1.13 --name or_jev           # -> preds_or_jev.jsonl
@@ -130,16 +164,18 @@ every model's limits: each side 280 to 1,568 px, at least 78,400 pixels, at most
 | SST-2, as an image | yes/no | The 200 SST-2 reviews from `cases.jsonl`, rendered in Noto Sans |
 | Arabic sentiment, as an image | 3 options | The 200 Arabic tweets from `cases.jsonl`, rendered in Noto Naskh Arabic |
 | Oxford-IIIT Pet | 37 options | `timm/oxford-iiit-pet` test, CC BY-SA 4.0 |
-| VQAv2 yes/no | yes/no | `lmms-lab/VQAv2` validation, first shard, one question per image, CC BY 4.0 |
+| VQAv2 yes/no | yes/no | `lmms-lab-encoder/VQAv2` validation, first shard, one question per image, CC BY 4.0 |
 | CountBench | score, 2 to 10 | `vikhyatk/CountBenchQA` |
-| RefCOCO | box | `lmms-lab/RefCOCO` testA (people) and testB (objects), 100 each, one phrase per image |
+| RefCOCO | box | `lmms-lab-encoder/RefCOCO` testA (people) and testB (objects), 100 each, one phrase per image |
 
 The two rendered datasets reuse the exact items of the text datasets, so the gap between them is what reading from
-pixels costs. Rendering Arabic needs Pillow with libraqm (`brew install libraqm` on macOS); the fonts are downloaded from
-Google Fonts into `fonts/`. The Box dataset only runs on models that answer Box questions, so pass `--suites` to the others:
+pixels costs. Those 400 images are committed (see [Frozen data](#frozen-data)); `build_images.py` reuses them and only
+fetches and resizes the photos. The Box dataset only runs on models that answer Box questions, so pass `--suites` to the
+others:
 
 ```bash
 .venv/bin/python build_images.py                  # needs cases.jsonl; -> image_cases.jsonl, images/
+.venv/bin/python data_lock.py                     # both files should match
 V=img_sst2,img_ar_sentiment,img_pets,img_vqa_yesno,img_count
 .venv/bin/python run_decisions.py --cases image_cases.jsonl --out-dir vision --model typesafe/jev-1.14 --name or_jev_14
 .venv/bin/python run_decisions.py --cases image_cases.jsonl --out-dir vision --model openai/gpt-6-luna-decisions --name luna --suites $V

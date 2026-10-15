@@ -1,0 +1,100 @@
+{
+ "cases.jsonl": {
+  "sha256": "ef835b824477321339110bd46bd079c9b3c6dd4c5679c421f7bceeb5145276d7",
+  "suites": {
+   "ag_news": {
+    "n": 200,
+    "sha256": "306cad9e25643b30bcaee86df182e0493afbcd706dba66bbd0b4a6a7d3758aa1"
+   },
+   "ar_massive_intent": {
+    "n": 200,
+    "sha256": "1824b2471207d123b6702930d774300252ecfca6baa125a522568047c97d2ba6"
+   },
+   "ar_massive_scenario": {
+    "n": 200,
+    "sha256": "c290260a66f697ea579a9f615a6eac8305508dc7197d10f1338bfb96627d5083"
+   },
+   "ar_miracl_pair": {
+    "n": 200,
+    "sha256": "c2f1c7ea61c470feed416cc6aea594ac1751d1625cc8a87a63ce670b7e17c217"
+   },
+   "ar_miracl_rerank": {
+    "n": 200,
+    "sha256": "df4849184a18787c5832efffa00246cb0bdfa1b71e527d90a5473a2423e1b226"
+   },
+   "ar_offensive": {
+    "n": 200,
+    "sha256": "4f911c12ceff0d64577927838f9887a57a469a8ac821de0a33c5486ac27fbc5c"
+   },
+   "ar_sentiment": {
+    "n": 200,
+    "sha256": "2cdbd359f66994b4ed70c0154da89a9c501b12eb86f232d143fe6aea3984fbd6"
+   },
+   "banking77": {
+    "n": 200,
+    "sha256": "381f6c3261eeedacb5feb3c60cd661982e9b7f173650fdbbbd5438a2e8bcd5e7"
+   },
+   "boolq": {
+    "n": 200,
+    "sha256": "2bec357495f87d7102fbf2912af478c3122b858a1f1840484ce728fb84e48b24"
+   },
+   "emotion": {
+    "n": 200,
+    "sha256": "7f5c9cd288b6fd7e4e112bed466207e4c3a2ab0fc3ca8f8a1a447992f5aaf262"
+   },
+   "sst2": {
+    "n": 200,
+    "sha256": "239e502f6bae0ce93011126736dad876445b7e9b104f3a0ff505ca0ffcea64a0"
+   },
+   "sst5": {
+    "n": 200,
+    "sha256": "411905b6913d353e404c7abf52000a3f099fc61fea17d0751b12d9c3849f936f"
+   },
+   "typed-decisions": {
+    "n": 400,
+    "sha256": "1627601177289295a97892af7f2771036d08a1b2b8c200a167bed169d47685e2"
+   },
+   "xnli_ar": {
+    "n": 150,
+    "sha256": "2944f2545a917ef395648b6f27aca495bab392095ca658395bfafdd220895d87"
+   },
+   "xnli_en": {
+    "n": 150,
+    "sha256": "32b7eb5e55d5b608481362da3a522f0c95a39d79ae524ed32c761c352cfd1e03"
+   },
+   "xnli_fr": {
+    "n": 150,
+    "sha256": "953ccf72930b878eea1172d5f71a91e75366665e0b59a753a047ba516fc936d9"
+   }
+  }
+ },
+ "image_cases.jsonl": {
+  "sha256": "9fcf4def08b3c6b1f2a043897d65c6721f4d146c2b3eff18214a1f7fa6ad992e",
+  "suites": {
+   "img_ar_sentiment": {
+    "n": 200,
+    "sha256": "47d6f2d07675b0ae689ef7248fad1fd43eb9f41f40db0e74fa8274babb510851"
+   },
+   "img_count": {
+    "n": 200,
+    "sha256": "7caa06ce32739d7dab2cd1a4d7ffc04929c8ff8d21b79ae8e2f01de2e16a7677"
+   },
+   "img_pets": {
+    "n": 200,
+    "sha256": "2f785f84d6d3699332017feae8de6287f23e095a92ab7a8fd9b89e14cfa4bf3f"
+   },
+   "img_refcoco": {
+    "n": 200,
+    "sha256": "9ecb51acbb72b2d6c268ca3b1d1bb2f485b3095f34614de4efc8e14a1f2cf7b2"
+   },
+   "img_sst2": {
+    "n": 200,
+    "sha256": "cf2168f413ffeced5c7f34fdb7a2fc16398dd3a248e689a52de26b843454df52"
+   },
+   "img_vqa_yesno": {
+    "n": 200,
+    "sha256": "f4aa9e20d076396f89945acbdd4d1ad417cce6b503f913fc8160cea63136f09d"
+   }
+  }
+ }
+}

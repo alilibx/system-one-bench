@@ -16,17 +16,24 @@ Every image is rotated by its EXIF tag, converted to RGB and resized so it fits 
 Jev wants at least 78,400 pixels in all and each side at most 1,568 px, and Clef works best under ~300 KB. Jev's docs
 give 256 px as the shortest side, but on 15 October 2026 it answered "Invalid image dimensions" for every image with a
 side under 280 px (272 and 274 included), so we keep every side at 280 px or more.
-Photos are JPEG; rendered text is PNG. The two rendered suites need cases.jsonl (build_suites.py, build_arabic.py)
-and Pillow built with libraqm for Arabic shaping.
+Photos are JPEG; rendered text is PNG.
 
-Usage: python build_images.py   -> image_cases.jsonl, images/, fonts/
+The two rendered suites are committed (images/img_sst2, images/img_ar_sentiment): text drawn by a different Pillow or
+FreeType comes out with different pixels, so they can't be rebuilt byte for byte. This script keeps those files and only
+draws them with --rerender, which needs cases.jsonl, Pillow built with libraqm for Arabic shaping, and makes a new
+benchmark version. The photos rebuild exactly from the pinned sources. data.lock.json holds the hashes of every case
+and image; check them with data_lock.py.
+
+Usage: python build_images.py                -> image_cases.jsonl, images/ (needs cases.jsonl)
+       python build_images.py --rerender     also redraw the rendered-text images, into fonts/ and images/
 """
+import argparse
+import hashlib
 import io
 import json
 import math
 import os
 import random
-import re
 from collections import Counter
 
 import httpx
@@ -38,8 +45,30 @@ SEED = 0
 LONG = 1024              # longest side we resize photos down to
 MIN_SIDE, MAX_SIDE, MIN_PIXELS = 280, 1568, 78_400  # Jev rejects sides under 280 px, though its docs say 256
 MAX_BYTES = 300_000
-FONTS = {"latin": "Noto Sans", "arabic": "Noto Naskh Arabic"}  # SIL Open Font License, from Google Fonts
+# Noto Sans and Noto Naskh Arabic (SIL Open Font License), pinned to the Google Fonts release they were drawn with.
+FONTS = {
+    "latin": ("https://fonts.gstatic.com/s/notosans/v42/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A99d.ttf",
+              "5be701a9511117e73603bdab95947feef4f18bd1851dbddc30659370b26c69f1"),
+    "arabic": ("https://fonts.gstatic.com/s/notonaskharabic/v44/RrQ5bpV-9Dd1b1OAGA6M9PkyDuVBePeKNaxcsss0Y7bwvc5krA.ttf",
+               "e62e84cf72fe9e8953a21c3337c68155a116d4bbdcd9522d860d46686b28c6e0"),
+}
+ap = argparse.ArgumentParser()
+ap.add_argument("--rerender", action="store_true", help="redraw the committed rendered-text images (a new benchmark version)")
+RERENDER = ap.parse_args().rerender
 out = []
+
+# Every source is pinned to the commit it was frozen from, so an upstream edit can't change the cases.
+# data.lock.json holds the hashes of the result; check with data_lock.py.
+REVISIONS = {
+    "timm/oxford-iiit-pet": "089695c834a7deb60505b7cc506672db1c31a6aa",
+    "lmms-lab-encoder/VQAv2": "32665d35052eb4a6d4414851c3c829a72754915a",
+    "vikhyatk/CountBenchQA": "76d600309e9d6147bd3713b4cd431518ac1206c8",
+    "lmms-lab-encoder/RefCOCO": "a5dff0b3194715fda69b2d6a0d2aaafb41eaa407",
+}
+
+
+def load(name, *args, **kw):
+    return load_dataset(name, *args, revision=REVISIONS[name], **kw)
 
 
 def sample(rows, n=N, seed=SEED):
@@ -82,14 +111,15 @@ def add(suite, i, image, qid, q, gold):
 # ---------- rendered text: the same items as the text suites, shown as a picture ----------
 
 def font(kind, size):
-    path = f"fonts/{FONTS[kind].replace(' ', '')}-Regular.ttf"
+    url, sha = FONTS[kind]
+    path = f"fonts/{kind}.ttf"
     if not os.path.exists(path):
-        css = httpx.get("https://fonts.googleapis.com/css2", params={"family": FONTS[kind]},
-                        headers={"User-Agent": "Mozilla/4.0"}).text  # an old user agent gets a plain TTF link
-        url = re.search(r"url\((https://[^)]+\.ttf)\)", css).group(1)
         os.makedirs("fonts", exist_ok=True)
         with open(path, "wb") as f:
             f.write(httpx.get(url).content)
+    with open(path, "rb") as f:
+        if hashlib.sha256(f.read()).hexdigest() != sha:
+            raise SystemExit(f"{path} isn't the pinned font; delete it and run again")
     return ImageFont.truetype(path, size, layout_engine=ImageFont.Layout.RAQM if kind == "arabic" else ImageFont.Layout.BASIC)
 
 
@@ -121,27 +151,37 @@ def render(text, kind, width=768, size=30, margin=40):
     return im
 
 
-if not features.check("raqm"):
+def rendered(text, kind, suite, i):
+    """The committed picture of this text, or a fresh drawing with --rerender."""
+    path = f"images/{suite}/{i}.png"
+    if not RERENDER:
+        if not os.path.exists(path):
+            raise SystemExit(f"{path} is missing: restore it with `git checkout -- images`, or pass --rerender for a new version")
+        return {"image": path}
+    return save(render(text, kind), suite, i, "PNG")
+
+
+if RERENDER and not features.check("raqm"):
     raise SystemExit("Pillow was built without libraqm, which Arabic shaping needs. On macOS: brew install libraqm")
 text_cases = {c["id"]: c for c in (json.loads(l) for l in open("cases.jsonl"))}
 
 for i in range(N):
     c = text_cases[f"sst2-{i}"]
-    add("img_sst2", i, save(render(c["state"]["review"], "latin"), "img_sst2", i, "PNG"), "positive",
+    add("img_sst2", i, rendered(c["state"]["review"], "latin", "img_sst2", i), "positive",
         {"type": "noul", "instructions": "Does the movie review shown in the image express a positive opinion of the movie?"},
         {"label": c["gold"]["positive"]["label"]})
 
 for i in range(N):
     c = text_cases[f"ar_sentiment-{i}"]
     q = c["questions"]["sentiment"]
-    add("img_ar_sentiment", i, save(render(c["state"]["tweet"], "arabic"), "img_ar_sentiment", i, "PNG"), "sentiment",
+    add("img_ar_sentiment", i, rendered(c["state"]["tweet"], "arabic", "img_ar_sentiment", i), "sentiment",
         {"type": "choice", "instructions": "What is the sentiment of the Arabic tweet shown in the image?", "criteria": q["criteria"]},
         {"label": c["gold"]["sentiment"]["label"]})
 
 # ---------- photos ----------
 
 # Oxford-IIIT Pet, 37 breeds
-pets = load_dataset("timm/oxford-iiit-pet", split="test")
+pets = load("timm/oxford-iiit-pet", split="test")
 names = pets.features["label"].names
 CATS = {"abyssinian", "bengal", "birman", "bombay", "british_shorthair", "egyptian_mau", "maine_coon", "persian",
         "ragdoll", "russian_blue", "siamese", "sphynx"}
@@ -158,7 +198,7 @@ for r in sample(pets, len(pets)):
         break
 
 # VQAv2, yes/no questions, one question per image. The first validation shard keeps the download near 100 MB.
-vqa = load_dataset("lmms-lab/VQAv2", data_files={"validation": "data/validation-00000-of-00068.parquet"}, split="validation")
+vqa = load("lmms-lab-encoder/VQAv2", data_files={"validation": "data/validation-00000-of-00068.parquet"}, split="validation")
 vqa = vqa.filter(lambda r: r["answer_type"] == "yes/no" and r["multiple_choice_answer"] in ("yes", "no"))
 seen, i = set(), 0
 for r in sample(vqa, len(vqa)):
@@ -176,7 +216,7 @@ for r in sample(vqa, len(vqa)):
         break
 
 # CountBenchQA: 2 to 10 objects, an ordered score
-cb = load_dataset("vikhyatk/CountBenchQA", split="test")
+cb = load("vikhyatk/CountBenchQA", split="test")
 WORDS = ["two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
 i = 0
 for r in sample(cb, len(cb)):
@@ -193,7 +233,7 @@ for r in sample(cb, len(cb)):
 # RefCOCO testA (people) and testB (other objects): box the described object. One expression per image.
 i = 0
 for split in ("testA", "testB"):
-    ref = load_dataset("lmms-lab/RefCOCO", data_files={split: f"data/{split}-*.parquet"}, split=split)  # skip val and test
+    ref = load("lmms-lab-encoder/RefCOCO", data_files={split: f"data/{split}-*.parquet"}, split=split)  # skip val and test
     seen, k = set(), 0
     for r in sample(ref, len(ref)):
         if r["file_name"] in seen or not r["answer"]:

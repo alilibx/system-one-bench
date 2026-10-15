@@ -10,6 +10,9 @@ IoU >= 0.5, plus mean IoU, and calibration compares the answer's confidence with
 
 API cost (usage.cost, USD) and token counts are summed per model when the predictions carry them.
 
+The cases file must match data.lock.json (--unverified skips the check), and each run records the frozen hash it was
+scored on as data_sha256.
+
 Usage: python score.py preds_laya.jsonl preds_jev.jsonl ...  -> results.json + printed tables
        python score.py --merge preds_jev_14.jsonl              -> adds or replaces just these runs in results.json
        python score.py --cases image_cases.jsonl --out results_vision.json vision/preds_*.jsonl
@@ -21,6 +24,8 @@ from collections import defaultdict
 
 import numpy as np
 from sklearn.metrics import f1_score, roc_auc_score
+
+import data_lock
 
 cases = {}
 BOX_HIT = 0.5
@@ -156,7 +161,9 @@ if __name__ == "__main__":
     ap.add_argument("--cases", default="cases.jsonl")
     ap.add_argument("--out", default="results.json")
     ap.add_argument("--merge", action="store_true", help="keep the runs already in --out and add or replace these")
+    ap.add_argument("--unverified", action="store_true", help="score even if the cases don't match data.lock.json")
     a = ap.parse_args()
+    data_sha = None if a.unverified else data_lock.verified_sha(a.cases)
     cases.update({c["id"]: c for c in (json.loads(l) for l in open(a.cases))})
     results = json.load(open(a.out)) if a.merge and os.path.exists(a.out) else {}
     for path in a.preds:
@@ -179,6 +186,7 @@ if __name__ == "__main__":
             res["type:box"] = box_metrics(boxes)
         res["all"] = metrics(rows) if rows else None
         res["cost"] = cost
+        res["data_sha256"] = data_sha
         res["latency_ms"] = {"p50": round(float(np.percentile(lat, 50)), 1), "p95": round(float(np.percentile(lat, 95)), 1)} if lat else None
         results[name] = res
     json.dump(results, open(a.out, "w"), indent=1)

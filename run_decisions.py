@@ -13,6 +13,9 @@ Writes preds_<name>.jsonl and, once, latency_<name>.jsonl (one request in flight
 Image cases (build_images.py) run the same way: --cases image_cases.jsonl --out-dir vision. Their state holds
 {"image": path} items, sent as image_url parts with a base64 data URL. --suites limits a run to some suites, such as
 img_refcoco for the models that answer Box questions.
+
+The cases must match data.lock.json, so every model runs on the same frozen data; --unverified skips that check for a
+run that isn't for the board.
 """
 import argparse
 import asyncio
@@ -23,6 +26,8 @@ import random
 import time
 
 import httpx
+
+import data_lock
 
 URL = os.environ.get("OPENROUTER_BASE_URL", "https://openrouter.ai") + "/api/alpha/decisions"
 # Vendors' own System One endpoints: (url, model, env var holding the key, auth header, USD per 1M input tokens).
@@ -94,6 +99,7 @@ async def main():
     ap.add_argument("--cases", default="cases.jsonl", help="cases file, e.g. image_cases.jsonl")
     ap.add_argument("--suites", help="comma-separated suites to run (default: every suite in the cases file)")
     ap.add_argument("--out-dir", default=".", help="folder for the output files, e.g. vision")
+    ap.add_argument("--unverified", action="store_true", help="run even if the cases don't match data.lock.json")
     ap.add_argument("--concurrency", type=int, default=8)
     ap.add_argument("--sequential-latency", type=int, default=60, help="single-question cases timed one at a time")
     a = ap.parse_args()
@@ -112,6 +118,10 @@ async def main():
     cases = [json.loads(l) for l in open(a.cases)]
     if a.suites:
         cases = [c for c in cases if c["suite"] in a.suites.split(",")]
+    problems = [] if a.unverified else data_lock.check(a.cases, {c["suite"] for c in cases})
+    if problems:
+        ap.error(f"{a.cases} doesn't match data.lock.json, so results wouldn't compare with the board:\n  " + "\n  ".join(problems)
+                 + "\nRebuild it with the build_*.py scripts, or pass --unverified for a run that isn't for the board.")
     done = set()
     if os.path.exists(out):
         done = {json.loads(l)["id"] for l in open(out) if "error" not in json.loads(l)}
