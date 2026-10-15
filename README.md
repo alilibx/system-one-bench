@@ -10,6 +10,7 @@ Models covered so far:
 | Model | Maker | How it runs | Round |
 |---|---|---|---|
 | Jev 1.13 (`typesafe/jev-1.13`) | TypeSafe | OpenRouter Decisions API, or the TypeSafe API | all |
+| Jev 1.14 (`typesafe/jev-1.14`), preview | TypeSafe | OpenRouter Decisions API | 2026-10-15 |
 | GPT-6 Luna Decisions (`openai/gpt-6-luna-decisions`) | OpenAI | OpenRouter Decisions API | 2026-10-07 |
 | Decider V1.1 27B (`perplexity/pplx-decider-v1.1-27b`) | Perplexity | OpenRouter Decisions API | 2026-10-12 |
 | Decider V1 27B (`perplexity/pplx-decider-v1-27b`), retired | Perplexity | OpenRouter Decisions API, no longer served | 2026-10-07 |
@@ -50,7 +51,7 @@ mkdir -p _site && cp site/* results.json _site/ && python3 -m http.server 8062 -
 ## Roadmap
 
 The roadmap lives in `site/meta.json` and is published at [systemonebench.dev/#roadmap](https://systemonebench.dev/#roadmap).
-As of 2026-10-12 it lists 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
+As of 2026-10-15 it lists 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
 Decision, Hanzo Kai 1, meraGPT Decider 1), 6 open-weight families to run locally (including Liquid AI's d1-3B and
 d1-omni-600M, vLLM's d3 and the Kev size sweep), 2 entries that need a track of their own, and 3 on a watch list. Everything that
 runs as-is on OpenRouter's Decisions API has been benchmarked. Several vendors publish their own scores; none go on the
@@ -93,7 +94,15 @@ To rebuild the published file, pass every run:
 .venv/bin/python score.py preds_laya_router.jsonl preds_laya_ara.jsonl preds_laya_ara-rag.jsonl preds_jev.jsonl \
   preds_or_jev.jsonl preds_luna.jsonl preds_pplx.jsonl preds_liquid_d1.jsonl preds_clef.jsonl preds_clef_flash.jsonl \
   preds_solar.jsonl preds_mercury.jsonl preds_kev.jsonl preds_tev1.jsonl preds_msft_d1.jsonl preds_pplx_v11.jsonl \
-  preds_clef_omni.jsonl preds_drex.jsonl preds_solar_flash.jsonl
+  preds_clef_omni.jsonl preds_drex.jsonl preds_solar_flash.jsonl preds_or_jev_114.jsonl
+```
+
+Latency on the site comes from a separate re-run of every API model from one machine (see
+[latency](#latency-every-api-model-from-one-machine-2026-10-15)). After a full re-score, put it back with
+`set_latency.py`, which replaces only `latency_ms`:
+
+```bash
+.venv/bin/python set_latency.py lat/preds_*.jsonl   # re-runs written by run_decisions.py run inside lat/
 ```
 
 Models on their vendor's own API take the same request body. `--provider fastino|celeris|hanzo|meragpt` sets the
@@ -147,6 +156,64 @@ The other open models need their own runners:
 A 24 GB Mac fits everything up to 9B at Q8. The 27B models (Kev 27B, d3 27B, Open-Jev 27B) and Open-Jev 9B, whose base
 model alone is 19 GB, need a bigger machine. Laya Multilingual is already covered: Laya Router sends every non-English
 state, Arabic and French included, to those same weights.
+
+## Round 5: Jev 1.14 (2026-10-15)
+
+TypeSafe released Jev 1.14 on 2026-10-14 as a preview; Jev 1.13 is still its stable release. It adds image input, a
+bounding-box question type and a 262K context window, none of which these text datasets use. It ran all 3,250 cases
+through OpenRouter's Decisions API with 8 calls in flight, served as `typesafe/jev-1.14-20261014`. Every call
+succeeded. To check the rebuilt cases, Jev 1.13 ran again from the same machine the same day; that control run isn't
+published.
+
+| Model | Index | English | Arabic | Calibration error | Median latency | Cost per 1,000 calls |
+|---|---|---|---|---|---|---|
+| **Jev 1.14** | **79.3** | **78.8** | **80.3** | 6.0% | **136 ms** | $0.028 |
+| Jev 1.13, published (2026-10-07) | 79.0 | 78.5 | 79.9 | 6.1% | 150 ms | $0.028 |
+| Jev 1.13, control (2026-10-15) | 79.0 | 78.7 | 79.5 | 5.9% | | $0.028 |
+
+- Jev 1.14 places 8th of 16 on the System One Index, 0.3 points above Jev 1.13. That's within run-to-run noise: the
+  control run of Jev 1.13 moved individual datasets by up to 1.5 points against the published one.
+- The one clear gain is customer-service decisions in typed-decisions: 83.6% against 77.4% and 78.2% for the two Jev
+  1.13 runs. Its biggest drop is Arabic offensive language (87.0% against 90.0%).
+- Same price, and the same billed tokens: both cost $0.091 for all 3,250 cases.
+- Jev 1.14 is the fastest model on the board, but only just: 136 ms median against 150 ms for Jev 1.13, timed from
+  the same machine on the same day (see [latency](#latency-every-api-model-from-one-machine-2026-10-15)). In the control
+  run earlier that day the two were 141 ms and 143 ms.
+
+## Latency: every API model from one machine (2026-10-15)
+
+Jev 1.14 ran from a cloud server much closer to OpenRouter than the machine behind every earlier run: Jev 1.13 measured
+143 ms there against 372 ms published. So every charted API model ran all 3,250 cases again from that server, with 8
+calls in flight for all of them (earlier rounds used 6 for some models and 24 to finish Solar Decide). Models from the
+same maker ran at different times so they didn't share capacity. Only latency comes from these runs; accuracy,
+calibration and cost stay from each model's original run. The latency columns in the round tables below are as measured
+at the time. The retired Decider V1 and the TypeSafe API run of Jev keep their original latency and stay off the charts.
+
+| Model | Maker | Median | 95th percentile | Median before |
+|---|---|---|---|---|
+| **Jev 1.14** | TypeSafe | **136 ms** | **175 ms** | – |
+| Jev 1.13 | TypeSafe | 150 ms | 216 ms | 372 ms |
+| d1 | Liquid AI | 188 ms | 297 ms | 659 ms |
+| Drex v1.5 | Nace AI | 198 ms | 529 ms | 608 ms |
+| Clef Omni | Cloudflare | 208 ms | 290 ms | 544 ms |
+| GPT-6 Luna Decisions | OpenAI | 215 ms | 582 ms | 363 ms |
+| Tev1 4B Experimental | Together AI | 232 ms | 292 ms | 518 ms |
+| Microsoft-Decision-1 | Microsoft | 240 ms | 321 ms | 679 ms |
+| Decider V1.1 27B | Perplexity | 262 ms | 605 ms | 678 ms |
+| Clef Flash | Cloudflare | 267 ms | 437 ms | 534 ms |
+| Mercury Decide | Inception | 276 ms | 820 ms | 490 ms |
+| Clef | Cloudflare | 310 ms | 436 ms | 706 ms |
+| Kev 4B | Jared Palmer | 552 ms | 3,597 ms | 899 ms |
+| Solar Decide Flash | Upstage | 586 ms | 983 ms | 908 ms |
+| Solar Decide | Upstage | 715 ms | 17,262 ms | 1,231 ms |
+
+- Every model got faster, but not by the same amount, so the order changed. Jev 1.13 and GPT-6 Luna Decisions looked
+  much faster than the rest before; Liquid AI d1, Drex v1.5 and Clef Omni now sit close behind Jev, ahead of Luna.
+- The two Jevs are still the fastest and have the tightest tails. Kev 4B and Solar Decide still have long tails (3.6 s
+  and 17 s at the 95th percentile).
+- GPT-6 Luna Decisions returned 13 gateway timeouts (504) out of 3,250 calls, which are left out of its latency. Solar
+  Decide, Solar Decide Flash and Tev1 again rejected all 200 Banking77 cases (too many options); every other call
+  succeeded.
 
 ## Round 4: four more models from OpenRouter (2026-10-12)
 

@@ -1,6 +1,6 @@
 """System One Bench live race: any set of decision models, racing on the same labelled cases at the same time.
 
-Racers: every model on OpenRouter's Decisions API (TypeSafe Jev, OpenAI GPT-6 Luna Decisions, Perplexity Decider
+Racers: every model on OpenRouter's Decisions API (TypeSafe Jev 1.13 and 1.14, OpenAI GPT-6 Luna Decisions, Perplexity Decider
 V1.1, Liquid AI d1, Cloudflare Clef, Clef Flash and Clef Omni, Inception Mercury, Upstage Solar and Solar Flash, Kev 4B,
 Together Tev1, Microsoft-Decision-1, Nace Drex), and, with LAYA=1, Laya running locally.
 
@@ -50,6 +50,7 @@ def key(name):
 # the same one systemonebench.dev uses.
 API_RACERS = [
     ("jev", "Jev 1.13", "TypeSafe", os.environ.get("JEV_MODEL", "typesafe/jev-1.13"), 1),
+    ("jev-1.14", "Jev 1.14", "TypeSafe", "typesafe/jev-1.14", 1),
     ("openai", "GPT-6 Luna Decisions", "OpenAI", os.environ.get("OPENAI_DECISIONS_MODEL", "openai/gpt-6-luna-decisions"), 2),
     ("pplx", "Decider V1.1 27B", "Perplexity", "perplexity/pplx-decider-v1.1-27b", 4),
     ("liquid", "d1", "Liquid AI", "liquid/d1", 6),
