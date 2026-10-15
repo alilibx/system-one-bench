@@ -225,6 +225,10 @@ The other open models need their own runners:
   version they need.
 - **`kev.serve`:** Kev 0.5B, 0.6B and 8B ship as LoRA adapters, served by [jaredpalmer/kev](https://github.com/jaredpalmer/kev)
   on `/v1/systemone`. It needs Python 3.12 or 3.13.
+- **Naluri `serve.py`:** the Naluri encoders (279M, 308M) answer `/v1/systemone` through `serve.py` in
+  [jerichosiahaya/naluri](https://github.com/jerichosiahaya/naluri), so `run_decisions.py --url` runs them:
+  `python serve.py --model jerichosiahaya/Naluri-308M-encoder --port 8000`, then
+  `run_decisions.py --url http://localhost:8000/v1/systemone --key-env "" --model naluri-308m --name naluri_308m --concurrency 1`.
 - **Adapters still to write:** GLiNER2.5-Decide and GLiClass answer label questions only, so noul and score map onto
   labels. bekko-system-one takes its own input format, and its weights have no licence yet.
 
