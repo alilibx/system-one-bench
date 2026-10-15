@@ -9,11 +9,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+  // Apply a saved theme before the first paint, so the page never flashes the wrong one.
+  try { const t = localStorage.getItem("theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
 <style>
 :root {
   color-scheme: light;
   --page: #f4f6f9; --surface: #ffffff; --ink: #121a2b; --ink-2: #4a5468; --muted: #6f7889;
   --rule: #dfe3ea; --grid: #e9ecf1; --axis: #c3c9d3; --hover: #eef1f6; --good: rgba(27, 175, 122, 0.08);
+  --accent: #2a78d6; --accent-soft: rgba(42, 120, 214, 0.1); --mark: rgba(237, 161, 0, 0.28);
   --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --s6: #008300; --s7: #4a3aa7; --s8: #e34948; --s9: #8a93a3; --s10: #0b6e75;
   --display: "Bricolage Grotesque", system-ui, sans-serif;
   --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -23,6 +28,7 @@
     color-scheme: dark;
     --page: #0c121d; --surface: #131b29; --ink: #eef2f8; --ink-2: #b6bfce; --muted: #8b95a7;
     --rule: #263043; --grid: #1d2636; --axis: #3a465c; --hover: #1a2334; --good: rgba(25, 158, 112, 0.12);
+    --accent: #5b9ef0; --accent-soft: rgba(91, 158, 240, 0.14); --mark: rgba(201, 133, 0, 0.35);
     --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767; --s9: #6f7889; --s10: #2fb3b5;
   }
 }
@@ -30,26 +36,58 @@
   color-scheme: dark;
   --page: #0c121d; --surface: #131b29; --ink: #eef2f8; --ink-2: #b6bfce; --muted: #8b95a7;
   --rule: #263043; --grid: #1d2636; --axis: #3a465c; --hover: #1a2334; --good: rgba(25, 158, 112, 0.12);
+  --accent: #5b9ef0; --accent-soft: rgba(91, 158, 240, 0.14); --mark: rgba(201, 133, 0, 0.35);
   --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767; --s9: #6f7889; --s10: #2fb3b5;
 }
 * { box-sizing: border-box; }
+html { scroll-padding-top: 76px; }
 body { margin: 0; background: var(--page); color: var(--ink); font: 16px/1.55 var(--body); -webkit-font-smoothing: antialiased; }
 a { color: inherit; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 a:hover { text-decoration-thickness: 2px; }
-:focus-visible { outline: 2px solid var(--s1); outline-offset: 3px; border-radius: 3px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
 code { font: 0.9em ui-monospace, "SF Mono", Menlo, monospace; }
+button { font: inherit; color: inherit; }
 .wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
 
-/* Masthead */
-.top { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 20px 0; border-bottom: 1px solid var(--rule); }
-.mark { display: flex; align-items: center; gap: 10px; font: 800 20px/1 var(--display); letter-spacing: -0.01em; text-decoration: none; }
-.top nav { display: flex; gap: 20px; font-size: 15px; color: var(--ink-2); }
+/* Masthead: stays on screen, with the search that filters every chart and table. */
+.top { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--page) 86%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--rule); }
+.top .wrap { display: flex; align-items: center; gap: 20px; height: 60px; }
+.mark { display: flex; align-items: center; gap: 10px; font: 800 19px/1 var(--display); letter-spacing: -0.01em; text-decoration: none; white-space: nowrap; }
+.top nav { display: flex; gap: 2px; font-size: 14.5px; color: var(--ink-2); margin-right: auto; }
+.top nav a { text-decoration: none; padding: 6px 10px; border-radius: 6px; }
+.top nav a:hover { background: var(--hover); }
+.top nav a[aria-current="true"] { color: var(--ink); background: var(--hover); }
+.search { position: relative; display: flex; align-items: center; }
+.search svg { position: absolute; left: 10px; color: var(--muted); pointer-events: none; }
+.search input { width: 240px; font: 14.5px var(--body); color: var(--ink); background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 7px 34px 7px 32px; }
+.search input::placeholder { color: var(--muted); }
+.search input:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
+.search kbd { position: absolute; right: 8px; font: 12px ui-monospace, monospace; color: var(--muted); border: 1px solid var(--rule); border-radius: 4px; padding: 0 5px; pointer-events: none; }
+.search input:focus + kbd, .search input:not(:placeholder-shown) + kbd { display: none; }
+.icon-btn { display: inline-grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); cursor: pointer; color: var(--ink-2); flex: none; }
+.icon-btn:hover { color: var(--ink); background: var(--hover); }
+.filter-pill { position: fixed; z-index: 19; left: 50%; transform: translateX(-50%); top: 68px; display: flex; align-items: center; gap: 10px; background: var(--ink); color: var(--page); border-radius: 999px; padding: 6px 8px 6px 14px; font-size: 13.5px; box-shadow: 0 6px 24px rgba(10, 16, 30, 0.2); }
+.filter-pill[hidden] { display: none; }
+.filter-pill button { background: color-mix(in srgb, var(--page) 18%, transparent); border: 0; color: inherit; border-radius: 999px; padding: 3px 10px; cursor: pointer; font-size: 13px; }
 
-.hero { padding: 48px 0 8px; }
-.hero h1 { font: 700 clamp(32px, 5vw, 54px)/1.03 var(--display); letter-spacing: -0.025em; margin: 0 0 14px; max-width: 20ch; text-wrap: balance; }
-.lede { max-width: 68ch; color: var(--ink-2); margin: 0 0 6px; font-size: 17px; }
-.stamp { color: var(--muted); font-size: 14px; margin: 0 0 14px; }
-.living { max-width: 68ch; margin: 0 0 28px; padding: 10px 14px; border-left: 3px solid var(--s1); background: var(--surface); border-radius: 0 8px 8px 0; color: var(--ink-2); font-size: 14.5px; }
+.hero { padding: 44px 0 4px; }
+.eyebrow { font: 600 12.5px var(--body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin: 0 0 8px; }
+.hero h1 { font: 700 clamp(30px, 4.4vw, 48px)/1.06 var(--display); letter-spacing: -0.025em; margin: 0 0 14px; max-width: 26ch; text-wrap: balance; }
+.lede { max-width: 70ch; color: var(--ink-2); margin: 0 0 6px; font-size: 17px; }
+.stamp { color: var(--muted); font-size: 14px; margin: 0 0 22px; }
+
+/* Leader tiles: one claim each, with the margin and the context that keeps it honest. */
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+.tile { display: block; text-decoration: none; background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 14px 16px 15px; min-width: 0; transition: border-color 0.15s; }
+.tile:hover { border-color: var(--axis); }
+.tile .k { font-size: 12.5px; color: var(--muted); font-weight: 500; letter-spacing: 0.02em; }
+.tile .who { display: flex; align-items: center; gap: 7px; font-weight: 600; margin: 8px 0 2px; min-width: 0; }
+.tile .who i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.tile .who span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tile .v { font: 700 30px/1.1 var(--display); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.tile .v small { font: 500 14px var(--body); color: var(--muted); letter-spacing: 0; margin-left: 4px; }
+.tile .ctx { color: var(--ink-2); font-size: 13px; margin-top: 6px; line-height: 1.45; }
+.living { max-width: 70ch; margin: 0 0 28px; padding: 10px 14px; border-left: 3px solid var(--accent); background: var(--surface); border-radius: 0 8px 8px 0; color: var(--ink-2); font-size: 14.5px; }
 
 /* Cards hold one chart each: a title, what is measured and which way is better, then the chart. */
 .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 20px 20px 16px; min-width: 0; }
@@ -60,9 +98,9 @@ code { font: 0.9em ui-monospace, "SF Mono", Menlo, monospace; }
 .trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .trio .card h3 { font-size: 18px; }
 
-.section { padding: 48px 0 0; }
+.section { padding: 56px 0 0; }
 .section > h2 { font: 700 30px/1.1 var(--display); letter-spacing: -0.015em; margin: 0 0 6px; }
-.section > p.note { color: var(--ink-2); margin: 0 0 18px; max-width: 72ch; }
+.section > p.note { color: var(--ink-2); margin: 0 0 18px; max-width: 74ch; }
 .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 
 .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
@@ -84,25 +122,72 @@ svg.chart .bar:hover path, svg.chart .pt:hover circle { opacity: 0.85; }
 .multiples .card .sub { font-size: 12.5px; margin-bottom: 6px; }
 .group-title { font: 600 15px var(--body); color: var(--ink-2); margin: 26px 0 10px; }
 
-.tip { position: absolute; z-index: 5; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--rule);
+.tip { position: absolute; z-index: 30; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--rule);
   border-radius: 8px; padding: 9px 12px; font-size: 13px; box-shadow: 0 6px 24px rgba(10, 16, 30, 0.14); max-width: 280px; font-variant-numeric: tabular-nums; }
 .tip[hidden] { display: none; }
 .tip b { display: block; font-size: 14px; }
 .tip span { color: var(--ink-2); display: block; }
 
+/* Filters above the leaderboard: maker chips, and how many models the search leaves. */
+.filters { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; margin: 0 0 14px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; background: var(--surface); border: 1px solid var(--rule); border-radius: 999px; padding: 4px 12px 4px 10px; cursor: pointer; color: var(--ink-2); }
+.chips button i { width: 9px; height: 9px; border-radius: 3px; }
+.chips button:hover { border-color: var(--axis); color: var(--ink); }
+.chips button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
+.filter-status { color: var(--muted); font-size: 13.5px; margin: 0; }
+.filter-status button { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; font-size: inherit; }
+
 /* Leaderboard */
+.board-card { padding: 6px 20px 4px; }
 .table-wrap { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
 th { font: 500 13px var(--body); color: var(--muted); text-align: right; padding: 0 12px 10px; white-space: nowrap; vertical-align: bottom; }
 th:first-child, td:first-child { text-align: left; padding-left: 0; }
 td { padding: 13px 12px; border-top: 1px solid var(--rule); text-align: right; white-space: nowrap; vertical-align: middle; }
 td:last-child, th:last-child { padding-right: 0; }
+#board th { padding-top: 14px; }
+#board th button { font: inherit; color: inherit; background: none; border: 0; padding: 2px 0; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+#board th button:hover { color: var(--ink); }
+#board th[aria-sort] button { color: var(--ink); }
+#board th button::after { content: "↕"; opacity: 0.35; font-size: 11px; }
+#board th[aria-sort="descending"] button::after { content: "↓"; opacity: 1; }
+#board th[aria-sort="ascending"] button::after { content: "↑"; opacity: 1; }
+#board th small { display: block; font-size: 11.5px; color: var(--muted); font-weight: 400; }
+#board .rank { width: 34px; color: var(--muted); font-size: 13.5px; padding-right: 0; }
+#board tbody tr.row { cursor: pointer; }
+#board tbody tr.row:hover td { background: var(--hover); }
+#board tbody tr.row td:first-child { border-radius: 8px 0 0 8px; }
 .model { display: flex; align-items: center; gap: 10px; }
 .model i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
 .model b { font-weight: 600; display: block; }
 .model small { color: var(--muted); font-size: 13px; display: block; }
+.model small .fail { display: block; color: var(--s8); }
+#board th:nth-child(2), #board td:nth-child(2) { text-align: left; }
+.model .more { background: none; border: 0; padding: 0; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px; }
+.model .more::after { content: "›"; color: var(--muted); font-size: 18px; line-height: 1; transition: transform 0.15s; margin-left: 2px; }
+.model .more[aria-expanded="true"]::after { transform: rotate(90deg); }
+.idx { display: inline-flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.idx span { display: inline-block; width: 56px; height: 6px; border-radius: 3px; background: var(--grid); position: relative; overflow: hidden; }
+.idx span::before { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--w); background: var(--c, var(--accent)); border-radius: 3px; }
+.top1 { font-weight: 700; }
+.tag { display: inline-block; font-size: 11.5px; font-weight: 500; color: var(--muted); border: 1px solid var(--rule); border-radius: 4px; padding: 0 5px; margin-left: 6px; vertical-align: 1px; }
+mark { background: var(--mark); color: inherit; border-radius: 2px; }
 .dim td { color: var(--muted); }
 tr.group td { border-top: 0; padding: 22px 0 6px; font: 600 14px var(--body); color: var(--ink-2); text-align: left; white-space: normal; }
+tr.empty td { text-align: left; color: var(--muted); white-space: normal; }
+tr.detail td { padding: 4px 0 20px; text-align: left; white-space: normal; border-top: 0; }
+.detail-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.6fr) minmax(0, 1fr); gap: 20px 28px; background: var(--page); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; }
+.detail-grid h4 { font: 600 13px var(--body); color: var(--muted); margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+.detail-grid dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13.5px; }
+.detail-grid dt { color: var(--muted); }
+.detail-grid dd { margin: 0; overflow-wrap: anywhere; }
+.detail-grid ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 18px; font-size: 13.5px; }
+.detail-grid li { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px dashed var(--rule); padding: 2px 0; }
+.detail-grid li em { font-style: normal; color: var(--muted); font-size: 12px; margin-left: 6px; }
+.detail-grid li.best b { color: var(--s3); }
+.detail-grid p { font-size: 13.5px; color: var(--ink-2); margin: 10px 0 0; }
+.vision-only ul { grid-template-columns: 1fr; }
 .na { color: var(--muted); }
 details { margin: 16px 0 0; }
 summary { cursor: pointer; color: var(--ink-2); font-size: 15px; }
@@ -127,50 +212,94 @@ pre { background: var(--surface); border: 1px solid var(--rule); border-radius: 
 footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40px; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 8px 24px; }
 .error { border: 1px solid var(--rule); border-radius: 8px; padding: 16px; background: var(--surface); }
 
-@media (max-width: 1000px) { .multiples { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 1100px) { .top nav a.opt { display: none; } }
+@media (max-width: 1000px) {
+  .multiples { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .detail-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .detail-grid > :first-child { grid-column: 1 / -1; }
+}
 @media (max-width: 860px) {
+  .top nav { display: none; }
+  .search { margin-left: auto; }
   .trio, .pair, .road { grid-template-columns: 1fr; }
   .cols { grid-template-columns: minmax(0, 1fr); }  /* a plain 1fr column grows to fit the longest code line */
   .multiples { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-@media (max-width: 560px) {
+@media (max-width: 640px) {
+  .top .wrap { gap: 10px; }
+  .mark span { display: none; }
+  .search { flex: 1; }
+  .search input { width: 100%; }
+  .tiles { grid-template-columns: 1fr; }
   .multiples { grid-template-columns: 1fr; }
-  .top nav a:not(:last-child) { display: none; }
+  .detail-grid, .detail-grid ul { grid-template-columns: 1fr; }
+  .board-card { padding: 4px 14px; }
   #board thead { display: none; }
-  #board tr:not(.group) { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 16px; padding: 14px 0; border-top: 1px solid var(--rule); }
+  #board tr.row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 16px; padding: 14px 0; border-top: 1px solid var(--rule); }
   #board td { border: 0; padding: 0; text-align: left; white-space: normal; }
-  #board td:first-child { grid-column: 1 / -1; }
+  #board td.rank { display: none; }
+  #board tr.row td:nth-child(2) { grid-column: 1 / -1; }
   #board td[data-label]::before { content: attr(data-label); display: block; color: var(--muted); font-size: 12px; }
+  #board .idx { justify-content: flex-start; flex-direction: row-reverse; }
+  #board tbody tr.row:hover td { background: none; }
+  .filter-pill { top: 64px; }
 }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="top">
+<header class="top">
+  <div class="wrap">
     <a class="mark" href="./" aria-label="System One Bench home">
       <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
         <rect x="1" y="7" width="24" height="12" rx="6" fill="none" stroke="currentColor" stroke-width="2"/>
         <rect x="4" y="10" width="13" height="6" rx="3" fill="currentColor"/>
       </svg>
-      System One Bench
+      <span>System One Bench</span>
     </a>
-    <nav><a href="#index">Index</a><a href="#datasets">Datasets</a><a href="#vision">Vision</a><a href="#roadmap">Roadmap</a><a href="#method">Method</a><a href="https://github.com/alilibx/system-one-bench">GitHub</a></nav>
-  </header>
+    <nav aria-label="Sections"><a href="#leaderboard">Leaderboard</a><a href="#index">Text</a><a href="#vision">Vision</a><a href="#datasets" class="opt">Datasets</a><a href="#roadmap" class="opt">Roadmap</a><a href="#method">Method</a><a href="https://github.com/alilibx/system-one-bench" class="opt">GitHub</a></nav>
+    <label class="search">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <input id="q" type="search" placeholder="Search models or makers" autocomplete="off" spellcheck="false" aria-label="Search models or makers. Filters every chart and table.">
+      <kbd>/</kbd>
+    </label>
+    <button class="icon-btn" id="theme" type="button" aria-label="Switch between light and dark">
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="7.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9 1.8a7.2 7.2 0 0 1 0 14.4z" fill="currentColor"/></svg>
+    </button>
+  </div>
+</header>
+<div class="filter-pill" id="filter-pill" role="status" hidden><span id="filter-pill-text"></span><button type="button" data-clear>Clear</button></div>
 
+<main class="wrap">
   <section class="hero" aria-live="polite">
+    <p class="eyebrow">Independent decision-model benchmark</p>
     <h1 id="headline">Loading the latest results.</h1>
-    <p class="lede">System One models read a situation and answer typed questions in one fast call: yes or no, pick one option, or score a level, each with probabilities. Every model gets the same cases and the same request body, scored against each dataset's labels.</p>
+    <p class="lede">System One models read a situation and answer typed questions in one fast call: yes or no, pick one option, or score a level, each with probabilities. Every model gets the same cases and the same request body, scored against each dataset's labels. Text and images are scored as two separate tracks.</p>
     <p class="stamp" id="stamp"></p>
+    <div class="tiles" id="tiles"></div>
     <p class="living">System One Bench is a living benchmark: we keep adding models as they're released, and every new model runs the same cases. See the <a href="#roadmap">roadmap</a> for what's next.</p>
   </section>
 
+  <p class="eyebrow">Text track highlights</p>
   <div class="trio">
-    <div class="card"><h3>System One Index</h3><p class="sub">Mean accuracy across all 16 datasets, top 5. Higher is better.</p><div id="mini-index"></div></div>
-    <div class="card"><h3>Latency</h3><p class="sub">Median time per call in milliseconds, fastest 5. Lower is better.</p><div id="mini-latency"></div><p class="latency-note"></p></div>
+    <div class="card"><h3>System One Index</h3><p class="sub">Mean accuracy across all 16 text datasets, top 5. Higher is better.</p><div id="mini-index"></div></div>
+    <div class="card"><h3>Latency</h3><p class="sub">Median time per call in milliseconds, fastest 5 API models. Lower is better.</p><div id="mini-latency"></div><p class="latency-note"></p></div>
     <div class="card"><h3>Cost</h3><p class="sub">USD per 1,000 calls, as billed by the API, cheapest 5. Lower is better.</p><div id="mini-cost"></div></div>
   </div>
 
+  <section class="section" id="leaderboard">
+    <p class="eyebrow">Both tracks</p>
+    <h2>Leaderboard</h2>
+    <p class="note">Every model run, with its text and vision results side by side. Failed calls count as wrong and are flagged under the model's name. Click a column to sort, and a model to see every dataset score. The search box and the maker filter apply to every chart and table on this page.</p>
+    <div class="filters">
+      <div class="chips" id="maker-chips" role="group" aria-label="Filter by maker"></div>
+      <p class="filter-status" id="filter-status" aria-live="polite"></p>
+    </div>
+    <div class="card board-card"><div class="table-wrap"><table id="board"><thead></thead><tbody></tbody></table></div></div>
+  </section>
+
   <section class="section" id="index">
+    <p class="eyebrow">Text track</p>
     <h2>System One Index</h2>
     <p class="note">The index is the mean accuracy across datasets, with every dataset weighted equally, on a 0 to 100 scale. A model gets an index only if it ran every dataset in the set, so the Arabic fine-tunes appear in the Arabic index alone.</p>
     <div class="card">
@@ -187,26 +316,29 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
   </section>
 
   <section class="section" id="tradeoffs">
+    <p class="eyebrow">Text track</p>
     <h2>Accuracy against speed and cost</h2>
     <p class="note">The shaded corner is the most attractive: more accurate, and faster or cheaper. The line joins the models that nothing else beats on both measures.</p>
     <div class="pair">
-      <div class="card"><h3>Index against latency</h3><p class="sub">System One Index (all datasets) against median latency per call.</p><div id="chart-vs-latency"></div><p class="latency-note"></p></div>
+      <div class="card"><h3>Index against latency</h3><p class="sub">System One Index (all datasets) against median latency per call, API models.</p><div id="chart-vs-latency"></div><p class="latency-note"></p></div>
       <div class="card"><h3>Index against cost</h3><p class="sub">System One Index (all datasets) against USD per 1,000 calls. Local models have no per-call price.</p><div id="chart-vs-cost"></div></div>
     </div>
   </section>
 
   <section class="section" id="calibration">
+    <p class="eyebrow">Text track</p>
     <h2>Calibration, speed and cost</h2>
     <p class="note">Calibration error is the average gap between a model's stated confidence and how often it's right, in percentage points. A well-calibrated model's 80% answers are right about 80% of the time.</p>
     <div class="pair">
       <div class="card"><h3>Calibration error</h3><p class="sub">Top-label ECE over every question, all datasets. Lower is better.</p><div id="chart-ece"></div></div>
-      <div class="card"><h3>Latency, median and 95th percentile</h3><p class="sub">Milliseconds per call. The bar is the median; the tick marks the 95th percentile, shown on hover. Lower is better.</p><div id="chart-latency"></div><p class="latency-note"></p></div>
+      <div class="card"><h3>Latency, median and 95th percentile</h3><p class="sub">Milliseconds per call, API models. The bar is the median; the tick marks the 95th percentile, shown on hover. Lower is better.</p><div id="chart-latency"></div><p class="latency-note"></p></div>
       <div class="card"><h3>Cost to run System One Bench</h3><p class="sub">USD for all 3,250 cases, as billed. Lower is better.</p><div id="chart-run-cost"></div></div>
       <div class="card"><h3>Input tokens per call</h3><p class="sub">Mean billed input tokens. Each tokenizer counts differently, so this explains cost rather than ranks models.</p><div id="chart-tokens"></div></div>
     </div>
   </section>
 
   <section class="section" id="datasets">
+    <p class="eyebrow">Text track</p>
     <h2>By dataset</h2>
     <p class="note">One chart per dataset. Bars are colored by who makes the model.</p>
     <div class="card-head" style="margin-bottom:14px">
@@ -221,23 +353,15 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
   </section>
 
   <section class="section" id="vision" hidden>
-    <h2>Vision</h2>
+    <p class="eyebrow">Vision track</p>
+    <h2>Vision Index</h2>
     <p class="note" id="vision-note"></p>
     <div class="card"><h3>Vision Index</h3><p class="sub" id="vision-index-sub"></p><div id="chart-vision-index"></div></div>
     <div class="card stack"><h3>Text against image</h3><p class="sub">Accuracy on the same 200 SST-2 reviews and 200 Arabic tweets, sent once as text and once as a picture of that text. The gap is what reading from pixels costs.</p><div class="table-wrap"><table id="vision-gap"></table></div></div>
     <p class="group-title">By image dataset</p>
     <div class="multiples" id="vision-multiples"></div>
     <div class="card stack"><h3>Box questions</h3><p class="sub" id="box-sub"></p><div class="table-wrap"><table id="vision-box"></table></div></div>
-    <div class="card stack"><h3>Calibration, speed and cost with images</h3><p class="sub">Every image call on the 5 datasets above, plus Jev 1.14's 200 Box calls. Latency includes uploading the image through OpenRouter, with 8 calls in flight.</p><div class="table-wrap"><table id="vision-cost"></table></div></div>
-  </section>
-
-  <section class="section" id="leaderboard">
-    <h2>All runs</h2>
-    <p class="note">Every model run with its overall numbers. Overall accuracy here counts every question, so the 5-question typed-decisions dataset weighs more than in the index.</p>
-    <div class="table-wrap"><table id="board"><thead><tr>
-      <th scope="col">Model</th><th scope="col">Index</th><th scope="col">Accuracy</th><th scope="col">Calibration error</th>
-      <th scope="col">Median latency</th><th scope="col">Cost per 1,000 calls</th><th scope="col">Failed answers</th><th scope="col">Datasets</th>
-    </tr></thead><tbody></tbody></table></div>
+    <div class="card stack"><h3>Calibration, speed and cost with images</h3><p class="sub">Calibration error covers the 5 image datasets above. Latency, cost and tokens cover every image call, including Jev 1.14's 200 Box calls. Latency includes uploading the image through OpenRouter, with 8 calls in flight.</p><div class="table-wrap"><table id="vision-cost"></table></div></div>
   </section>
 
   <section class="section" id="roadmap">
@@ -254,9 +378,10 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
         <ul>
           <li>Each case is a <code>state</code> plus one to five named questions, sent unchanged to every model.</li>
           <li>Accuracy compares the most likely answer with the dataset's label. A failed call counts as wrong.</li>
+          <li>Text and images are two tracks with two indexes: the System One Index over 16 text datasets, and the Vision Index over 5 image datasets. They rank models separately, so a model can lead one and not the other.</li>
           <li>Calibration error is top-label ECE over 10 bins. Log loss, Brier score and more are in <a href="results.json">results.json</a>.</li>
           <li>Cost is the summed <code>usage.cost</code> the API reports.</li>
-          <li>Latency depends on the network between caller and API, so every API model was timed again on 15 October from one cloud server, all 3,250 cases through OpenRouter with 8 requests in flight. Only latency comes from that run; accuracy, calibration and cost come from each model's original run. Laya ran locally on an Apple M5 GPU, one call at a time.</li>
+          <li>Latency depends on the network between caller and API, so every API model was timed again on 15 October from one cloud server, all 3,250 cases through OpenRouter with 8 requests in flight. Only latency comes from that run; accuracy, calibration and cost come from each model's original run. Laya ran locally on an Apple M5 GPU, one call at a time, so it stays out of the latency charts.</li>
           <li>The vision track ran on 15 October from a cloud server, 8 requests in flight per model. It sends each image once, as a base64 PNG or JPEG in <code>state</code>, resized to fit every model's limits. Box answers count as right when they overlap the labelled box by at least half (IoU of 0.5 or more).</li>
           <li>The data is frozen: <a href="https://github.com/alilibx/system-one-bench/blob/main/data.lock.json">data.lock.json</a> holds a SHA-256 for every dataset and image, every source is pinned to a fixed version, and runs are refused on data that doesn't match.</li>
           <li>Nothing was tuned on test data. Some open-weight fine-tunes trained on related data; the repo README lists which.</li>
@@ -280,26 +405,28 @@ python score.py preds_or_jev.jsonl preds_luna.jsonl</pre>
     <a href="https://github.com/alilibx/system-one-bench/blob/main/CONTRIBUTING.md">Benchmark rules</a>
     <a href="https://github.com/alilibx/system-one-bench">github.com/alilibx/system-one-bench</a>
   </footer>
-</div>
+</main>
 <div class="tip" id="tip" hidden></div>
 
 <script>
 const $ = id => document.getElementById(id);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const date = s => new Date(s + "T12:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" })[n % 10] || "th");
 let R, M, V, indexSet = "all", metric = "acc";
 
 // The vision results are optional: without them the page shows the text benchmark alone.
 const vision = fetch("results_vision.json").then(r => r.ok ? r.json() : null).catch(() => null);
 Promise.all([fetch("results.json").then(r => r.json()), fetch("meta.json").then(r => r.json()), vision])
   .then(([results, meta, vis]) => { R = results; M = meta; V = vis; render(); })
-  .catch(() => {
+  .catch(err => {
+    console.error(err);
     $("headline").textContent = "The results didn't load.";
     $("index").insertAdjacentHTML("afterbegin", '<p class="error">This page reads results.json and meta.json from the same folder. Serve the folder over HTTP (for example <code>python -m http.server</code>) instead of opening the file directly.</p>');
   });
 
 // Shown under every latency chart: what the numbers include, and why yours will differ.
-const LATENCY_NOTE = "About these numbers: latency is the full round trip from our test machine, a cloud server, through OpenRouter to the model and back, so it includes the network as well as the model. Every API model was timed from that one machine on 15 October 2026 with 8 calls in flight, so they compare fairly with each other, but your own latency depends on where you call from: from the machine behind our earlier runs, the same calls took 1.5 to 3.5 times as long. Laya runs on a local Apple M5 GPU with no network, so its latency isn't directly comparable.";
+const LATENCY_NOTE = "About these numbers: latency is the full round trip from our test machine, a cloud server, through OpenRouter to the model and back, so it includes the network as well as the model. Every API model was timed from that one machine on 15 October 2026 with 8 calls in flight, so they compare fairly with each other, but your own latency depends on where you call from: from the machine behind our earlier runs, the same calls took 1.5 to 3.5 times as long. Laya runs on a local Apple M5 GPU with no network, so it isn't comparable and stays out of the latency charts; its local timing is in the leaderboard.";
 document.querySelectorAll(".latency-note").forEach(el => { el.textContent = LATENCY_NOTE; });
 
 // ---------- data ----------
@@ -308,6 +435,7 @@ const unlisted = () => Object.keys(R).filter(k => !M.models[k]);
 // The newest run date stands for the whole page, so a new run only needs its meta.json entry updated.
 const updated = () => runs().map(k => M.models[k].run).sort().at(-1);
 const charted = () => runs().filter(k => M.models[k].chart !== false);
+const local = k => M.models[k].access.startsWith("Open weights");
 const suites = set => Object.keys(M.suites).filter(s => set === "all" || M.suites[s].lang === set);
 const val = (k, s, key = "acc") => R[k]?.["suite:" + s]?.[key];
 function index(k, set = "all") {
@@ -322,9 +450,68 @@ const vval = (k, s, key = "acc") => V?.[k]?.["suite:" + s]?.[key];
 const vruns = () => V ? Object.keys(M.models).filter(k => V[k] && M.models[k].chart !== false) : [];
 function vindex(k) {
   const ss = vsuites();
-  if (!ss.length || ss.some(s => vval(k, s) == null)) return null;
+  if (!V?.[k] || !ss.length || ss.some(s => vval(k, s) == null)) return null;
   return 100 * ss.reduce((a, s) => a + vval(k, s), 0) / ss.length;
 }
+const vper1k = k => V?.[k]?.cost && V[k].cost.usd != null ? 1000 * V[k].cost.usd / V[k].cost.calls : null;
+const byDesc = f => (a, b) => f(b) - f(a);
+
+// ---------- search and filters ----------
+// One filter for the whole page: the search words (all must match) and the selected makers (any may match).
+// Headlines and leader tiles always describe the whole board, never the filtered view.
+let query = "", makers = new Set();
+const words = () => query.toLowerCase().split(/\s+/).filter(Boolean);
+const hay = k => { const m = M.models[k]; return [m.label, m.maker, m.slug, m.short, m.access, m.tag || ""].join(" ").toLowerCase(); };
+const shown = k => (!makers.size || makers.has(M.models[k].maker)) && words().every(w => hay(k).includes(w));
+const filtering = () => makers.size > 0 || words().length > 0;
+const highlight = t => {
+  const ws = words().map(w => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  return ws.length ? esc(t).replace(new RegExp(`(${ws.join("|")})`, "gi"), "<mark>$1</mark>") : esc(t);
+};
+
+function readUrl() {
+  const p = new URLSearchParams(location.search);
+  query = p.get("q") || "";
+  makers = new Set((p.get("maker") || "").split(",").filter(Boolean));
+  $("q").value = query;
+}
+function writeUrl() {
+  const p = new URLSearchParams();
+  if (query.trim()) p.set("q", query.trim());
+  if (makers.size) p.set("maker", [...makers].join(","));
+  const s = p.toString();
+  history.replaceState(null, "", (s ? "?" + s : location.pathname) + location.hash);
+}
+function clearFilters() { query = ""; makers.clear(); $("q").value = ""; applyFilter(); }
+
+function applyFilter() {
+  writeUrl();
+  $("maker-chips").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(makers.has(b.dataset.maker))));
+  const all = runs(), n = all.filter(shown).length;
+  const what = [words().length ? `matching “${esc(query.trim())}”` : "", makers.size ? `from ${[...makers].map(esc).join(" or ")}` : ""].filter(Boolean).join(" ");
+  $("filter-status").innerHTML = filtering() ? `Showing ${n} of ${all.length} runs ${what}. <button type="button" data-clear>Clear</button>` : `${all.length} runs. Type in the search box or pick makers to narrow every chart.`;
+  $("filter-pill").hidden = !filtering();
+  $("filter-pill-text").textContent = `${n} of ${all.length} runs shown`;
+  draw(); renderBoard(); renderMatrix(); renderVisionTables();
+}
+document.addEventListener("click", e => { if (e.target.closest("[data-clear]")) clearFilters(); });
+let qt;
+$("q").addEventListener("input", e => { query = e.target.value; clearTimeout(qt); qt = setTimeout(() => R && applyFilter(), 120); });
+$("q").addEventListener("keydown", e => {
+  if (e.key === "Escape") { clearFilters(); e.target.blur(); }
+  if (e.key === "Enter") document.getElementById("leaderboard").scrollIntoView({ behavior: "smooth" });
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "/" && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) { e.preventDefault(); $("q").focus(); }
+});
+
+// ---------- theme ----------
+$("theme").addEventListener("click", () => {
+  const root = document.documentElement;
+  const now = root.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  root.dataset.theme = now === "dark" ? "light" : "dark";
+  try { localStorage.setItem("theme", root.dataset.theme); } catch (e) {}
+});
 
 // ---------- tooltip ----------
 const tip = $("tip");
@@ -356,7 +543,7 @@ function niceTicks(hi, n) {
 // Vertical bars, best first, value above each bar, name under it. Bars are 4px-rounded at the data end only.
 function bars(el, items, opts = {}) {
   const { fmt, lower = false, height = 230, max, labelKey = "short", note, limit } = opts;
-  if (!items.length) { el.innerHTML = `<p class="na">${note || "No data for these models."}</p>`; return; }
+  if (!items.length) { el.innerHTML = `<p class="na">${note || (filtering() ? "No model in this chart matches the filter." : "No data for these models.")}</p>`; return; }
   items = items.slice().sort((a, b) => lower ? a.v - b.v : b.v - a.v).slice(0, limit ?? items.length);
   const w = Math.max(el.clientWidth, 200), top = 22, bottom = 40, plotH = height - top - bottom;
   if (w / items.length < 64) return hbars(el, items, opts);
@@ -461,46 +648,101 @@ function scatter(el, pts, { xFmt, xLabel, note }) {
   wireTips(el);
 }
 
-// ---------- page ----------
 const fmtIdx = v => v.toFixed(1), fmtMs = v => Math.round(v) + " ms", fmtUsd = v => v === 0 ? "Free" : "$" + (v < 1 ? v.toFixed(3) : v.toFixed(2)), fmtPct = v => v.toFixed(1) + "%";
 
+// ---------- headline and leader tiles: always the whole board ----------
 function render() {
-  const full = charted().filter(k => index(k) != null);
-  const topK = full.slice().sort((a, b) => index(b) - index(a))[0];
-  $("stamp").textContent = `Updated ${date(updated())}. ${runs().length} model runs across ${suites("all").length} datasets.`;
+  readUrl();
+  $("stamp").textContent = `Updated ${date(updated())}. ${runs().length} model runs across ${suites("all").length} text datasets` + (vruns().length ? ` and ${vsuites().length} image datasets.` : ".");
   $("foot-updated").textContent = `Last run ${date(updated())}`;
   $("legend").innerHTML = [...new Set(charted().map(k => M.models[k].series))].map(sr => `<li><i style="background:var(--s${sr}, var(--muted))"></i>${esc(M.series[sr] || M.models[charted().find(k => M.models[k].series === sr)].maker)}</li>`).join("");
   if (unlisted().length) $("leaderboard").insertAdjacentHTML("beforeend", `<p class="na">Not shown: ${unlisted().map(esc).join(", ")}. Add an entry to site/meta.json to include a run.</p>`);
-  draw(); renderBoard(); renderMatrix(); renderRoadmap(); renderVisionTables();
-  if (!topK) { $("headline").textContent = "No model has run every dataset yet."; return; }
-  const wins = {};
-  for (const s of suites("all")) {
-    const vs = charted().filter(k => val(k, s) != null), best = Math.max(...vs.map(k => val(k, s)));
-    vs.filter(k => val(k, s) === best).forEach(k => wins[k] = (wins[k] || 0) + 1);
-  }
-  const t = M.models[topK];
-  $("headline").textContent = `${t.maker} ${t.label} leads the System One Index at ${fmtIdx(index(topK))}, and wins ${wins[topK] || 0} of ${suites("all").length} datasets.`;
+  renderChips(); renderRoadmap(); renderHeadline(); renderTiles();
+  applyFilter();
+  watchNav();
 }
 
+function textRanking() { return charted().filter(k => index(k) != null).sort(byDesc(index)); }
+function visionRanking() { return vruns().filter(k => vindex(k) != null).sort(byDesc(vindex)); }
+const who = k => `${M.models[k].maker} ${M.models[k].label}`;
+
+function renderHeadline() {
+  const t = textRanking(), v = visionRanking();
+  if (!t.length) { $("headline").textContent = "No model has run every dataset yet."; return; }
+  $("headline").textContent =
+    !v.length ? `${who(t[0])} leads the System One Index.`
+    : t[0] === v[0] ? `${who(t[0])} leads both the System One Index and the Vision Index.`
+    : `${who(t[0])} leads the System One Index. On images, ${who(v[0])} leads the Vision Index.`;
+}
+
+function renderTiles() {
+  const t = textRanking(), v = visionRanking(), n = suites("all").length;
+  const tile = (href, k, label, value, unit, ctx) => `<a class="tile" href="${href}"><div class="k">${label}</div>
+    <div class="who"><i style="background:${color(k)}"></i><span>${esc(M.models[k].label)}</span></div>
+    <div class="v">${value}${unit ? `<small>${unit}</small>` : ""}</div><div class="ctx">${ctx}</div></a>`;
+  const out = [];
+  if (t.length) {
+    let best = 0, tied = 0;
+    for (const s of suites("all")) {
+      const vs = charted().map(k => val(k, s)).filter(x => x != null), top = Math.max(...vs);
+      if (val(t[0], s) === top) { best++; if (vs.filter(x => x === top).length > 1) tied++; }
+    }
+    const lead = t[1] ? `${(index(t[0]) - index(t[1])).toFixed(1)} ahead of ${esc(M.models[t[1]].label)}. ` : "";
+    out.push(tile("#index", t[0], "System One Index · text", fmtIdx(index(t[0])), "of 100",
+      `${lead}Best on ${best} of ${n} datasets${tied ? `, ${tied} of them shared` : ""}.`));
+  }
+  if (v.length) {
+    const lead = v[1] ? `${(vindex(v[0]) - vindex(v[1])).toFixed(1)} ahead of ${esc(M.models[v[1]].label)}. ` : "";
+    const tl = t[0], vr = v.indexOf(tl);
+    const textLeader = !tl || tl === v[0] ? "" : vr >= 0 ? `${esc(M.models[tl].label)}, the text leader, is ${ordinal(vr + 1)} (${fmtIdx(vindex(tl))}).` : `${esc(M.models[tl].label)}, the text leader, doesn't read images.`;
+    out.push(tile("#vision", v[0], "Vision Index · images", fmtIdx(vindex(v[0])), "of 100", lead + textLeader));
+  }
+  const fast = charted().filter(k => !local(k) && R[k].latency_ms).sort((a, b) => R[a].latency_ms.p50 - R[b].latency_ms.p50);
+  if (fast.length) out.push(tile("#calibration", fast[0], "Fastest API model · text", Math.round(R[fast[0]].latency_ms.p50), "ms median",
+    fast[1] ? `Next: ${esc(M.models[fast[1]].label)}, ${fmtMs(R[fast[1]].latency_ms.p50)}. Timed from one machine; yours will differ.` : ""));
+  const paid = charted().filter(k => per1k(k) > 0).sort((a, b) => per1k(a) - per1k(b));
+  const free = charted().filter(k => per1k(k) === 0);
+  if (paid.length) out.push(tile("#tradeoffs", paid[0], "Cheapest paid model · text", fmtUsd(per1k(paid[0])), "per 1,000 calls",
+    `Index ${fmtIdx(index(paid[0]) ?? 0)}.` + (free.length ? ` ${free.map(k => esc(M.models[k].label)).join(", ")} ran on a free tier.` : "")));
+  $("tiles").innerHTML = out.join("");
+}
+
+function renderChips() {
+  const t = textRanking();
+  const rank = k => { const i = t.indexOf(k); return i < 0 ? 999 : i; };
+  const ms = [...new Set(runs().sort((a, b) => rank(a) - rank(b)).map(k => M.models[k].maker))];
+  $("maker-chips").innerHTML = ms.map(m => {
+    const k = runs().find(x => M.models[x].maker === m);
+    return `<button type="button" data-maker="${esc(m)}" aria-pressed="false"><i style="background:${color(k)}"></i>${esc(m)}</button>`;
+  }).join("");
+  $("maker-chips").querySelectorAll("button").forEach(b => b.onclick = () => {
+    makers.has(b.dataset.maker) ? makers.delete(b.dataset.maker) : makers.add(b.dataset.maker);
+    applyFilter();
+  });
+}
+
+// ---------- charts that follow the filter ----------
 function draw() {
   hideTip();
-  const full = charted().filter(k => index(k) != null);
+  const vis = charted().filter(shown);
+  const full = vis.filter(k => index(k) != null);
+  const timed = full.filter(k => R[k].latency_ms && !local(k));
   bars($("mini-index"), full.map(k => ({ k, v: index(k) })), { fmt: fmtIdx, max: 100, height: 200, limit: 5 });
-  bars($("mini-latency"), full.filter(k => R[k].latency_ms).map(k => ({ k, v: R[k].latency_ms.p50 })), { fmt: fmtMs, lower: true, height: 200, limit: 5 });
+  bars($("mini-latency"), timed.map(k => ({ k, v: R[k].latency_ms.p50 })), { fmt: fmtMs, lower: true, height: 200, limit: 5 });
   bars($("mini-cost"), full.filter(k => per1k(k) != null).map(k => ({ k, v: per1k(k) })), { fmt: fmtUsd, lower: true, height: 200, limit: 5 });
 
   const setName = { all: "all 16 datasets", English: `the ${suites("English").length} English datasets`, Arabic: `the ${suites("Arabic").length} Arabic datasets` }[indexSet];
   $("index-title").textContent = indexSet === "all" ? "All datasets" : `${indexSet} datasets`;
   $("index-sub").textContent = `Mean accuracy across ${setName}, equal weight per dataset. Higher is better.`;
-  bars($("chart-index"), charted().filter(k => index(k, indexSet) != null).map(k => ({ k, v: index(k, indexSet) })), { fmt: fmtIdx, max: 100, height: 300, labelKey: "label" });
+  bars($("chart-index"), vis.filter(k => index(k, indexSet) != null).map(k => ({ k, v: index(k, indexSet) })), { fmt: fmtIdx, max: 100, height: 300, labelKey: "label" });
 
-  scatter($("chart-vs-latency"), full.filter(k => R[k].latency_ms).map(k => ({ k, x: R[k].latency_ms.p50, y: index(k) })),
-    { xFmt: fmtMs, xLabel: "Median latency per call", note: "Needs at least two models with latency." });
+  scatter($("chart-vs-latency"), timed.map(k => ({ k, x: R[k].latency_ms.p50, y: index(k) })),
+    { xFmt: fmtMs, xLabel: "Median latency per call", note: "Needs at least two API models with latency." });
   scatter($("chart-vs-cost"), full.filter(k => per1k(k) != null).map(k => ({ k, x: per1k(k), y: index(k) })),
     { xFmt: fmtUsd, xLabel: "USD per 1,000 calls", note: "Needs at least two priced models." });
 
   bars($("chart-ece"), full.map(k => ({ k, v: 100 * R[k].all.ece })), { fmt: fmtPct, lower: true, labelKey: "label" });
-  bars($("chart-latency"), full.filter(k => R[k].latency_ms).map(k => ({ k, v: R[k].latency_ms.p50, w: R[k].latency_ms.p95 })), { fmt: fmtMs, lower: true, labelKey: "label" });
+  bars($("chart-latency"), timed.map(k => ({ k, v: R[k].latency_ms.p50, w: R[k].latency_ms.p95 })), { fmt: fmtMs, lower: true, labelKey: "label" });
   bars($("chart-run-cost"), full.filter(k => R[k].cost?.usd != null).map(k => ({ k, v: R[k].cost.usd })), { fmt: fmtUsd, lower: true, labelKey: "label" });
   bars($("chart-tokens"), full.filter(k => R[k].cost?.calls).map(k => ({ k, v: R[k].cost.input_tokens / R[k].cost.calls })), { fmt: v => Math.round(v).toLocaleString("en"), lower: true, labelKey: "label" });
 
@@ -515,7 +757,7 @@ function draw() {
   $("multiples").innerHTML = html;
   document.querySelectorAll("#multiples [data-suite]").forEach(el => {
     const s = el.dataset.suite;
-    bars(el, charted().filter(k => val(k, s) != null).map(k => ({ k, v: 100 * val(k, s, metric) })),
+    bars(el, vis.filter(k => val(k, s) != null).map(k => ({ k, v: 100 * val(k, s, metric) })),
       metric === "acc" ? { fmt: fmtIdx, max: 100, height: 190 } : { fmt: fmtPct, lower: true, height: 190, max: eceMax });
   });
   drawVision();
@@ -523,13 +765,13 @@ function draw() {
 
 // ---------- vision ----------
 function drawVision() {
-  const ks = vruns();
-  $("vision").hidden = !ks.length;
-  if (!ks.length) return;
+  const all = vruns(), ks = all.filter(shown);
+  $("vision").hidden = !all.length;
+  if (!all.length) return;
   $("vision-index-sub").textContent = `Mean accuracy across the ${vsuites().length} image datasets, equal weight per dataset. Box questions are scored on their own, below. Higher is better.`;
   bars($("chart-vision-index"), ks.filter(k => vindex(k) != null).map(k => ({ k, v: vindex(k) })), { fmt: fmtIdx, max: 100, height: 260, labelKey: "label" });
   $("vision-multiples").innerHTML = vsuites().map(s => {
-    const n = vval(ks.find(k => vval(k, s) != null), s, "n");
+    const n = vval(all.find(k => vval(k, s) != null), s, "n");
     return `<div class="card"><h3>${esc(M.vision.suites[s].label)}</h3><p class="sub">${esc(M.vision.suites[s].task)}, n=${n}</p><div data-vsuite="${s}"></div></div>`;
   }).join("");
   document.querySelectorAll("#vision-multiples [data-vsuite]").forEach(el => {
@@ -539,63 +781,142 @@ function drawVision() {
 }
 
 function renderVisionTables() {
-  const ks = vruns();
-  if (!ks.length) return;
-  const name = k => `<div class="model"><i style="background:${color(k)}"></i><span><b>${esc(M.models[k].label)}</b><small>${esc(M.models[k].maker)}</small></span></div>`;
+  const all = vruns();
+  if (!all.length) return;
+  const ks = all.filter(shown);
+  const name = k => `<div class="model"><i style="background:${color(k)}"></i><span><b>${highlight(M.models[k].label)}</b><small>${highlight(M.models[k].maker)}</small></span></div>`;
   const pct = v => v == null ? '<span class="na">–</span>' : (100 * v).toFixed(1);
   const gap = (t, i) => {
     if (t == null || i == null) return '<span class="na">–</span>';
     const d = Math.round(1000 * (i - t)) / 10;
     return d === 0 ? "0.0" : `${d > 0 ? "+" : "−"}${Math.abs(d).toFixed(1)}`;
   };
+  const none = cols => `<tr class="empty"><td colspan="${cols}">No vision run matches the filter.</td></tr>`;
   const byIdx = ks.slice().sort((a, b) => (vindex(b) ?? 0) - (vindex(a) ?? 0));
   const pairs = vsuites().filter(s => M.vision.suites[s].text);
   $("vision-gap").innerHTML = `<thead><tr><th scope="col">Model</th>${pairs.map(s => `<th scope="col">${esc(M.vision.suites[s].short)}, text</th><th scope="col">As image</th><th scope="col">Gap</th>`).join("")}</tr></thead><tbody>` +
-    byIdx.map(k => `<tr><td>${name(k)}</td>${pairs.map(s => { const t = val(k, M.vision.suites[s].text), i = vval(k, s); return `<td>${pct(t)}</td><td>${pct(i)}</td><td>${gap(t, i)}</td>`; }).join("")}</tr>`).join("") + "</tbody>";
+    (byIdx.map(k => `<tr><td>${name(k)}</td>${pairs.map(s => { const t = val(k, M.vision.suites[s].text), i = vval(k, s); return `<td>${pct(t)}</td><td>${pct(i)}</td><td>${gap(t, i)}</td>`; }).join("")}</tr>`).join("") || none(1 + 3 * pairs.length)) + "</tbody>";
 
   const boxSuites = Object.keys(M.vision.box || {});
-  const boxed = ks.filter(k => boxSuites.some(s => vval(k, s) != null));
-  $("box-sub").textContent = `${boxSuites.map(s => `${M.vision.box[s].label}: ${M.vision.box[s].task.toLowerCase()}`).join("; ")}. A box counts as right when it overlaps the labelled box by at least half (IoU of 0.5 or more). Only ${boxed.map(k => M.models[k].label).join(", ") || "no model yet"} answers Box questions; every other model rejects them.`;
+  const boxedAll = all.filter(k => boxSuites.some(s => vval(k, s) != null)), boxed = boxedAll.filter(shown);
+  $("box-sub").textContent = `${boxSuites.map(s => `${M.vision.box[s].label}: ${M.vision.box[s].task.toLowerCase()}`).join("; ")}. A box counts as right when it overlaps the labelled box by at least half (IoU of 0.5 or more). Only ${boxedAll.map(k => M.models[k].label).join(", ") || "no model yet"} answers Box questions; every other model rejects them.`;
   $("vision-box").innerHTML = `<thead><tr><th scope="col">Model</th><th scope="col">Right (IoU ≥ 0.5)</th><th scope="col">Mean IoU</th><th scope="col">Mean confidence</th><th scope="col">Calibration error</th></tr></thead><tbody>` +
-    boxed.flatMap(k => boxSuites.filter(s => vval(k, s) != null).map(s => `<tr><td>${name(k)}</td><td>${pct(vval(k, s))}%</td><td>${vval(k, s, "mean_iou").toFixed(2)}</td><td>${pct(vval(k, s, "mean_conf"))}%</td><td>${fmtPct(100 * vval(k, s, "ece"))}</td></tr>`)).join("") + "</tbody>";
+    (boxed.flatMap(k => boxSuites.filter(s => vval(k, s) != null).map(s => `<tr><td>${name(k)}</td><td>${pct(vval(k, s))}%</td><td>${vval(k, s, "mean_iou").toFixed(2)}</td><td>${pct(vval(k, s, "mean_conf"))}%</td><td>${fmtPct(100 * vval(k, s, "ece"))}</td></tr>`)).join("") || none(5)) + "</tbody>";
 
-  const vper1k = k => V[k].cost && V[k].cost.usd != null ? 1000 * V[k].cost.usd / V[k].cost.calls : null;
   $("vision-cost").innerHTML = `<thead><tr><th scope="col">Model</th><th scope="col">Calibration error</th><th scope="col">Median latency</th><th scope="col">Per 1,000 calls</th><th scope="col">Input tokens per call</th></tr></thead><tbody>` +
-    byIdx.map(k => { const r = V[k], c = vper1k(k); return `<tr><td>${name(k)}</td><td>${r.all ? fmtPct(100 * r.all.ece) : "–"}</td><td>${r.latency_ms ? fmtMs(r.latency_ms.p50) : "–"}</td><td>${c != null ? fmtUsd(c) : '<span class="na">–</span>'}</td><td>${r.cost?.calls ? Math.round(r.cost.input_tokens / r.cost.calls).toLocaleString("en") : "–"}</td></tr>`; }).join("") + "</tbody>";
+    (byIdx.map(k => { const r = V[k], c = vper1k(k); return `<tr><td>${name(k)}</td><td>${r.all ? fmtPct(100 * r.all.ece) : "–"}</td><td>${r.latency_ms ? fmtMs(r.latency_ms.p50) : "–"}</td><td>${c != null ? fmtUsd(c) : '<span class="na">–</span>'}</td><td>${r.cost?.calls ? Math.round(r.cost.input_tokens / r.cost.calls).toLocaleString("en") : "–"}</td></tr>`; }).join("") || none(5)) + "</tbody>";
 
-  const none = (M.vision.no_image || []).filter(k => M.models[k]).map(k => M.models[k].label);
-  $("vision-note").textContent = `${ks.length} models on OpenRouter's Decisions API accept images, and run 5 image datasets in English and Arabic with the same request body. ` +
-    (none.length ? `${none.join(", ")} reject image input, so they have no vision score. ` : "") +
+  // The vision note says plainly where the text leader lands here, so the two indexes never read as contradicting.
+  const noImg = (M.vision.no_image || []).filter(k => M.models[k]).map(k => M.models[k].label);
+  const t = textRanking(), v = visionRanking(), vr = v.indexOf(t[0]);
+  const order = !t.length || !v.length ? "" : t[0] === v[0] ? `${M.models[v[0]].label} leads both indexes. `
+    : `The two indexes rank models differently: ${M.models[v[0]].label} leads here, while ${M.models[t[0]].label}, which leads the System One Index, ${vr >= 0 ? `is ${ordinal(vr + 1)} on images` : "doesn't read images"}. `;
+  $("vision-note").textContent = `${all.length} models on OpenRouter's Decisions API accept images, and run 5 image datasets in English and Arabic with the same request body. ` +
+    (noImg.length ? `${noImg.join(", ")} reject image input, so they have no vision score. ` : "") + order +
     "The Vision Index is kept apart from the System One Index, so models without image input aren't penalised there.";
 }
 
+// ---------- leaderboard ----------
+// Sortable columns. Each knows which way is better, so the first click on it puts the best first.
+const COLS = [
+  { id: "index", label: "Index", hint: "text, 16 datasets", get: x => x.idx, better: "high" },
+  { id: "en", label: "English", hint: "8 datasets", get: x => index(x.k, "English"), better: "high" },
+  { id: "ar", label: "Arabic", hint: "7 datasets", get: x => index(x.k, "Arabic"), better: "high" },
+  { id: "vision", label: "Vision Index", hint: "5 image datasets", get: x => vindex(x.k), better: "high" },
+  { id: "ece", label: "Calibration error", hint: "text", get: x => 100 * x.r.all.ece, better: "low" },
+  { id: "lat", label: "Median latency", hint: "text", get: x => x.r.latency_ms?.p50 ?? null, better: "low" },
+  { id: "cost", label: "Cost", hint: "per 1,000 text calls", get: x => per1k(x.k), better: "low" },
+];
+let sortBy = "index", sortDir = "desc";
+const expanded = new Set();
+
 function renderBoard() {
   const all = suites("all").length;
-  const rows = runs().map(k => ({ k, m: M.models[k], r: R[k], cover: Object.keys(R[k]).filter(x => x.startsWith("suite:")).length, idx: index(k) }));
-  const byIdx = (a, b) => (b.idx ?? b.r.all.acc * 100) - (a.idx ?? a.r.all.acc * 100);
-  const line = x => {
-    const c = per1k(x.k);
-    return `<tr class="${x.m.chart === false ? "dim" : ""}" title="${esc(x.m.slug)}: ${esc(x.m.latency)}, run ${date(x.m.run)}${x.m.note ? ". " + esc(x.m.note) : ""}">
-      <td><div class="model"><i style="background:${color(x.k)}"></i><span><b>${esc(x.m.label)}</b><small>${esc(x.m.maker)}, ${esc(x.m.access)}, ${date(x.m.run)}</small></span></div></td>
-      <td data-label="Index">${x.idx != null ? fmtIdx(x.idx) : '<span class="na">–</span>'}</td>
-      <td data-label="Accuracy">${(100 * x.r.all.acc).toFixed(1)}%</td>
-      <td data-label="Calibration error">${fmtPct(100 * x.r.all.ece)}</td>
-      <td data-label="Median latency">${x.r.latency_ms ? fmtMs(x.r.latency_ms.p50) : '<span class="na">–</span>'}</td>
-      <td data-label="Cost per 1,000 calls">${c != null ? fmtUsd(c) : `<span class="na">${x.m.access.startsWith("Open weights") ? "Local" : "Not reported"}</span>`}</td>
-      <td data-label="Failed answers">${x.r.all.failed ? x.r.all.failed.toLocaleString("en") : "0"}</td>
-      <td data-label="Datasets">${x.cover} of ${all}</td></tr>`;
+  COLS[1].hint = `${suites("English").length} datasets`; COLS[2].hint = `${suites("Arabic").length} datasets`; COLS[0].hint = `text, ${all} datasets`; COLS[3].hint = `${vsuites().length} image datasets`;
+  $("board").querySelector("thead").innerHTML = `<tr><th scope="col" class="rank">#</th><th scope="col">Model</th>${COLS.map(c =>
+    `<th scope="col"${c.id === sortBy ? ` aria-sort="${sortDir === "desc" ? "descending" : "ascending"}"` : ""}><button type="button" data-sort="${c.id}">${c.label}</button><small>${c.hint}</small></th>`).join("")}</tr>`;
+  $("board").querySelectorAll("[data-sort]").forEach(b => b.onclick = () => {
+    const c = COLS.find(x => x.id === b.dataset.sort);
+    if (sortBy === c.id) sortDir = sortDir === "desc" ? "asc" : "desc";
+    else { sortBy = c.id; sortDir = c.better === "high" ? "desc" : "asc"; }
+    renderBoard();
+  });
+
+  const col = COLS.find(c => c.id === sortBy);
+  const cmp = (a, b) => {
+    const va = col.get(a), vb = col.get(b);
+    if (va == null && vb == null) return (b.idx ?? 100 * b.r.all.acc) - (a.idx ?? 100 * a.r.all.acc);
+    if (va == null) return 1;
+    if (vb == null) return -1;
+    return sortDir === "desc" ? vb - va : va - vb;
   };
-  const group = (rs, title) => rs.length ? `<tr class="group"><td colspan="8">${title}</td></tr>` + rs.map(line).join("") : "";
+  const rows = runs().filter(shown).map(k => ({ k, m: M.models[k], r: R[k], cover: Object.keys(R[k]).filter(x => x.startsWith("suite:")).length, idx: index(k) }));
+  const topText = textRanking()[0], topVision = visionRanking()[0];
+  const noImage = new Set(M.vision?.no_image || []);
+  const cell = (label, html) => `<td data-label="${label}">${html}</td>`;
+  const dash = '<span class="na">–</span>';
+  const line = (x, rank) => {
+    const c = per1k(x.k), vi = vindex(x.k), isOpen = expanded.has(x.k);
+    const bar = (v, k, top) => `<span class="idx${top ? " top1" : ""}">${fmtIdx(v)}<span style="--w:${v.toFixed(1)}%;--c:${color(k)}"></span></span>`;
+    return `<tr class="row${x.m.chart === false ? " dim" : ""}" data-k="${esc(x.k)}">
+      <td class="rank">${rank ?? ""}</td>
+      <td><div class="model"><button type="button" class="more" aria-expanded="${isOpen}" aria-controls="d-${esc(x.k)}"><i style="background:${color(x.k)}"></i><span><b>${highlight(x.m.label)}${x.m.tag ? `<span class="tag">${esc(x.m.tag)}</span>` : ""}</b><small>${highlight(x.m.maker)}, ${highlight(x.m.access)}${x.r.all.failed ? `<span class="fail">${x.r.all.failed.toLocaleString("en")} failed, counted wrong</span>` : ""}</small></span></button></div></td>
+      ${cell("Index", x.idx != null ? bar(x.idx, x.k, x.k === topText) : dash)}
+      ${cell("English", index(x.k, "English") != null ? fmtIdx(index(x.k, "English")) : dash)}
+      ${cell("Arabic", index(x.k, "Arabic") != null ? fmtIdx(index(x.k, "Arabic")) : dash)}
+      ${cell("Vision Index", vi != null ? bar(vi, x.k, x.k === topVision) : `<span class="na">${noImage.has(x.k) ? "No image input" : "Not run"}</span>`)}
+      ${cell("Calibration error", fmtPct(100 * x.r.all.ece))}
+      ${cell("Median latency", x.r.latency_ms ? fmtMs(x.r.latency_ms.p50) + (local(x.k) ? '<span class="tag">local</span>' : "") : dash)}
+      ${cell("Cost per 1,000 calls", c != null ? fmtUsd(c) : `<span class="na">${local(x.k) ? "Local" : "Not reported"}</span>`)}
+    </tr>` + (isOpen ? `<tr class="detail" id="d-${esc(x.k)}"><td colspan="${COLS.length + 2}">${detail(x)}</td></tr>` : "");
+  };
+  const group = (rs, title) => rs.length ? `<tr class="group"><td colspan="${COLS.length + 2}">${title}</td></tr>` + rs.map(x => line(x)).join("") : "";
   const cur = rows.filter(x => x.m.chart !== false);
-  $("board").querySelector("tbody").innerHTML =
-    cur.filter(x => x.cover === all).sort(byIdx).map(line).join("") +
-    group(cur.filter(x => x.cover < all).sort(byIdx), "Ran only some of the datasets") +
-    group(rows.filter(x => x.m.chart === false), "Earlier runs and retired models, kept for reference");
+  const main = cur.filter(x => x.cover === all).sort(cmp);
+  const html = main.map((x, i) => line(x, i + 1)).join("") +
+    group(cur.filter(x => x.cover < all).sort(cmp), "Ran only some of the datasets") +
+    group(rows.filter(x => x.m.chart === false).sort(cmp), "Earlier runs and retired models, kept for reference");
+  $("board").querySelector("tbody").innerHTML = html || `<tr class="empty"><td colspan="${COLS.length + 2}">No model matches “${esc(query.trim())}”${makers.size ? ` from ${[...makers].map(esc).join(" or ")}` : ""}. <button type="button" class="filter-status" data-clear style="color:var(--accent);background:none;border:0;cursor:pointer;text-decoration:underline">Clear the filter</button></td></tr>`;
+  $("board").querySelectorAll("tr.row").forEach(tr => tr.onclick = e => {
+    if (e.target.closest("a")) return;
+    const k = tr.dataset.k;
+    expanded.has(k) ? expanded.delete(k) : expanded.add(k);
+    renderBoard();
+    $("board").querySelector(`tr.row[data-k="${CSS.escape(k)}"] .more`)?.focus({ preventScroll: true });
+  });
+}
+
+// One model's run: where it came from, then every dataset with its rank among the charted models.
+function detail(x) {
+  const m = x.m, cmpSet = charted();
+  const rankIn = (get, k) => { const vs = cmpSet.map(get).filter(v => v != null); const me = get(k); return { r: 1 + vs.filter(v => v > me).length, n: vs.length, best: me === Math.max(...vs) }; };
+  const li = (label, v, rk) => `<li class="${rk.best ? "best" : ""}"><span>${esc(label)}</span><span><b>${(100 * v).toFixed(1)}</b><em>${ordinal(rk.r)}/${rk.n}</em></span></li>`;
+  const text = Object.keys(M.suites).filter(s => val(x.k, s) != null)
+    .map(s => li(M.suites[s].label + (M.suites[s].lang !== "English" && !M.suites[s].label.includes(M.suites[s].lang) ? ` (${M.suites[s].lang})` : ""), val(x.k, s), rankIn(k => val(k, s), x.k))).join("");
+  const vis = V?.[x.k] ? vsuites().filter(s => vval(x.k, s) != null)
+    .map(s => li(M.vision.suites[s].label, vval(x.k, s), rankIn(k => vruns().includes(k) ? vval(k, s) : null, x.k))).join("") : "";
+  const box = V?.[x.k] ? Object.keys(M.vision?.box || {}).filter(s => vval(x.k, s) != null)
+    .map(s => `<li><span>${esc(M.vision.box[s].label)} boxes, right</span><span><b>${(100 * vval(x.k, s)).toFixed(1)}</b><em>IoU ${vval(x.k, s, "mean_iou").toFixed(2)}</em></span></li>`).join("") : "";
+  const noImage = (M.vision?.no_image || []).includes(x.k);
+  return `<div class="detail-grid">
+    <div><h4>This run</h4><dl>
+      <dt>Model id</dt><dd><code>${esc(m.slug)}</code></dd>
+      <dt>Maker</dt><dd>${esc(m.maker)}</dd>
+      <dt>Runs on</dt><dd>${esc(m.access)}</dd>
+      <dt>Run date</dt><dd>${date(m.run)}</dd>
+      <dt>Latency</dt><dd>${esc(m.latency)}${x.r.latency_ms ? `, ${fmtMs(x.r.latency_ms.p50)} median, ${fmtMs(x.r.latency_ms.p95)} 95th percentile` : ""}</dd>
+      <dt>Accuracy</dt><dd>${(100 * x.r.all.acc).toFixed(1)}% over all ${x.r.all.n.toLocaleString("en")} questions</dd>
+      <dt>Datasets</dt><dd>${x.cover} of ${suites("all").length} text${V?.[x.k] ? `, ${vsuites().filter(s => vval(x.k, s) != null).length} of ${vsuites().length} image` : ""}</dd>
+    </dl>${m.note ? `<p>${esc(m.note)}</p>` : ""}</div>
+    <div><h4>Text datasets, accuracy and rank</h4><ul>${text}</ul></div>
+    <div class="vision-only"><h4>Image datasets</h4>${vis || box ? `<ul>${vis}${box}</ul>` : `<p>${noImage ? "Rejects image input, so it has no vision score." : "Not run on the vision track."}</p>`}</div>
+  </div>`;
 }
 
 function renderMatrix() {
-  const ks = runs();
-  const ranked = charted();  // the earlier reference run is listed but never marked as a winner
+  const ks = runs().filter(shown);
+  const ranked = charted();  // earlier reference runs are listed but never marked as winners, and the filter never changes who won
+  if (!ks.length) { $("matrix").innerHTML = '<tbody><tr class="empty"><td>No model matches the filter.</td></tr></tbody>'; return; }
   $("matrix").innerHTML = `<thead><tr><th scope="col">Dataset</th>${ks.map(k => `<th scope="col">${esc(M.models[k].label)}${M.models[k].chart === false ? ` (${esc(M.models[k].tag || "earlier run")})` : ""}</th>`).join("")}</tr></thead><tbody>` +
     suites("all").map(s => {
       const vs = ranked.map(k => val(k, s, metric)).filter(v => v != null);
@@ -610,6 +931,18 @@ function renderMatrix() {
 function renderRoadmap() {
   $("road").innerHTML = (M.roadmap || []).map(g => `<div class="card"><h3>${esc(g.title)}</h3><p class="count">${g.items.length} ${g.items.length === 1 ? "entry" : "entries"}</p><ul>${
     g.items.map(i => `<li><b>${esc(i.name)}</b>${i.access ? `<code>${esc(i.access)}</code>` : ""}<span>${esc(i.note)}</span></li>`).join("")}</ul></div>`).join("");
+}
+
+// Marks the nav link of the section on screen.
+function watchNav() {
+  if (!("IntersectionObserver" in window)) return;
+  const links = [...document.querySelectorAll(".top nav a[href^='#']")];
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    const id = e.target.id === "tradeoffs" || e.target.id === "calibration" ? "index" : e.target.id;
+    links.forEach(a => a.setAttribute("aria-current", String(a.getAttribute("href") === "#" + id)));
+  }), { rootMargin: "-40% 0px -55% 0px" });
+  document.querySelectorAll("main .section[id]").forEach(s => io.observe(s));
 }
 
 function tabs(id, onPick) {
