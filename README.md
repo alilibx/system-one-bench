@@ -10,6 +10,7 @@ Models covered so far:
 | Model | Maker | How it runs | Round |
 |---|---|---|---|
 | Jev 1.13 (`typesafe/jev-1.13`) | TypeSafe | OpenRouter Decisions API, or the TypeSafe API | all |
+| Jev 1.14 (`typesafe/jev-1.14`), preview | TypeSafe | OpenRouter Decisions API | 2026-10-15 |
 | GPT-6 Luna Decisions (`openai/gpt-6-luna-decisions`) | OpenAI | OpenRouter Decisions API | 2026-10-07 |
 | Decider V1.1 27B (`perplexity/pplx-decider-v1.1-27b`) | Perplexity | OpenRouter Decisions API | 2026-10-12 |
 | Decider V1 27B (`perplexity/pplx-decider-v1-27b`), retired | Perplexity | OpenRouter Decisions API, no longer served | 2026-10-07 |
@@ -50,12 +51,10 @@ mkdir -p _site && cp site/* results.json _site/ && python3 -m http.server 8062 -
 ## Roadmap
 
 The roadmap lives in `site/meta.json` and is published at [systemonebench.dev/#roadmap](https://systemonebench.dev/#roadmap).
-As of 2026-10-15 it lists Jev 1.14 (`typesafe/jev-1.14`, a TypeSafe preview released 2026-10-14) as next on
-OpenRouter's Decisions API, 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
+As of 2026-10-15 it lists 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
 Decision, Hanzo Kai 1, meraGPT Decider 1), 6 open-weight families to run locally (including Liquid AI's d1-3B and
-d1-omni-600M, vLLM's d3 and the Kev size sweep), 2 entries that need a track of their own, and 3 on a watch list. Jev 1.14 is the
-only model on OpenRouter's Decisions API not yet benchmarked; it's already a lane in the live race (`jev-1.14`), and
-`run_decisions.py --model typesafe/jev-1.14 --name or_jev_114` runs it on every case. Several vendors publish their own scores; none go on the
+d1-omni-600M, vLLM's d3 and the Kev size sweep), 2 entries that need a track of their own, and 3 on a watch list. Everything that
+runs as-is on OpenRouter's Decisions API has been benchmarked. Several vendors publish their own scores; none go on the
 site until they've run here like every other model.
 
 ## Live race
@@ -95,8 +94,11 @@ To rebuild the published file, pass every run:
 .venv/bin/python score.py preds_laya_router.jsonl preds_laya_ara.jsonl preds_laya_ara-rag.jsonl preds_jev.jsonl \
   preds_or_jev.jsonl preds_luna.jsonl preds_pplx.jsonl preds_liquid_d1.jsonl preds_clef.jsonl preds_clef_flash.jsonl \
   preds_solar.jsonl preds_mercury.jsonl preds_kev.jsonl preds_tev1.jsonl preds_msft_d1.jsonl preds_pplx_v11.jsonl \
-  preds_clef_omni.jsonl preds_drex.jsonl preds_solar_flash.jsonl
+  preds_clef_omni.jsonl preds_drex.jsonl preds_solar_flash.jsonl preds_or_jev_114.jsonl
 ```
+
+Jev 1.14's latency is set to `null` in the published `results.json` (see [round 5](#round-5-jev-114-2026-10-15)), so
+null it again after a full re-score.
 
 Models on their vendor's own API take the same request body. `--provider fastino|celeris|hanzo|meragpt` sets the
 endpoint, model id and auth header, and reads the key from `FASTINO_API_KEY`, `CELERIS_API_KEY`, `HANZO_API_KEY` or
@@ -149,6 +151,29 @@ The other open models need their own runners:
 A 24 GB Mac fits everything up to 9B at Q8. The 27B models (Kev 27B, d3 27B, Open-Jev 27B) and Open-Jev 9B, whose base
 model alone is 19 GB, need a bigger machine. Laya Multilingual is already covered: Laya Router sends every non-English
 state, Arabic and French included, to those same weights.
+
+## Round 5: Jev 1.14 (2026-10-15)
+
+TypeSafe released Jev 1.14 on 2026-10-14 as a preview; Jev 1.13 is still its stable release. It adds image input, a
+bounding-box question type and a 262K context window, none of which these text datasets use. It ran all 3,250 cases
+through OpenRouter's Decisions API with 8 calls in flight, served as `typesafe/jev-1.14-20261014`. Every call
+succeeded. To check the rebuilt cases and to measure latency like for like, Jev 1.13 ran again from the same machine the
+same day; that control run isn't published.
+
+| Model | Index | English | Arabic | Calibration error | Median latency, same machine | Cost per 1,000 calls |
+|---|---|---|---|---|---|---|
+| **Jev 1.14** | **79.3** | **78.8** | **80.3** | 6.0% | 141 ms | $0.028 |
+| Jev 1.13, published (2026-10-07) | 79.0 | 78.5 | 79.9 | 6.1% | | $0.028 |
+| Jev 1.13, control (2026-10-15) | 79.0 | 78.7 | 79.5 | 5.9% | 143 ms | $0.028 |
+
+- Jev 1.14 places 8th of 16 on the System One Index, 0.3 points above Jev 1.13. That's within run-to-run noise: the
+  control run of Jev 1.13 moved individual datasets by up to 1.5 points against the published one.
+- The one clear gain is customer-service decisions in typed-decisions: 83.6% against 77.4% and 78.2% for the two Jev
+  1.13 runs. Its biggest drop is Arabic offensive language (87.0% against 90.0%).
+- Same price, and the same billed tokens: both cost $0.091 for all 3,250 cases.
+- This run came from a cloud server closer to OpenRouter than the machine behind every other run, so its latency isn't
+  charted on the site. From that server Jev 1.14 and Jev 1.13 are the same speed: 141 ms and 143 ms median with 8 calls
+  in flight, 126 ms and 136 ms one call at a time.
 
 ## Round 4: four more models from OpenRouter (2026-10-12)
 

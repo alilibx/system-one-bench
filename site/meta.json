@@ -20,7 +20,18 @@
       "run": "2026-10-07",
       "series": 1,
       "latency": "API, 8 in flight",
-      "short": "Jev"
+      "short": "Jev 1.13"
+    },
+    "or_jev_114": {
+      "label": "Jev 1.14",
+      "maker": "TypeSafe",
+      "access": "OpenRouter API",
+      "slug": "typesafe/jev-1.14",
+      "run": "2026-10-15",
+      "series": 1,
+      "latency": "API, 8 in flight",
+      "short": "Jev 1.14",
+      "note": "Preview release. Run from a cloud server, closer to OpenRouter than the other models' runs, so its latency isn't charted: there it measured 141 ms median against 143 ms for Jev 1.13"
     },
     "luna": {
       "label": "GPT-6 Luna Decisions",
@@ -300,16 +311,6 @@
     }
   },
   "roadmap": [
-    {
-      "title": "Next: on OpenRouter's Decisions API",
-      "items": [
-        {
-          "name": "Jev 1.14",
-          "access": "typesafe/jev-1.14",
-          "note": "Released 14 October 2026 as a preview; Jev 1.13 is still TypeSafe's stable release. Adds image input, a bounding-box question type and a 262K context window, none of which our text datasets use. Same price as Jev 1.13: $0.042 per 1M input tokens, output free."
-        }
-      ]
-    },
     {
       "title": "Next: own API, same request shape",
       "items": [

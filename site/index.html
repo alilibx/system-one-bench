@@ -241,7 +241,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
           <li>Accuracy compares the most likely answer with the dataset's label. A failed call counts as wrong.</li>
           <li>Calibration error is top-label ECE over 10 bins. Log loss, Brier score and more are in <a href="results.json">results.json</a>.</li>
           <li>Cost is the summed <code>usage.cost</code> the API reports.</li>
-          <li>API latency was measured through OpenRouter with 8 requests in flight for Jev, GPT-6 Luna Decisions and the models added on 12 October, and 6 for the rest (Solar Decide finished at 24 because it's slow on long states); Laya ran locally on an Apple M5 GPU, one call at a time.</li>
+          <li>API latency was measured through OpenRouter with 8 requests in flight for Jev, GPT-6 Luna Decisions and the models added on 12 October, and 6 for the rest (Solar Decide finished at 24 because it's slow on long states); Laya ran locally on an Apple M5 GPU, one call at a time. Jev 1.14 ran from a cloud server closer to OpenRouter, so its latency isn't charted.</li>
           <li>Nothing was tuned on test data. Some open-weight fine-tunes trained on related data; the repo README lists which.</li>
         </ul>
       </div>
@@ -410,7 +410,8 @@ function scatter(el, pts, { xFmt, xLabel, note }) {
       spots.push({ x: lx + (right ? 3 : -3), y: ly + 4, a: right ? "start" : "end", lead: { x1: cx + 8 * Math.cos(t), y1: cy + 8 * Math.sin(t), x2: lx, y2: ly } });
     }
     // A leader must not pass over another dot, and its label keeps clear of other dots, so it can't be misread.
-    const others = pts.filter(q => q !== p).map(q => [X(q.x), Y(q.y)]);
+    // Dots drawn on top of this one (same cost, near-equal index) don't count: every leader would start over them.
+    const others = pts.filter(q => q !== p).map(q => [X(q.x), Y(q.y)]).filter(([qx, qy]) => Math.hypot(qx - cx, qy - cy) > 6);
     const nearSeg = ({ x1, y1, x2, y2 }, [qx, qy]) => { const dx = x2 - x1, dy = y2 - y1, t = Math.max(0, Math.min(1, ((qx - x1) * dx + (qy - y1) * dy) / (dx * dx + dy * dy))); return Math.hypot(x1 + t * dx - qx, y1 + t * dy - qy) < 10; };
     const clear = o => !o.lead || (!others.some(q => nearSeg(o.lead, q)) && !others.some(([qx, qy]) => qx > o.b.x0 - 9 && qx < o.b.x1 + 9 && qy > o.b.y0 - 9 && qy < o.b.y1 + 9));
     const spot = spots.map(o => ({ ...o, b: o.a === "end" ? { x0: o.x - tw, x1: o.x, y0: o.y - 12, y1: o.y + 3 } : { x0: o.x, x1: o.x + tw, y0: o.y - 12, y1: o.y + 3 } }))
