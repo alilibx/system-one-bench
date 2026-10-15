@@ -40,9 +40,21 @@ cases through the same scorer. The [roadmap](#roadmap) lists what's next.
 ## Results site
 
 `site/` is a static page that reads `results.json`, `results_vision.json` and `site/meta.json` (display names, makers, run
-dates, dataset descriptions, and the vision track's datasets). Its layout follows [Artificial Analysis](https://artificialanalysis.ai/): a headline **System One Index** (mean
-accuracy across datasets, equal weight per dataset, 0 to 100, with English and Arabic sub-indexes), index-against-latency
-and index-against-cost scatters with a Pareto line, calibration, latency and cost bar charts, and one bar chart per dataset. `.github/workflows/pages.yml` publishes it to GitHub Pages on every push to `main` that touches
+dates, dataset descriptions, and the vision track's datasets). Its layout follows [Artificial Analysis](https://artificialanalysis.ai/):
+
+- **Two tracks, two indexes.** The **System One Index** (text: mean accuracy across the 16 datasets, equal weight per
+  dataset, 0 to 100, with English and Arabic sub-indexes) and the **Vision Index** (the same over the 5 image datasets).
+  They rank models separately. The headline and the leader tiles are computed from the data and name the leader of
+  each, with its margin, so the page never claims one model leads both unless it does.
+- **Search and filters.** The search box (press `/`) and the maker chips filter every chart and table at once, and the
+  filter is kept in the URL (`?q=clef`, `?maker=Perplexity`) so a filtered view can be shared.
+- **Leaderboard.** One table with both indexes side by side, sortable by any column. Clicking a model shows its run
+  details and every dataset score with its rank.
+- **Charts.** Index-against-latency and index-against-cost scatters with a Pareto line, calibration, latency and cost
+  bar charts, one bar chart per dataset, and the vision track's charts and tables. Latency charts show API models only:
+  Laya runs locally, so its timing doesn't compare and is listed in the leaderboard instead.
+
+`.github/workflows/pages.yml` publishes it to GitHub Pages on every push to `main` that touches
 `results.json`, `results_vision.json` or `site/`, so re-running `score.py` and merging updates it. Each run needs an entry in `site/meta.json` with its run
 date; the newest run date becomes the page's "Updated" date, and runs without an entry are listed as not shown.
 The site is served at systemonebench.dev: the domain's DNS (Vercel) points the apex at GitHub Pages' A records and
@@ -56,8 +68,8 @@ mkdir -p _site && cp site/* results.json results_vision.json _site/ && python3 -
 
 The roadmap lives in `site/meta.json` and is published at [systemonebench.dev/#roadmap](https://systemonebench.dev/#roadmap).
 As of 2026-10-15 it lists 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
-Decision, Hanzo Kai 1, meraGPT Decider 1), 6 open-weight families to run locally (including Liquid AI's d1-3B and
-d1-omni-600M, vLLM's d3 and the Kev size sweep), 2 entries that need a track of their own, and 3 on a watch list. Everything that
+Decision, Hanzo Kai 1, meraGPT Decider 1), 7 open-weight families to run locally (including Liquid AI's d1-3B and
+d1-omni-600M, the Naluri encoders, vLLM's d3 and the Kev size sweep), 2 entries that need a track of their own, and 3 on a watch list. Everything that
 runs as-is on OpenRouter's Decisions API has been benchmarked. Several vendors publish their own scores; none go on the
 site until they've run here like every other model.
 
@@ -166,7 +178,7 @@ TYPESAFE_API_KEY=<your key> .venv/bin/python run_jev.py
 ## Vision track
 
 `build_images.py` builds 1,200 image cases (200 per dataset) into `image_cases.jsonl`, with the images under `images/`.
-A case's `state` holds `{"image": "images/<suite>/<n>.jpg"}`, and `run_decisions.py` sends it as an `image_url` part with a
+A case's `state` holds `{"image": "images/<suite>/<n>.jpg"}` (`.png` for the two rendered-text datasets), and `run_decisions.py` sends it as an `image_url` part with a
 base64 data URL, the shape OpenRouter's Decisions API reads. Every image is rotated by its EXIF tag and resized to fit
 every model's limits: each side 280 to 1,568 px, at least 78,400 pixels, at most about 300 KB.
 
@@ -260,6 +272,8 @@ from the System One Index.
 
 - Jev 1.14 leads the Vision Index by 1.2 points over Jev 1.13, mostly on pet breeds (+5.0) and the Arabic tweets
   (+4.5). Both Jevs are the best calibrated on images.
+- The two indexes rank models differently. Decider V1.1 27B, which leads the System One Index on text, is 3rd on
+  images (83.0), 2.1 points behind Jev 1.14; Jev 1.14 is 8th on text. Neither model leads both.
 - Reading English from a picture costs little: every model is within 7.5 points of its text SST-2 score, and Decider,
   Jev 1.13 and Clef Flash lose nothing. Reading Arabic from a picture costs a lot: 12.5 to 23.5 points on the same 200
   tweets. GPT-6 Luna Decisions is best at it (67.0); the Clef models fall to near the 3-way floor.
@@ -301,7 +315,7 @@ published.
 - The one clear gain is customer-service decisions in typed-decisions: 83.6% against 77.4% and 78.2% for the two Jev
   1.13 runs. Its biggest drop is Arabic offensive language (87.0% against 90.0%).
 - Same price, and the same billed tokens: both cost $0.091 for all 3,250 cases.
-- Jev 1.14 is the fastest model on the board, but only just: 136 ms median against 150 ms for Jev 1.13, timed from
+- Jev 1.14 is the fastest API model on the board, but only just: 136 ms median against 150 ms for Jev 1.13, timed from
   the same machine on the same day (see [latency](#latency-every-api-model-from-one-machine-2026-10-15)). In the control
   run earlier that day the two were 141 ms and 143 ms.
 
@@ -324,7 +338,7 @@ at the time. The retired Decider V1 and the TypeSafe API run of Jev keep their o
 | GPT-6 Luna Decisions | OpenAI | 215 ms | 582 ms | 363 ms |
 | Tev1 4B Experimental | Together AI | 232 ms | 292 ms | 518 ms |
 | Microsoft-Decision-1 | Microsoft | 240 ms | 321 ms | 679 ms |
-| Decider V1.1 27B | Perplexity | 262 ms | 605 ms | 678 ms |
+| Decider V1.1 27B | Perplexity | 263 ms | 605 ms | 678 ms |
 | Clef Flash | Cloudflare | 267 ms | 437 ms | 534 ms |
 | Mercury Decide | Inception | 276 ms | 820 ms | 490 ms |
 | Clef | Cloudflare | 310 ms | 436 ms | 706 ms |
@@ -354,7 +368,7 @@ kept for reference.
 | Drex v1.5 | Nace AI | 77.6 | 77.6 | 77.0 | 10.8% | 608 ms | $0.010 |
 | Solar Decide Flash | Upstage | 63.6 | 61.3 | 66.5 | 14.4% | 908 ms | $0.042 |
 
-- Decider V1.1 matches V1 on accuracy (83.4 against 83.3) and still leads the index, at half V1's price per token. It's
+- Decider V1.1 matches V1 on accuracy (83.4 against 83.3) and still leads the System One Index, at half V1's price per token. It's
   now also the cheapest paid model. It's slower: 785 ms one call at a time, against 352 ms for V1.
 - Clef Omni, Cloudflare's model that also reads audio and video, places 7th, between Clef Flash and Jev, and is well
   calibrated (3.4%).

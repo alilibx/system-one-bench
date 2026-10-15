@@ -31,7 +31,8 @@
       "series": 1,
       "latency": "API, 8 in flight, timed 15 October 2026",
       "short": "Jev 1.14",
-      "note": "Preview release"
+      "note": "Preview release",
+      "tag": "preview"
     },
     "luna": {
       "label": "GPT-6 Luna Decisions",
