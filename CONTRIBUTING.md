@@ -84,5 +84,5 @@ anyone can see what changed and when.
 - Merging to `main` runs `.github/workflows/release.yml`, which publishes every notes file that has no release yet, and
   updates the notes of any release whose file changed. The workflow's token can't publish a release on an older commit whose
   workflow files differ from `main`'s; when that happens, run `python3 .github/scripts/publish_releases.py` from a clone
-  where `gh` is logged in as a maintainer.
+  where `gh` is logged in as a maintainer with the `workflow` scope (`gh auth refresh -h github.com -s workflow`).
 - Credit outside contributors by GitHub handle in the notes.

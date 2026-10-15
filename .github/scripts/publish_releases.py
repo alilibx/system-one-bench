@@ -12,7 +12,8 @@ Run by .github/workflows/release.yml with GH_TOKEN set. `--dry-run` prints what 
 
 The workflow's token can't publish a release on a commit whose workflow files differ from main's (GitHub answers 403,
 even when the tag already exists), which is the case for older commits. For those, run this script from a clone where
-`gh` is logged in as a maintainer: it skips releases that already exist.
+`gh` is logged in as a maintainer with the `workflow` scope (`gh auth refresh -h github.com -s workflow`): it skips
+releases that already exist.
 """
 import json
 import os
@@ -92,6 +93,7 @@ for path in files:
 
 if failed:
     print(f"\nThe workflow's token can't publish {', '.join(failed)}: their commits' workflow files differ from main's.")
-    print("Publish them from a clone where gh is logged in as a maintainer:")
+    print("Publish them from a clone where gh is logged in as a maintainer with the workflow scope:")
+    print("  gh auth refresh -h github.com -s workflow")
     print("  git pull && git fetch --tags && python3 .github/scripts/publish_releases.py")
     sys.exit(1)
