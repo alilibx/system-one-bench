@@ -14,7 +14,7 @@ The cases file must match data.lock.json (--unverified skips the check), and eac
 scored on as data_sha256.
 
 Usage: python score.py preds_laya.jsonl preds_jev.jsonl ...  -> results.json + printed tables
-       python score.py --merge preds_jev_14.jsonl              -> adds or replaces just these runs in results.json
+       python score.py --merge preds_or_jev_114.jsonl            -> adds or replaces just these runs in results.json
        python score.py --cases image_cases.jsonl --out results_vision.json vision/preds_*.jsonl
 """
 import argparse

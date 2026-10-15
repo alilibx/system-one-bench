@@ -50,7 +50,7 @@ def key(name):
 # the same one systemonebench.dev uses.
 API_RACERS = [
     ("jev", "Jev 1.13", "TypeSafe", os.environ.get("JEV_MODEL", "typesafe/jev-1.13"), 1),
-    ("jev-14", "Jev 1.14", "TypeSafe", "typesafe/jev-1.14", 1),
+    ("jev-1.14", "Jev 1.14", "TypeSafe", "typesafe/jev-1.14", 1),
     ("openai", "GPT-6 Luna Decisions", "OpenAI", os.environ.get("OPENAI_DECISIONS_MODEL", "openai/gpt-6-luna-decisions"), 2),
     ("pplx", "Decider V1.1 27B", "Perplexity", "perplexity/pplx-decider-v1.1-27b", 4),
     ("liquid", "d1", "Liquid AI", "liquid/d1", 6),

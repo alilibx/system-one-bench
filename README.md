@@ -10,8 +10,8 @@ Models covered so far:
 
 | Model | Maker | How it runs | Round |
 |---|---|---|---|
-| Jev 1.14 (`typesafe/jev-1.14`) | TypeSafe | OpenRouter Decisions API | 2026-10-15, text and vision |
 | Jev 1.13 (`typesafe/jev-1.13`) | TypeSafe | OpenRouter Decisions API, or the TypeSafe API | all |
+| Jev 1.14 (`typesafe/jev-1.14`), preview | TypeSafe | OpenRouter Decisions API | 2026-10-15, text and vision |
 | GPT-6 Luna Decisions (`openai/gpt-6-luna-decisions`) | OpenAI | OpenRouter Decisions API | 2026-10-07 |
 | Decider V1.1 27B (`perplexity/pplx-decider-v1.1-27b`) | Perplexity | OpenRouter Decisions API | 2026-10-12 |
 | Decider V1 27B (`perplexity/pplx-decider-v1-27b`), retired | Perplexity | OpenRouter Decisions API, no longer served | 2026-10-07 |
@@ -30,6 +30,9 @@ Models covered so far:
 Every API model is called at `POST https://openrouter.ai/api/alpha/decisions`, so they all share one gateway.
 
 **Latest results: [systemonebench.dev](https://systemonebench.dev/)**
+
+**Adding a model or changing the data? Follow the [benchmark rules](CONTRIBUTING.md):** every model runs on the frozen
+data (`python data_lock.py` must match), gets identical requests, and is added without disturbing other runs.
 
 System One Bench is a living benchmark: we keep adding models as they're released, and every new model runs the same
 cases through the same scorer. The [roadmap](#roadmap) lists what's next.
@@ -52,7 +55,7 @@ mkdir -p _site && cp site/* results.json results_vision.json _site/ && python3 -
 ## Roadmap
 
 The roadmap lives in `site/meta.json` and is published at [systemonebench.dev/#roadmap](https://systemonebench.dev/#roadmap).
-As of 2026-10-12 it lists 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
+As of 2026-10-15 it lists 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
 Decision, Hanzo Kai 1, meraGPT Decider 1), 6 open-weight families to run locally (including Liquid AI's d1-3B and
 d1-omni-600M, vLLM's d3 and the Kev size sweep), 2 entries that need a track of their own, and 3 on a watch list. Everything that
 runs as-is on OpenRouter's Decisions API has been benchmarked. Several vendors publish their own scores; none go on the
@@ -83,9 +86,9 @@ Every model on the board has to see the same bytes, including models added month
 
 - **`data.lock.json`** holds a SHA-256 for every suite: each case's `state`, `questions` and gold labels, and every
   image file it points to. `python data_lock.py` checks the local `cases.jsonl` and `image_cases.jsonl` against it.
-- **`run_decisions.py` and `score.py` refuse cases that don't match** and name the suites that differ. Each run scored
-  since 15 October records the hash it ran on as `data_sha256` in the results. `--unverified` skips the check for
-  experiments that aren't for the board.
+- **`run_decisions.py` and `score.py` refuse cases that don't match** and name the suites that differ. Every run
+  `score.py` scores now records the hash it ran on as `data_sha256`; the text runs already on the board were scored
+  before the check existed and don't carry it. `--unverified` skips the check for experiments that aren't for the board.
 - **Every source is pinned.** The build scripts load each Hugging Face dataset at a fixed commit, the fonts come from
   fixed URLs checked by hash, and `requirements-data.txt` pins the libraries. Upstream does move: `lmms-lab` renamed
   itself `lmms-lab-encoder`, and typed-decisions was edited on 14 October (its test split is unchanged).
@@ -123,14 +126,22 @@ export OPENROUTER_API_KEY=<your key>
 ```
 
 `score.py` rewrites `results.json` from only the files you pass, in that order, and the site lists models in that order.
-`--merge` instead keeps the runs already there and adds or replaces just the ones you pass, which is how Jev 1.14 joined
-(`score.py --merge preds_or_jev_14.jsonl`). To rebuild the published file, pass every run:
+`--merge` instead keeps the runs already there and adds or replaces just the ones you pass
+(`score.py --merge preds_or_jev_114.jsonl`). To rebuild the published file, pass every run:
 
 ```bash
 .venv/bin/python score.py preds_laya_router.jsonl preds_laya_ara.jsonl preds_laya_ara-rag.jsonl preds_jev.jsonl \
   preds_or_jev.jsonl preds_luna.jsonl preds_pplx.jsonl preds_liquid_d1.jsonl preds_clef.jsonl preds_clef_flash.jsonl \
   preds_solar.jsonl preds_mercury.jsonl preds_kev.jsonl preds_tev1.jsonl preds_msft_d1.jsonl preds_pplx_v11.jsonl \
-  preds_clef_omni.jsonl preds_drex.jsonl preds_solar_flash.jsonl preds_or_jev_14.jsonl
+  preds_clef_omni.jsonl preds_drex.jsonl preds_solar_flash.jsonl preds_or_jev_114.jsonl
+```
+
+Latency on the site comes from a separate re-run of every API model from one machine (see
+[latency](#latency-every-api-model-from-one-machine-2026-10-15)). After a full re-score, put it back with
+`set_latency.py`, which replaces only `latency_ms`:
+
+```bash
+.venv/bin/python set_latency.py lat/preds_*.jsonl   # re-runs written by run_decisions.py run inside lat/
 ```
 
 Models on their vendor's own API take the same request body. `--provider fastino|celeris|hanzo|meragpt` sets the
@@ -177,9 +188,9 @@ others:
 .venv/bin/python build_images.py                  # needs cases.jsonl; -> image_cases.jsonl, images/
 .venv/bin/python data_lock.py                     # both files should match
 V=img_sst2,img_ar_sentiment,img_pets,img_vqa_yesno,img_count
-.venv/bin/python run_decisions.py --cases image_cases.jsonl --out-dir vision --model typesafe/jev-1.14 --name or_jev_14
+.venv/bin/python run_decisions.py --cases image_cases.jsonl --out-dir vision --model typesafe/jev-1.14 --name or_jev_114
 .venv/bin/python run_decisions.py --cases image_cases.jsonl --out-dir vision --model openai/gpt-6-luna-decisions --name luna --suites $V
-.venv/bin/python score.py --cases image_cases.jsonl --out results_vision.json vision/preds_or_jev_14.jsonl vision/preds_or_jev.jsonl \
+.venv/bin/python score.py --cases image_cases.jsonl --out results_vision.json vision/preds_or_jev_114.jsonl vision/preds_or_jev.jsonl \
   vision/preds_luna.jsonl vision/preds_pplx_v11.jsonl vision/preds_clef.jsonl vision/preds_clef_flash.jsonl \
   vision/preds_clef_omni.jsonl vision/preds_mercury.jsonl
 ```
@@ -221,25 +232,12 @@ A 24 GB Mac fits everything up to 9B at Q8. The 27B models (Kev 27B, d3 27B, Ope
 model alone is 19 GB, need a bigger machine. Laya Multilingual is already covered: Laya Router sends every non-English
 state, Arabic and French included, to those same weights.
 
-## Round 5: Jev 1.14 and the vision track (2026-10-15)
+## Round 6: the vision track (2026-10-15)
 
-TypeSafe released Jev 1.14 on 2026-10-14. It adds images, a Box question type that returns a bounding box, and a 262k
-context; TypeSafe marks all three as early features that aren't production-ready. This round runs Jev 1.14 on the text
-benchmark and starts a vision track for every model on OpenRouter's Decisions API that accepts images. Everything ran
-from a cloud machine, 8 calls in flight per model.
-
-**Text.** Jev 1.14 ran all 3,250 cases, served as `typesafe/jev-1.14`. It billed exactly the 2,157,160 input tokens of
-the Jev 1.13 run, which confirms the cases were rebuilt byte for byte.
-
-| Model | Index | English | Arabic | Calibration error | Cost per 1,000 calls |
-|---|---|---|---|---|---|
-| Jev 1.14 | **79.4** | **78.8** | **80.4** | **5.9%** | $0.028 |
-| Jev 1.13 | 79.0 | 78.5 | 79.9 | 6.1% | $0.028 |
-
-- Jev 1.14 is 0.4 points ahead of Jev 1.13 and places 8th of 16, just behind Clef Omni (79.7). Its gains are spread
-  thin (+2.5 on MASSIVE-ar scenario, +2.0 on XNLI Arabic); it drops 3 points on Arabic offensive language.
-- Same price as Jev 1.13, and the same speed: one call at a time from the cloud machine, Jev 1.14 took 136 ms median
-  and Jev 1.13 140 ms. Its 134 ms on the site is lower than earlier runs because of that machine's network, not the model.
+Jev 1.14 (round 5) can read images and answer Box questions, which return a bounding box; TypeSafe marks both as early
+features that aren't production-ready. This round starts a [vision track](#vision-track) for every model on OpenRouter's
+Decisions API that accepts images: 6 image datasets, 1,200 cases. Every model ran from a cloud server on 15 October,
+8 calls in flight, so the vision latencies compare with each other.
 
 **Vision.** 8 models accept images; d1, Microsoft-Decision-1, Kev 4B, Tev1, Solar Decide, Solar Decide Flash and Drex
 return 400 ("does not accept image_url parts"). The Vision Index is the mean accuracy over 5 image datasets, kept apart
@@ -259,7 +257,7 @@ from the System One Index.
 - Jev 1.14 leads the Vision Index by 1.2 points over Jev 1.13, mostly on pet breeds (+5.0) and the Arabic tweets
   (+4.5). Both Jevs are the best calibrated on images.
 - Reading English from a picture costs little: every model is within 7.5 points of its text SST-2 score, and Decider,
-  Jev 1.13 and Clef Flash lose nothing. Reading Arabic from a picture costs a lot: 13 to 23.5 points on the same 200
+  Jev 1.13 and Clef Flash lose nothing. Reading Arabic from a picture costs a lot: 12.5 to 23.5 points on the same 200
   tweets. GPT-6 Luna Decisions is best at it (67.0); the Clef models fall to near the 3-way floor.
 - Jev bills about 1,100 input tokens per image call, twice what the others count, but its price per token is lower, so
   it costs the same as Luna. Decider V1.1 is again the cheapest paid model.
@@ -280,6 +278,63 @@ from the System One Index.
 - A Box call takes 194 ms median, about the same as Jev's other image calls (182 ms).
 - Jev's image docs give 256 px as the shortest side it accepts, but it answered "Invalid image dimensions" for every
   image with a side under 280 px. `build_images.py` keeps every side at 280 px or more.
+## Round 5: Jev 1.14 (2026-10-15)
+
+TypeSafe released Jev 1.14 on 2026-10-14 as a preview; Jev 1.13 is still its stable release. It adds image input, a
+bounding-box question type and a 262K context window, none of which these text datasets use. It ran all 3,250 cases
+through OpenRouter's Decisions API with 8 calls in flight, served as `typesafe/jev-1.14-20261014`. Every call
+succeeded. To check the rebuilt cases, Jev 1.13 ran again from the same machine the same day; that control run isn't
+published.
+
+| Model | Index | English | Arabic | Calibration error | Median latency | Cost per 1,000 calls |
+|---|---|---|---|---|---|---|
+| **Jev 1.14** | **79.3** | **78.8** | **80.3** | 6.0% | **136 ms** | $0.028 |
+| Jev 1.13, published (2026-10-07) | 79.0 | 78.5 | 79.9 | 6.1% | 150 ms | $0.028 |
+| Jev 1.13, control (2026-10-15) | 79.0 | 78.7 | 79.5 | 5.9% | | $0.028 |
+
+- Jev 1.14 places 8th of 16 on the System One Index, 0.3 points above Jev 1.13. That's within run-to-run noise: the
+  control run of Jev 1.13 moved individual datasets by up to 1.5 points against the published one.
+- The one clear gain is customer-service decisions in typed-decisions: 83.6% against 77.4% and 78.2% for the two Jev
+  1.13 runs. Its biggest drop is Arabic offensive language (87.0% against 90.0%).
+- Same price, and the same billed tokens: both cost $0.091 for all 3,250 cases.
+- Jev 1.14 is the fastest model on the board, but only just: 136 ms median against 150 ms for Jev 1.13, timed from
+  the same machine on the same day (see [latency](#latency-every-api-model-from-one-machine-2026-10-15)). In the control
+  run earlier that day the two were 141 ms and 143 ms.
+
+## Latency: every API model from one machine (2026-10-15)
+
+Jev 1.14 ran from a cloud server much closer to OpenRouter than the machine behind every earlier run: Jev 1.13 measured
+143 ms there against 372 ms published. So every charted API model ran all 3,250 cases again from that server, with 8
+calls in flight for all of them (earlier rounds used 6 for some models and 24 to finish Solar Decide). Models from the
+same maker ran at different times so they didn't share capacity. Only latency comes from these runs; accuracy,
+calibration and cost stay from each model's original run. The latency columns in the round tables below are as measured
+at the time. The retired Decider V1 and the TypeSafe API run of Jev keep their original latency and stay off the charts.
+
+| Model | Maker | Median | 95th percentile | Median before |
+|---|---|---|---|---|
+| **Jev 1.14** | TypeSafe | **136 ms** | **175 ms** | – |
+| Jev 1.13 | TypeSafe | 150 ms | 216 ms | 372 ms |
+| d1 | Liquid AI | 188 ms | 297 ms | 659 ms |
+| Drex v1.5 | Nace AI | 198 ms | 529 ms | 608 ms |
+| Clef Omni | Cloudflare | 208 ms | 290 ms | 544 ms |
+| GPT-6 Luna Decisions | OpenAI | 215 ms | 582 ms | 363 ms |
+| Tev1 4B Experimental | Together AI | 232 ms | 292 ms | 518 ms |
+| Microsoft-Decision-1 | Microsoft | 240 ms | 321 ms | 679 ms |
+| Decider V1.1 27B | Perplexity | 262 ms | 605 ms | 678 ms |
+| Clef Flash | Cloudflare | 267 ms | 437 ms | 534 ms |
+| Mercury Decide | Inception | 276 ms | 820 ms | 490 ms |
+| Clef | Cloudflare | 310 ms | 436 ms | 706 ms |
+| Kev 4B | Jared Palmer | 552 ms | 3,597 ms | 899 ms |
+| Solar Decide Flash | Upstage | 586 ms | 983 ms | 908 ms |
+| Solar Decide | Upstage | 715 ms | 17,262 ms | 1,231 ms |
+
+- Every model got faster, but not by the same amount, so the order changed. Jev 1.13 and GPT-6 Luna Decisions looked
+  much faster than the rest before; Liquid AI d1, Drex v1.5 and Clef Omni now sit close behind Jev, ahead of Luna.
+- The two Jevs are still the fastest and have the tightest tails. Kev 4B and Solar Decide still have long tails (3.6 s
+  and 17 s at the 95th percentile).
+- GPT-6 Luna Decisions returned 13 gateway timeouts (504) out of 3,250 calls, which are left out of its latency. Solar
+  Decide, Solar Decide Flash and Tev1 again rejected all 200 Banking77 cases (too many options); every other call
+  succeeded.
 
 ## Round 4: four more models from OpenRouter (2026-10-12)
 
