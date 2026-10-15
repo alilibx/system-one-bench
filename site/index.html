@@ -55,6 +55,7 @@ code { font: 0.9em ui-monospace, "SF Mono", Menlo, monospace; }
 .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 20px 20px 16px; min-width: 0; }
 .card h3 { font: 700 20px/1.2 var(--display); letter-spacing: -0.01em; margin: 0; }
 .card .sub { color: var(--muted); font-size: 13.5px; margin: 4px 0 12px; }
+.latency-note { color: var(--muted); font-size: 12.5px; margin: 12px 0 0; padding-left: 10px; border-left: 2px solid var(--rule); }
 .trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .trio .card h3 { font-size: 18px; }
 
@@ -162,7 +163,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
 
   <div class="trio">
     <div class="card"><h3>System One Index</h3><p class="sub">Mean accuracy across all 16 datasets, top 5. Higher is better.</p><div id="mini-index"></div></div>
-    <div class="card"><h3>Latency</h3><p class="sub">Median time per call in milliseconds, fastest 5. APIs through OpenRouter with 8 calls in flight, all timed from one machine; Laya locally, one at a time. Lower is better.</p><div id="mini-latency"></div></div>
+    <div class="card"><h3>Latency</h3><p class="sub">Median time per call in milliseconds, fastest 5. Lower is better.</p><div id="mini-latency"></div><p class="latency-note"></p></div>
     <div class="card"><h3>Cost</h3><p class="sub">USD per 1,000 calls, as billed by the API, cheapest 5. Lower is better.</p><div id="mini-cost"></div></div>
   </div>
 
@@ -186,7 +187,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
     <h2>Accuracy against speed and cost</h2>
     <p class="note">The shaded corner is the most attractive: more accurate, and faster or cheaper. The line joins the models that nothing else beats on both measures.</p>
     <div class="pair">
-      <div class="card"><h3>Index against latency</h3><p class="sub">System One Index (all datasets) against median latency per call. API models measured through OpenRouter with 8 calls in flight, all from one machine on 15 October; Laya on a local Apple M5 GPU, so its latency excludes any network.</p><div id="chart-vs-latency"></div></div>
+      <div class="card"><h3>Index against latency</h3><p class="sub">System One Index (all datasets) against median latency per call.</p><div id="chart-vs-latency"></div><p class="latency-note"></p></div>
       <div class="card"><h3>Index against cost</h3><p class="sub">System One Index (all datasets) against USD per 1,000 calls. Local models have no per-call price.</p><div id="chart-vs-cost"></div></div>
     </div>
   </section>
@@ -196,7 +197,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
     <p class="note">Calibration error is the average gap between a model's stated confidence and how often it's right, in percentage points. A well-calibrated model's 80% answers are right about 80% of the time.</p>
     <div class="pair">
       <div class="card"><h3>Calibration error</h3><p class="sub">Top-label ECE over every question, all datasets. Lower is better.</p><div id="chart-ece"></div></div>
-      <div class="card"><h3>Latency, median and 95th percentile</h3><p class="sub">Milliseconds per call. The bar is the median; the tick marks the 95th percentile, shown on hover. Lower is better.</p><div id="chart-latency"></div></div>
+      <div class="card"><h3>Latency, median and 95th percentile</h3><p class="sub">Milliseconds per call. The bar is the median; the tick marks the 95th percentile, shown on hover. Lower is better.</p><div id="chart-latency"></div><p class="latency-note"></p></div>
       <div class="card"><h3>Cost to run System One Bench</h3><p class="sub">USD for all 3,250 cases, as billed. Lower is better.</p><div id="chart-run-cost"></div></div>
       <div class="card"><h3>Input tokens per call</h3><p class="sub">Mean billed input tokens. Each tokenizer counts differently, so this explains cost rather than ranks models.</p><div id="chart-tokens"></div></div>
     </div>
@@ -276,6 +277,10 @@ Promise.all([fetch("results.json").then(r => r.json()), fetch("meta.json").then(
     $("headline").textContent = "The results didn't load.";
     $("index").insertAdjacentHTML("afterbegin", '<p class="error">This page reads results.json and meta.json from the same folder. Serve the folder over HTTP (for example <code>python -m http.server</code>) instead of opening the file directly.</p>');
   });
+
+// Shown under every latency chart: what the numbers include, and why yours will differ.
+const LATENCY_NOTE = "About these numbers: latency is the full round trip from our test machine, a cloud server, through OpenRouter to the model and back, so it includes the network as well as the model. Every API model was timed from that one machine on 15 October 2026 with 8 calls in flight, so they compare fairly with each other, but your own latency depends on where you call from: from the machine behind our earlier runs, the same calls took 1.5 to 3.5 times as long. Laya runs on a local Apple M5 GPU with no network, so its latency isn't directly comparable.";
+document.querySelectorAll(".latency-note").forEach(el => { el.textContent = LATENCY_NOTE; });
 
 // ---------- data ----------
 const runs = () => Object.keys(M.models).filter(k => R[k]);
