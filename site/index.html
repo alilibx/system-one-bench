@@ -162,7 +162,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
 
   <div class="trio">
     <div class="card"><h3>System One Index</h3><p class="sub">Mean accuracy across all 16 datasets, top 5. Higher is better.</p><div id="mini-index"></div></div>
-    <div class="card"><h3>Latency</h3><p class="sub">Median time per call in milliseconds, fastest 5. APIs through OpenRouter with 6 to 8 calls in flight; Laya locally, one at a time. Lower is better.</p><div id="mini-latency"></div></div>
+    <div class="card"><h3>Latency</h3><p class="sub">Median time per call in milliseconds, fastest 5. APIs through OpenRouter with 8 calls in flight, all timed from one machine; Laya locally, one at a time. Lower is better.</p><div id="mini-latency"></div></div>
     <div class="card"><h3>Cost</h3><p class="sub">USD per 1,000 calls, as billed by the API, cheapest 5. Lower is better.</p><div id="mini-cost"></div></div>
   </div>
 
@@ -186,7 +186,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
     <h2>Accuracy against speed and cost</h2>
     <p class="note">The shaded corner is the most attractive: more accurate, and faster or cheaper. The line joins the models that nothing else beats on both measures.</p>
     <div class="pair">
-      <div class="card"><h3>Index against latency</h3><p class="sub">System One Index (all datasets) against median latency per call. API models measured through OpenRouter with 6 to 8 calls in flight; Laya on a local Apple M5 GPU, so its latency excludes any network.</p><div id="chart-vs-latency"></div></div>
+      <div class="card"><h3>Index against latency</h3><p class="sub">System One Index (all datasets) against median latency per call. API models measured through OpenRouter with 8 calls in flight, all from one machine on 15 October; Laya on a local Apple M5 GPU, so its latency excludes any network.</p><div id="chart-vs-latency"></div></div>
       <div class="card"><h3>Index against cost</h3><p class="sub">System One Index (all datasets) against USD per 1,000 calls. Local models have no per-call price.</p><div id="chart-vs-cost"></div></div>
     </div>
   </section>
@@ -241,7 +241,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 56px; padding: 22px 0 40
           <li>Accuracy compares the most likely answer with the dataset's label. A failed call counts as wrong.</li>
           <li>Calibration error is top-label ECE over 10 bins. Log loss, Brier score and more are in <a href="results.json">results.json</a>.</li>
           <li>Cost is the summed <code>usage.cost</code> the API reports.</li>
-          <li>API latency was measured through OpenRouter with 8 requests in flight for Jev, GPT-6 Luna Decisions and the models added on 12 October, and 6 for the rest (Solar Decide finished at 24 because it's slow on long states); Laya ran locally on an Apple M5 GPU, one call at a time. Jev 1.14 ran from a cloud server closer to OpenRouter, so its latency isn't charted.</li>
+          <li>Latency depends on the network between caller and API, so every API model was timed again on 15 October from one cloud server, all 3,250 cases through OpenRouter with 8 requests in flight. Only latency comes from that run; accuracy, calibration and cost come from each model's original run. Laya ran locally on an Apple M5 GPU, one call at a time.</li>
           <li>Nothing was tuned on test data. Some open-weight fine-tunes trained on related data; the repo README lists which.</li>
         </ul>
       </div>

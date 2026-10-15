@@ -19,7 +19,7 @@
       "slug": "typesafe/jev-1.13",
       "run": "2026-10-07",
       "series": 1,
-      "latency": "API, 8 in flight",
+      "latency": "API, 8 in flight, timed 15 October 2026",
       "short": "Jev 1.13"
     },
     "or_jev_114": {
@@ -29,9 +29,9 @@
       "slug": "typesafe/jev-1.14",
       "run": "2026-10-15",
       "series": 1,
-      "latency": "API, 8 in flight",
+      "latency": "API, 8 in flight, timed 15 October 2026",
       "short": "Jev 1.14",
-      "note": "Preview release. Run from a cloud server, closer to OpenRouter than the other models' runs, so its latency isn't charted: there it measured 141 ms median against 143 ms for Jev 1.13"
+      "note": "Preview release"
     },
     "luna": {
       "label": "GPT-6 Luna Decisions",
@@ -40,7 +40,7 @@
       "slug": "openai/gpt-6-luna-decisions",
       "run": "2026-10-07",
       "series": 2,
-      "latency": "API, 8 in flight",
+      "latency": "API, 8 in flight, timed 15 October 2026",
       "short": "Luna"
     },
     "laya_router": {
@@ -83,7 +83,7 @@
       "run": "2026-10-07",
       "latency": "API, 6 in flight",
       "chart": false,
-      "note": "Retired by Perplexity in October 2026 (OpenRouter now returns 404) and replaced by Decider V1.1 27B. Left out of the charts.",
+      "note": "Retired by Perplexity in October 2026 (OpenRouter now returns 404) and replaced by Decider V1.1 27B. Left out of the charts. Its latency is from the original run, on a different machine.",
       "tag": "retired"
     },
     "liquid_d1": {
@@ -94,7 +94,7 @@
       "series": 6,
       "short": "d1",
       "run": "2026-10-07",
-      "latency": "API, 6 in flight"
+      "latency": "API, 8 in flight, timed 15 October 2026"
     },
     "clef": {
       "label": "Clef",
@@ -104,7 +104,7 @@
       "series": 5,
       "short": "Clef",
       "run": "2026-10-07",
-      "latency": "API, 6 in flight"
+      "latency": "API, 8 in flight, timed 15 October 2026"
     },
     "clef_flash": {
       "label": "Clef Flash",
@@ -114,7 +114,7 @@
       "series": 5,
       "short": "Clef Flash",
       "run": "2026-10-07",
-      "latency": "API, 6 in flight"
+      "latency": "API, 8 in flight, timed 15 October 2026"
     },
     "solar": {
       "label": "Solar Decide",
@@ -124,7 +124,7 @@
       "series": 8,
       "short": "Solar",
       "run": "2026-10-07",
-      "latency": "API, 6 then 24 in flight",
+      "latency": "API, 8 in flight, timed 15 October 2026",
       "note": "Accepts at most 26 options per question, so all 200 Banking77 cases (77 options) failed and count as wrong."
     },
     "mercury": {
@@ -135,7 +135,7 @@
       "series": 7,
       "short": "Mercury",
       "run": "2026-10-07",
-      "latency": "API, 6 in flight",
+      "latency": "API, 8 in flight, timed 15 October 2026",
       "note": "Run on OpenRouter's free tier, so its cost is $0."
     },
     "kev": {
@@ -146,7 +146,7 @@
       "series": 9,
       "short": "Kev",
       "run": "2026-10-07",
-      "latency": "API, 6 in flight"
+      "latency": "API, 8 in flight, timed 15 October 2026"
     },
     "tev1": {
       "label": "Tev1 4B Experimental",
@@ -156,7 +156,7 @@
       "series": 9,
       "short": "Tev1",
       "run": "2026-10-07",
-      "latency": "API, 6 in flight",
+      "latency": "API, 8 in flight, timed 15 October 2026",
       "note": "Accepts at most 20 options per question, so all 200 Banking77 cases (77 options) failed and count as wrong."
     },
     "jev": {
@@ -167,7 +167,7 @@
       "run": "2026-09-23",
       "series": 1,
       "latency": "API, 8 in flight",
-      "note": "Same model as the OpenRouter run, measured two weeks earlier. Left out of the charts.",
+      "note": "Same model as the OpenRouter run, measured two weeks earlier. Left out of the charts. Its latency is from the original run, on a different machine.",
       "chart": false,
       "short": "Jev (Sept)",
       "tag": "Sept"
@@ -180,12 +180,12 @@
       "series": 10,
       "short": "Microsoft",
       "run": "2026-10-12",
-      "latency": "API, 8 in flight"
+      "latency": "API, 8 in flight, timed 15 October 2026"
     },
     "pplx_v11": {
       "access": "OpenRouter API",
       "run": "2026-10-12",
-      "latency": "API, 8 in flight",
+      "latency": "API, 8 in flight, timed 15 October 2026",
       "label": "Decider V1.1 27B",
       "maker": "Perplexity",
       "slug": "perplexity/pplx-decider-v1.1-27b",
@@ -195,7 +195,7 @@
     "clef_omni": {
       "access": "OpenRouter API",
       "run": "2026-10-12",
-      "latency": "API, 8 in flight",
+      "latency": "API, 8 in flight, timed 15 October 2026",
       "label": "Clef Omni",
       "maker": "Cloudflare",
       "slug": "cloudflare/clef-omni",
@@ -205,7 +205,7 @@
     "solar_flash": {
       "access": "OpenRouter API",
       "run": "2026-10-12",
-      "latency": "API, 8 in flight",
+      "latency": "API, 8 in flight, timed 15 October 2026",
       "label": "Solar Decide Flash",
       "maker": "Upstage",
       "slug": "upstage/solar-decide-flash",
@@ -215,7 +215,7 @@
     "drex": {
       "access": "OpenRouter API",
       "run": "2026-10-12",
-      "latency": "API, 8 in flight",
+      "latency": "API, 8 in flight, timed 15 October 2026",
       "label": "Drex v1.5",
       "maker": "Nace AI",
       "slug": "nace-ai/drex-v1.5",
