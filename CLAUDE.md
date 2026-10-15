@@ -11,3 +11,5 @@ Follow [CONTRIBUTING.md](CONTRIBUTING.md) for any run, data or results change. I
   model.
 - Every model gets identical request bodies; failures count as wrong; add runs with `score.py --merge`.
 - Keep API keys out of the repo.
+- Commits and squash merges carry no `Co-authored-by: Claude` or `Claude-Session` trailers, so Claude doesn't appear
+  as a contributor. Commit as the maintainer.
