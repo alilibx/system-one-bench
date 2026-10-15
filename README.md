@@ -31,6 +31,9 @@ Every API model is called at `POST https://openrouter.ai/api/alpha/decisions`, s
 
 **Latest results: [systemonebench.dev](https://systemonebench.dev/)**
 
+**What changed and when: [releases](https://github.com/alilibx/system-one-bench/releases)**, one per round, with notes
+in [`releases/`](releases/).
+
 **Adding a model or changing the data? Follow the [benchmark rules](CONTRIBUTING.md):** every model runs on the frozen
 data (`python data_lock.py` must match), gets identical requests, and is added without disturbing other runs.
 
