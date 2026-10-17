@@ -38,7 +38,31 @@ in [`releases/`](releases/).
 data (`python data_lock.py` must match), gets identical requests, and is added without disturbing other runs.
 
 System One Bench is a living benchmark: we keep adding models as they're released, and every new model runs the same
-cases through the same scorer. The [roadmap](#roadmap) lists what's next.
+cases through the same scorer. The [roadmap](#roadmap) lists what's next. The [plan](docs/plan.md) lists what we're building to make it the
+reference for decision models.
+
+## Licence and citation
+
+- **Code:** [Apache-2.0](LICENSE).
+- **Results** (`results.json`, `results_vision.json` and the numbers on the site): [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+  Use them anywhere, with a link back to [systemonebench.dev](https://systemonebench.dev/).
+- **Cases and images** come from public datasets and keep their sources' licences. The build scripts list every source
+  and the exact revision it's pinned to; the [vision track](#vision-track) table gives the image datasets' licences.
+
+To cite System One Bench, use GitHub's "Cite this repository" button, which reads [CITATION.cff](CITATION.cff).
+
+### Badge for model makers
+
+A model that has run here can link to its results with this badge. Replace the model id with the model's own (as in
+the table above); the link opens the board filtered to that model.
+
+[![Scored on System One Bench](https://img.shields.io/badge/System_One_Bench-scored-2a78d6)](https://systemonebench.dev/?q=perplexity/pplx-decider-v1.1-27b)
+
+```markdown
+[![Scored on System One Bench](https://img.shields.io/badge/System_One_Bench-scored-2a78d6)](https://systemonebench.dev/?q=<model id>)
+```
+
+Want a model run? [Request it](https://github.com/alilibx/system-one-bench/issues/new?template=request-a-model.yml).
 
 ## Results site
 

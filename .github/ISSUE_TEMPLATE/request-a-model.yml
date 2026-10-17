@@ -1,0 +1,53 @@
+name: Request a model
+description: Ask for a decision model to be run on System One Bench.
+title: "Run <model name>"
+labels: ["model request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Every model runs under the same [rules](https://github.com/alilibx/system-one-bench/blob/main/CONTRIBUTING.md): the same frozen cases, byte-identical requests, failures counted as wrong. Scores go on the board only after the model has run here; numbers published elsewhere are never copied over.
+  - type: input
+    id: model
+    attributes:
+      label: Model
+      description: Name and version.
+      placeholder: "Example: Celeris-1 Decision"
+    validations:
+      required: true
+  - type: input
+    id: maker
+    attributes:
+      label: Maker
+    validations:
+      required: true
+  - type: dropdown
+    id: access
+    attributes:
+      label: How it runs
+      options:
+        - OpenRouter Decisions API
+        - Its maker's own API, same request shape
+        - Open weights, run locally
+        - Something else (explain below)
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Model id, endpoint or weights
+      description: The OpenRouter slug, the API endpoint, or the Hugging Face repo.
+      placeholder: "provider/model-name"
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Anything we should know
+      description: Licence, limits (options per question, input size, image support), and any training data that overlaps the benchmark's datasets.
+  - type: checkboxes
+    id: affiliation
+    attributes:
+      label: Affiliation
+      options:
+        - label: I work for or with this model's maker.
