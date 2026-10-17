@@ -4,7 +4,7 @@ name: Publish results site
 on:
   push:
     branches: [main]
-    paths: [results.json, results_vision.json, "site/**", .github/workflows/pages.yml]
+    paths: [results.json, results_vision.json, "site/**", .github/workflows/pages.yml, .github/scripts/build_pages.py]
   workflow_dispatch:
 
 permissions:
@@ -29,6 +29,7 @@ jobs:
           mkdir _site
           cp site/* _site/
           cp results.json results_vision.json _site/
+          python3 .github/scripts/build_pages.py _site
           python3 -c "import json; [json.load(open(f'_site/{f}')) for f in ('results.json', 'results_vision.json', 'meta.json')]"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

@@ -14,7 +14,7 @@ pull request that shipped them.
 - [x] Licence: Apache-2.0 for the code, CC BY 4.0 for the results, and the source datasets' own licences for the cases.
 - [x] `CITATION.cff`, so GitHub offers "Cite this repository".
 - [x] `robots.txt` and `sitemap.xml`.
-- [ ] One page per model, and pages comparing two models, generated from the results at deploy time, so searches for a
+- [x] One page per model, and pages comparing two models, generated from the results at deploy time, so searches for a
   model's name find its results.
 - [ ] Analytics that respect privacy, to see which channels bring readers.
 - [ ] A short technical report on arXiv: the method (frozen data, identical requests, calibration, latency from one
