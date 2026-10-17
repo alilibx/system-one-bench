@@ -23,7 +23,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Assemble site
         run: |
           mkdir _site
@@ -31,9 +31,9 @@ jobs:
           cp results.json results_vision.json _site/
           python3 .github/scripts/build_pages.py _site
           python3 -c "import json; [json.load(open(f'_site/{f}')) for f in ('results.json', 'results_vision.json', 'meta.json')]"
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
