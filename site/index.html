@@ -429,10 +429,12 @@ const $ = id => document.getElementById(id);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const date = s => new Date(s + "T12:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" })[n % 10] || "th");
-let R, M, V, indexSet = "all", metric = "acc";
+let R, M, V, PAGES = {}, indexSet = "all", metric = "acc";
 
 // The vision results are optional: without them the page shows the text benchmark alone.
 const vision = fetch("results_vision.json").then(r => r.ok ? r.json() : null).catch(() => null);
+// Per-model pages are generated at deploy time; a local preview without them just leaves the links out.
+fetch("pages.json").then(r => r.ok ? r.json() : {}).then(p => { PAGES = p; if (R) renderBoard(); }).catch(() => {});
 Promise.all([fetch("results.json").then(r => r.json()), fetch("meta.json").then(r => r.json()), vision])
   .then(([results, meta, vis]) => { R = results; M = meta; V = vis; render(); })
   .catch(err => {
@@ -923,7 +925,7 @@ function detail(x) {
       <dt>Latency</dt><dd>${esc(m.latency)}${x.r.latency_ms ? `, ${fmtMs(x.r.latency_ms.p50)} median, ${fmtMs(x.r.latency_ms.p95)} 95th percentile` : ""}</dd>
       <dt>Accuracy</dt><dd>${(100 * x.r.all.acc).toFixed(1)}% over all ${x.r.all.n.toLocaleString("en")} questions</dd>
       <dt>Datasets</dt><dd>${x.cover} of ${suites("all").length} text${V?.[x.k] ? `, ${vsuites().filter(s => vval(x.k, s) != null).length} of ${vsuites().length} image` : ""}</dd>
-    </dl>${m.note ? `<p>${esc(m.note)}</p>` : ""}</div>
+    </dl>${m.note ? `<p>${esc(m.note)}</p>` : ""}${PAGES[x.k] ? `<p><a href="${esc(PAGES[x.k])}">Full results page and comparisons →</a></p>` : ""}</div>
     <div><h4>Text datasets, accuracy and rank</h4><ul>${text}</ul></div>
     <div class="vision-only"><h4>Image datasets</h4>${vis || box ? `<ul>${vis}${box}</ul>` : `<p>${noImage ? "Rejects image input, so it has no vision score." : "Not run on the vision track."}</p>`}</div>
   </div>`;

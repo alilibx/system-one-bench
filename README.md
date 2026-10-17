@@ -77,6 +77,9 @@ dates, dataset descriptions, and the vision track's datasets). Its layout follow
   filter is kept in the URL (`?q=clef`, `?maker=Perplexity`) so a filtered view can be shared.
 - **Leaderboard.** One table with both indexes side by side, sortable by any column. Clicking a model shows its run
   details and every dataset score with its rank.
+- **A page per model, and per pair.** `.github/scripts/build_pages.py` runs at deploy time and writes
+  `/models/<model>/` (every score, with its rank and the best on the board) and `/compare/<a>-vs-<b>/` for every pair of
+  ranked models, plus `sitemap.xml`. They're built from the results, so they never need editing by hand.
 - **Charts.** Index-against-latency and index-against-cost scatters with a Pareto line, calibration, latency and cost
   bar charts, one bar chart per dataset, and the vision track's charts and tables. Latency charts show API models only:
   Laya runs locally, so its timing doesn't compare and is listed in the leaderboard instead.
@@ -88,7 +91,8 @@ The site is served at systemonebench.dev: the domain's DNS (Vercel) points the a
 `www` at `alilibx.github.io`. To preview locally:
 
 ```bash
-mkdir -p _site && cp site/* results.json results_vision.json _site/ && python3 -m http.server 8062 -d _site
+mkdir -p _site && cp site/* results.json results_vision.json _site/ && python3 .github/scripts/build_pages.py _site \
+  && python3 -m http.server 8062 -d _site
 ```
 
 ## Roadmap
