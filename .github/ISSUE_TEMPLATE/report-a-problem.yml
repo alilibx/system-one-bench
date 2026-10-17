@@ -1,0 +1,39 @@
+name: Report a problem
+description: A score, label, case, page or script that's wrong.
+title: "<what's wrong>"
+labels: ["problem"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Security issues go through [private reporting](https://github.com/alilibx/system-one-bench/security/advisories/new) instead. To ask for a model to be run, use the model request form.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where
+      options:
+        - A score or ranking on the site
+        - A case, label or image in the data
+        - The results site itself
+        - A script (build, run, score, race server)
+        - The docs
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What's wrong
+      description: What you saw, what you expected, and a link to the page, model, dataset or case.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce it
+      description: Commands and their output. For data problems, the output of `python data_lock.py`.
+      render: shell
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: The release or commit, your Python version and OS, if it's about a script.

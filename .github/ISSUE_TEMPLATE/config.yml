@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Results and leaderboard
+    url: https://systemonebench.dev/
+    about: Every score, model page and head-to-head comparison.
+  - name: Benchmark rules
+    url: https://github.com/alilibx/system-one-bench/blob/main/CONTRIBUTING.md
+    about: How every model is run and scored, before you open a pull request.
