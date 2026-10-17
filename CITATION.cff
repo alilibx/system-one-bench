@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use System One Bench or its results, please cite it as below."
+title: "System One Bench: an independent benchmark for decision models"
+type: software
+authors:
+  - family-names: Alhashimi
+    given-names: Ali
+repository-code: "https://github.com/alilibx/system-one-bench"
+url: "https://systemonebench.dev/"
+license: Apache-2.0
+abstract: >-
+  System One Bench scores decision models, which read a state and answer typed questions (yes/no, one of several
+  options, or an ordered score) with probabilities in one call. Every model gets byte-identical requests on frozen
+  data: 3,250 text cases across 16 labelled datasets in English, French and Arabic, and 1,200 image cases across
+  6 datasets. Models are scored on accuracy, calibration, latency and cost.
+keywords:
+  - benchmark
+  - decision models
+  - calibration
+  - multilingual
+  - Arabic
+  - vision
