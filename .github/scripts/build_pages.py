@@ -123,6 +123,8 @@ dt { color: var(--muted); } dd { margin: 0; overflow-wrap: anywhere; }
 .note { color: var(--ink-2); font-size: 14px; }
 footer { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 8px 20px; }
 """
+# The same cookieless page-view counter as the main page (see site/index.html).
+ANALYTICS = """<script async src="https://us-assets.i.posthog.com/static/array.js" onload="posthog.init('phc_yCVgdaCDPPpPV77usF3Ar7FmwDY23xfCJaDN7hHSQprt', {api_host: 'https://us.i.posthog.com', cookieless_mode: 'always', person_profiles: 'identified_only', autocapture: false, disable_session_recording: true, capture_pageleave: true})"></script>"""
 COLORS = {1: "#2a78d6", 2: "#eb6834", 3: "#1baf7a", 4: "#eda100", 5: "#e87ba4", 6: "#008300", 7: "#4a3aa7", 8: "#e34948", 9: "#8a93a3", 10: "#0b6e75"}
 color = lambda k: COLORS.get(MODELS[k].get("series"), "#8a93a3")
 MARK = '<svg width="24" height="24" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="7" width="24" height="12" rx="6" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="10" width="13" height="6" rx="3" fill="currentColor"/></svg>'
@@ -146,6 +148,7 @@ def page(path, title, description, body):
 <meta property="og:url" content="{url}">
 <meta property="og:image" content="{SITE}/og.png">
 <meta name="twitter:card" content="summary_large_image">
+{ANALYTICS}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
