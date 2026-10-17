@@ -16,7 +16,7 @@ pull request that shipped them.
 - [x] `robots.txt` and `sitemap.xml`.
 - [x] One page per model, and pages comparing two models, generated from the results at deploy time, so searches for a
   model's name find its results.
-- [ ] Analytics that respect privacy, to see which channels bring readers.
+- [x] Analytics that respect privacy, to see which channels bring readers: page views only, no cookies.
 - [ ] A short technical report on arXiv: the method (frozen data, identical requests, calibration, latency from one
   machine) and the findings, such as what reading text from pixels costs in Arabic.
 - [ ] Results and per-case predictions as a Hugging Face dataset, and a leaderboard Space. Only data whose licence

@@ -80,6 +80,8 @@ dates, dataset descriptions, and the vision track's datasets). Its layout follow
 - **A page per model, and per pair.** `.github/scripts/build_pages.py` runs at deploy time and writes
   `/models/<model>/` (every score, with its rank and the best on the board) and `/compare/<a>-vs-<b>/` for every pair of
   ranked models, plus `sitemap.xml`. They're built from the results, so they never need editing by hand.
+- **Analytics.** Page views are counted with PostHog in cookieless mode: no cookies or browser storage, IP addresses
+  dropped, no autocapture or session recording. The snippet is in `site/index.html` and `.github/scripts/build_pages.py`.
 - **Charts.** Index-against-latency and index-against-cost scatters with a Pareto line, calibration, latency and cost
   bar charts, one bar chart per dataset, and the vision track's charts and tables. Latency charts show API models only:
   Laya runs locally, so its timing doesn't compare and is listed in the leaderboard instead.
