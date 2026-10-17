@@ -2,7 +2,8 @@
 
 System One Bench is only useful if every model is measured the same way, including models added months from now.
 These rules apply to every run that goes on [systemonebench.dev](https://systemonebench.dev/), whoever adds it.
-The [PR template](.github/pull_request_template.md) asks you to confirm each one.
+The [PR template](.github/pull_request_template.md) asks you to confirm each one. Everyone taking part follows the
+[code of conduct](CODE_OF_CONDUCT.md).
 
 ## 1. Every model runs on the frozen data
 

@@ -1,0 +1,13 @@
+# Keeps the workflows' actions current. Python packages stay pinned in requirements-data.txt on purpose: changing them
+# can change the rebuilt data (see CONTRIBUTING.md, rule 2), so they're only bumped by hand with a new benchmark version.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "chore(ci)"
+    groups:
+      actions:
+        patterns: ["*"]

@@ -1,4 +1,5 @@
-"""Write one static page per model run and one per pair of ranked models, plus sitemap.xml, into the assembled site.
+"""Write one static page per model run and one per pair of ranked models, plus sitemap.xml and the README's badges, into
+the assembled site.
 
 Run by .github/workflows/pages.yml after it copies site/ and the results into _site:
 
@@ -298,5 +299,14 @@ urls += [model_page(k) for k in runs]
 urls += [compare_page(a, b) for i, a in enumerate(text_rank) for b in text_rank[i + 1:]]
 (OUT / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
                                  + "".join(f"  <url><loc>{u}</loc></url>\n" for u in urls) + "</urlset>\n")
+# shields.io endpoint badges for the README: https://img.shields.io/endpoint?url=https://systemonebench.dev/badge/<name>.json
+badges = {"models": ("models", str(len(runs)))}
+if text_rank:
+    badges["text-leader"] = ("text leader", f"{MODELS[text_rank[0]]['label']} · {fidx(index(text_rank[0]))}")
+if vision_rank:
+    badges["vision-leader"] = ("vision leader", f"{MODELS[vision_rank[0]]['label']} · {fidx(vindex(vision_rank[0]))}")
+(OUT / "badge").mkdir(exist_ok=True)
+for name, (label, message) in badges.items():
+    (OUT / "badge" / f"{name}.json").write_text(json.dumps({"schemaVersion": 1, "label": label, "message": message, "color": "2a78d6"}) + "\n")
 (OUT / "pages.json").write_text(json.dumps({k: f"/models/{slugs[k]}/" for k in runs}, indent=1) + "\n")
 print(f"{len(runs)} model pages, {len(urls) - 1 - len(runs)} comparison pages, sitemap with {len(urls)} URLs")

@@ -1,4 +1,41 @@
-# System One Bench
+<h1 align="center">
+  <a href="https://systemonebench.dev/">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.svg">
+      <img src="docs/assets/logo.svg" alt="System One Bench" width="420">
+    </picture>
+  </a>
+</h1>
+
+<p align="center"><b>Every decision model, measured the same way.</b><br>
+Accuracy, calibration, latency and cost on frozen data, with byte-identical requests.</p>
+
+<p align="center">
+  <a href="https://systemonebench.dev/"><img src="https://img.shields.io/website?url=https%3A%2F%2Fsystemonebench.dev&label=leaderboard&up_message=live&up_color=2a78d6" alt="Leaderboard"></a>
+  <a href="https://github.com/alilibx/system-one-bench/releases"><img src="https://img.shields.io/github/v/release/alilibx/system-one-bench?label=release&color=2a78d6" alt="Latest release"></a>
+  <a href="https://github.com/alilibx/system-one-bench/actions/workflows/data.yml"><img src="https://img.shields.io/github/actions/workflow/status/alilibx/system-one-bench/data.yml?branch=main&label=frozen%20data" alt="Frozen data check"></a>
+  <a href="https://github.com/alilibx/system-one-bench/actions/workflows/pages.yml"><img src="https://img.shields.io/github/actions/workflow/status/alilibx/system-one-bench/pages.yml?branch=main&label=site" alt="Site deploy"></a>
+  <br>
+  <a href="https://systemonebench.dev/#leaderboard"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fsystemonebench.dev%2Fbadge%2Fmodels.json" alt="Models on the board"></a>
+  <a href="https://systemonebench.dev/#index"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fsystemonebench.dev%2Fbadge%2Ftext-leader.json" alt="Text leader"></a>
+  <a href="https://systemonebench.dev/#vision"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fsystemonebench.dev%2Fbadge%2Fvision-leader.json" alt="Vision leader"></a>
+  <a href="#full-benchmark"><img src="https://img.shields.io/badge/cases-3%2C250%20text%20%C2%B7%201%2C200%20image-555" alt="Cases"></a>
+  <a href="#full-benchmark"><img src="https://img.shields.io/badge/languages-EN%20%C2%B7%20FR%20%C2%B7%20AR-555" alt="Languages"></a>
+  <br>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/code-Apache--2.0-555" alt="Code licence: Apache-2.0"></a>
+  <a href="https://creativecommons.org/licenses/by/4.0/"><img src="https://img.shields.io/badge/results-CC%20BY%204.0-555" alt="Results licence: CC BY 4.0"></a>
+  <a href="CITATION.cff"><img src="https://img.shields.io/badge/cite-CITATION.cff-555" alt="Cite this repository"></a>
+  <a href="https://github.com/alilibx/system-one-bench/issues/new?template=request-a-model.yml"><img src="https://img.shields.io/badge/request-a%20model-2a78d6" alt="Request a model"></a>
+</p>
+
+<p align="center">
+  <a href="https://systemonebench.dev/"><b>Leaderboard</b></a> ·
+  <a href="#quick-start">Quick start</a> ·
+  <a href="CONTRIBUTING.md">Benchmark rules</a> ·
+  <a href="https://github.com/alilibx/system-one-bench/releases">Releases</a> ·
+  <a href="#licence-and-citation">Cite</a> ·
+  <a href="https://github.com/alilibx/system-one-bench/issues/new?template=request-a-model.yml">Request a model</a>
+</p>
 
 A benchmark for System One models: models that read a `state` and answer named questions with typed, probabilistic
 answers (`noul` yes/no, `choice`, and ordered `score`) in one fast call. Every model gets byte-identical `state` +
@@ -40,6 +77,34 @@ data (`python data_lock.py` must match), gets identical requests, and is added w
 System One Bench is a living benchmark: we keep adding models as they're released, and every new model runs the same
 cases through the same scorer. The [roadmap](#roadmap) lists what's next. The [plan](docs/plan.md) lists what we're building to make it the
 reference for decision models.
+
+## Quick start
+
+```bash
+git clone https://github.com/alilibx/system-one-bench && cd system-one-bench
+python3 -m venv .venv && .venv/bin/pip install -r requirements-data.txt
+.venv/bin/python build_suites.py && .venv/bin/python build_arabic.py    # -> cases.jsonl
+.venv/bin/python build_images.py                                        # -> image_cases.jsonl, images/
+.venv/bin/python data_lock.py                                           # both files: matches
+OPENROUTER_API_KEY=<your key> .venv/bin/python run_decisions.py --model typesafe/jev-1.14 --name my_run
+.venv/bin/python score.py --merge preds_my_run.jsonl                    # -> results.json
+```
+
+[Full benchmark](#full-benchmark) has every option, the [vision track](#vision-track) the image cases, and the
+[benchmark rules](CONTRIBUTING.md) what a run needs before it goes on the board.
+
+## Contents
+
+- [Licence and citation](#licence-and-citation) · [Results site](#results-site) · [Roadmap](#roadmap) · [Live race](#live-race)
+- [Frozen data](#frozen-data) · [Full benchmark](#full-benchmark) · [Vision track](#vision-track) ·
+  [Open-weight models, run locally](#open-weight-models-run-locally)
+- Rounds: [6, vision](#round-6-the-vision-track-2026-10-15) · [5, Jev 1.14](#round-5-jev-114-2026-10-15) ·
+  [latency](#latency-every-api-model-from-one-machine-2026-10-15) ·
+  [4](#round-4-four-more-models-from-openrouter-2026-10-12) · [3](#round-3-microsoft-decision-1-2026-10-12) ·
+  [2](#round-2-eleven-models-2026-10-07) · [Jev vs OpenAI](#jev-vs-openai-decisions-2026-10-07) ·
+  [Laya vs Jev](#laya-vs-jev-2026-09-23-apple-m5-24-gb) · [Laya Arabic](#laya-arabic-fine-tunes-vs-jev-2026-09-25) ·
+  [Laya takeaways](#laya-takeaways)
+- [Contributing, conduct and security](#contributing-conduct-and-security)
 
 ## Licence and citation
 
@@ -584,3 +649,14 @@ runs as shipped. The Router sends Arabic to `laya-multilingual`, so its column i
   own sequence (batched, fp32 on MPS), so five questions cost about five times the compute. The card's ~33 ms figures are for a CUDA GPU.
 - Caveat: Laya's training families include topic, emotion, NLI and intent tasks, so some public test sets may
   overlap its training data.
+
+## Contributing, conduct and security
+
+- **Add a model or change the data** under the [benchmark rules](CONTRIBUTING.md); the
+  [PR template](.github/pull_request_template.md) checks each one. Or [request a model](https://github.com/alilibx/system-one-bench/issues/new?template=request-a-model.yml)
+  and we'll run it.
+- **Found a wrong score, label or case?** [Report it](https://github.com/alilibx/system-one-bench/issues/new?template=report-a-problem.yml).
+- Everyone here follows the [code of conduct](CODE_OF_CONDUCT.md). Report security issues privately, as
+  [SECURITY.md](SECURITY.md) describes.
+
+[![Contributors](https://contrib.rocks/image?repo=alilibx/system-one-bench)](https://github.com/alilibx/system-one-bench/graphs/contributors)
