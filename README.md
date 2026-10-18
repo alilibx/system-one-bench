@@ -1,4 +1,41 @@
-# System One Bench
+<h1 align="center">
+  <a href="https://systemonebench.dev/">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.svg">
+      <img src="docs/assets/logo.svg" alt="System One Bench" width="420">
+    </picture>
+  </a>
+</h1>
+
+<p align="center"><b>Every decision model, measured the same way.</b><br>
+Accuracy, calibration, latency and cost on frozen data, with byte-identical requests.</p>
+
+<p align="center">
+  <a href="https://systemonebench.dev/"><img src="https://img.shields.io/website?url=https%3A%2F%2Fsystemonebench.dev&label=leaderboard&up_message=live&up_color=2a78d6" alt="Leaderboard"></a>
+  <a href="https://github.com/alilibx/system-one-bench/releases"><img src="https://img.shields.io/github/v/release/alilibx/system-one-bench?label=release&color=2a78d6" alt="Latest release"></a>
+  <a href="https://github.com/alilibx/system-one-bench/actions/workflows/data.yml"><img src="https://img.shields.io/github/actions/workflow/status/alilibx/system-one-bench/data.yml?branch=main&label=frozen%20data" alt="Frozen data check"></a>
+  <a href="https://github.com/alilibx/system-one-bench/actions/workflows/pages.yml"><img src="https://img.shields.io/github/actions/workflow/status/alilibx/system-one-bench/pages.yml?branch=main&label=site" alt="Site deploy"></a>
+  <br>
+  <a href="https://systemonebench.dev/#leaderboard"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fsystemonebench.dev%2Fbadge%2Fmodels.json" alt="Models on the board"></a>
+  <a href="https://systemonebench.dev/#index"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fsystemonebench.dev%2Fbadge%2Ftext-leader.json" alt="Text leader"></a>
+  <a href="https://systemonebench.dev/#vision"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fsystemonebench.dev%2Fbadge%2Fvision-leader.json" alt="Vision leader"></a>
+  <a href="#full-benchmark"><img src="https://img.shields.io/badge/cases-3%2C250%20text%20%C2%B7%201%2C200%20image-555" alt="Cases"></a>
+  <a href="#full-benchmark"><img src="https://img.shields.io/badge/languages-EN%20%C2%B7%20FR%20%C2%B7%20AR-555" alt="Languages"></a>
+  <br>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/code-Apache--2.0-555" alt="Code licence: Apache-2.0"></a>
+  <a href="https://creativecommons.org/licenses/by/4.0/"><img src="https://img.shields.io/badge/results-CC%20BY%204.0-555" alt="Results licence: CC BY 4.0"></a>
+  <a href="CITATION.cff"><img src="https://img.shields.io/badge/cite-CITATION.cff-555" alt="Cite this repository"></a>
+  <a href="https://github.com/alilibx/system-one-bench/issues/new?template=request-a-model.yml"><img src="https://img.shields.io/badge/request-a%20model-2a78d6" alt="Request a model"></a>
+</p>
+
+<p align="center">
+  <a href="https://systemonebench.dev/"><b>Leaderboard</b></a> ·
+  <a href="#quick-start">Quick start</a> ·
+  <a href="CONTRIBUTING.md">Benchmark rules</a> ·
+  <a href="https://github.com/alilibx/system-one-bench/releases">Releases</a> ·
+  <a href="#licence-and-citation">Cite</a> ·
+  <a href="https://github.com/alilibx/system-one-bench/issues/new?template=request-a-model.yml">Request a model</a>
+</p>
 
 A benchmark for System One models: models that read a `state` and answer named questions with typed, probabilistic
 answers (`noul` yes/no, `choice`, and ordered `score`) in one fast call. Every model gets byte-identical `state` +
@@ -26,6 +63,10 @@ Models covered so far:
 | Microsoft-Decision-1 (`microsoft/microsoft-decision-1`) | Microsoft | OpenRouter Decisions API | 2026-10-12 |
 | Drex v1.5 (`nace-ai/drex-v1.5`) | Nace AI | OpenRouter Decisions API | 2026-10-12 |
 | [Laya](https://huggingface.co/convaiinnovations/laya) and its Arabic fine-tunes | Convai Innovations, Wouze | open weights, locally on Apple MPS | 2026-09-23, 2026-09-25 |
+| d1-3B and d1-omni-600M (`LiquidAI/d1-3B`, `LiquidAI/d1-omni-600M`) | Liquid AI | open weights, llama.cpp on a 4-vCPU CPU | 2026-10-17, 2026-10-18 |
+| d3 edge, lite and nano (`vllm-sr/d3-{edge,lite,nano}`) | vLLM Semantic Router | open weights, llama.cpp on a 4-vCPU CPU | 2026-10-17, 2026-10-18 |
+| Kev 0.8B (`jaredpalmer/kev-0.8b`) | Jared Palmer | open weights, llama.cpp on a 4-vCPU CPU | 2026-10-18 |
+| Naluri-279M and Naluri-308M (`jerichosiahaya/Naluri-{279M,308M}-encoder`) | Jericho Siahaya | open weights, PyTorch on a 4-vCPU CPU | 2026-10-17 |
 
 Every API model is called at `POST https://openrouter.ai/api/alpha/decisions`, so they all share one gateway.
 
@@ -40,6 +81,35 @@ data (`python data_lock.py` must match), gets identical requests, and is added w
 System One Bench is a living benchmark: we keep adding models as they're released, and every new model runs the same
 cases through the same scorer. The [roadmap](#roadmap) lists what's next. The [plan](docs/plan.md) lists what we're building to make it the
 reference for decision models.
+
+## Quick start
+
+```bash
+git clone https://github.com/alilibx/system-one-bench && cd system-one-bench
+python3 -m venv .venv && .venv/bin/pip install -r requirements-data.txt
+.venv/bin/python build_suites.py && .venv/bin/python build_arabic.py    # -> cases.jsonl
+.venv/bin/python build_images.py                                        # -> image_cases.jsonl, images/
+.venv/bin/python data_lock.py                                           # both files: matches
+OPENROUTER_API_KEY=<your key> .venv/bin/python run_decisions.py --model typesafe/jev-1.14 --name my_run
+.venv/bin/python score.py --merge preds_my_run.jsonl                    # -> results.json
+```
+
+[Full benchmark](#full-benchmark) has every option, the [vision track](#vision-track) the image cases, and the
+[benchmark rules](CONTRIBUTING.md) what a run needs before it goes on the board.
+
+## Contents
+
+- [Licence and citation](#licence-and-citation) · [Results site](#results-site) · [Roadmap](#roadmap) · [Live race](#live-race)
+- [Frozen data](#frozen-data) · [Full benchmark](#full-benchmark) · [Vision track](#vision-track) ·
+  [Open-weight models, run locally](#open-weight-models-run-locally)
+- Rounds: [7, open weights on a CPU](#round-7-eight-small-open-weight-models-on-a-cpu-2026-10-18) ·
+  [6, vision](#round-6-the-vision-track-2026-10-15) · [5, Jev 1.14](#round-5-jev-114-2026-10-15) ·
+  [latency](#latency-every-api-model-from-one-machine-2026-10-15) ·
+  [4](#round-4-four-more-models-from-openrouter-2026-10-12) · [3](#round-3-microsoft-decision-1-2026-10-12) ·
+  [2](#round-2-eleven-models-2026-10-07) · [Jev vs OpenAI](#jev-vs-openai-decisions-2026-10-07) ·
+  [Laya vs Jev](#laya-vs-jev-2026-09-23-apple-m5-24-gb) · [Laya Arabic](#laya-arabic-fine-tunes-vs-jev-2026-09-25) ·
+  [Laya takeaways](#laya-takeaways)
+- [Contributing, conduct and security](#contributing-conduct-and-security)
 
 ## Licence and citation
 
@@ -100,10 +170,11 @@ mkdir -p _site && cp site/* results.json results_vision.json _site/ && python3 .
 ## Roadmap
 
 The roadmap lives in `site/meta.json` and is published at [systemonebench.dev/#roadmap](https://systemonebench.dev/#roadmap).
-As of 2026-10-15 it lists 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
-Decision, Hanzo Kai 1, meraGPT Decider 1), 7 open-weight families to run locally (including Liquid AI's d1-3B and
-d1-omni-600M, the Naluri encoders, vLLM's d3 and the Kev size sweep), 2 entries that need a track of their own, and 3 on a watch list. Everything that
-runs as-is on OpenRouter's Decisions API has been benchmarked. Several vendors publish their own scores; none go on the
+As of 2026-10-18 it lists 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
+Decision, Hanzo Kai 1, meraGPT Decider 1), 5 open-weight families to run locally (the rest of the Kev size sweep, the larger
+d3 sizes, the leading community models, GLiNER2.5-Decide and GLiClass), 2 entries that need a track of their
+own, and 3 on a watch list. [Round 7](#round-7-eight-small-open-weight-models-on-a-cpu-2026-10-18) ran the small
+open-weight models. Everything that runs as-is on OpenRouter's Decisions API has been benchmarked. Several vendors publish their own scores; none go on the
 site until they've run here like every other model.
 
 ## Live race
@@ -280,6 +351,50 @@ The other open models need their own runners:
 A 24 GB Mac fits everything up to 9B at Q8. The 27B models (Kev 27B, d3 27B, Open-Jev 27B) and Open-Jev 9B, whose base
 model alone is 19 GB, need a bigger machine. Laya Multilingual is already covered: Laya Router sends every non-English
 state, Arabic and French included, to those same weights.
+
+## Round 7: eight small open-weight models on a CPU (2026-10-18)
+
+Eight open-weight models from the roadmap, run on 17 and 18 October on all 3,250 cases from a 4-vCPU Linux cloud
+server with no GPU, one call at a time. The GGUF models ran under `llama-server` from llama.cpp b11716, built from
+source, at Q8_0 with `-b 8192 -ub 8192 -c 8192 -t 4` and no mmproj, so text only. d1-3B's server died with those
+settings 80 seconds into its first attempt, most likely out of memory, so it ran again from scratch with
+`-b 4096 -ub 4096 -c 4096 -np 1`, which still holds the longest prompt (2,973 tokens) in one batch. The Naluri
+encoders ran under `serve.py` from [jerichosiahaya/naluri](https://github.com/jerichosiahaya/naluri) (commit
+`473a789`) on PyTorch's CPU build. Both answer `POST /v1/systemone`, so `run_decisions.py --url` sent every model the
+same bodies as the API models. Every call in the published runs succeeded.
+
+| Model | Maker | Weights (revision) | Index | English | Arabic | Calibration error | Median latency, CPU |
+|---|---|---|---|---|---|---|---|
+| **d1-3B** | Liquid AI | `LiquidAI/d1-3B-GGUF` (`bb1e436`), 2.9 GB | **78.4** (10th) | **78.4** | **78.3** | **2.4%** | 1,134 ms |
+| d3 nano | vLLM Semantic Router | `ggml-org/vllm-d3-nano-GGUF` (`67baf94`), 2.6 GB | 78.0 (11th) | 77.9 | 76.9 | 7.0% | 1,167 ms |
+| d3 lite | vLLM Semantic Router | `ggml-org/vllm-d3-lite-GGUF` (`a1f9fa1`), 1.1 GB | 74.9 (15th) | 74.3 | 74.7 | 7.1% | 620 ms |
+| d3 edge | vLLM Semantic Router | `ggml-org/vllm-d3-edge-GGUF` (`753af7a`), 0.8 GB | 65.9 (18th) | 69.1 | 62.2 | 18.7% | 294 ms |
+| d1-omni-600M | Liquid AI | `LiquidAI/d1-omni-600M-GGUF` (`8eb2d2a`), 0.4 GB | 65.2 (19th) | 75.5 | 53.4 | 9.8% | 251 ms |
+| Kev 0.8B | Jared Palmer | `ggml-org/Kev-0.8B-GGUF` (`e551e31`), 0.8 GB | 63.6 (21st) | 71.0 | 54.9 | 4.3% | 705 ms |
+| Naluri-308M | Jericho Siahaya | `jerichosiahaya/Naluri-308M-encoder` (`2346b40`) | 61.0 (22nd) | 59.3 | 61.9 | 5.7% | 189 ms |
+| Naluri-279M | Jericho Siahaya | `jerichosiahaya/Naluri-279M-encoder` (`765d51e`) | 50.4 (24th) | 52.6 | 50.7 | 8.3% | **138 ms** |
+
+Ranks are out of the 24 models on the System One Index.
+
+- **d1-3B is the first open-weight model in the top 10, with d3 nano right behind it.** Both place above Drex v1.5,
+  Kev 4B and GPT-6 Luna Decisions, 0.6 and 1.0 points below Jev 1.13, and both are under 3 GB at Q8_0.
+- **d1-3B is the second best calibrated model on the board** (2.4%, behind Clef's 2.2%), and keeps English and Arabic
+  level. It is 4.3 points below the full d1 on the index: 2.9 in English and 5.6 in Arabic. Its best dataset is
+  SST-2 (95.5%); emotion (63.5%) and SST-5 (56.0%) are its weakest.
+- **d3 nano** scores 93.0% on Banking77 and 86.0% on XNLI French; emotion (59.5%) and SST-5 (55.5%) are its weakest
+  datasets. Each d3 size up adds points: edge to lite +9.0, lite to nano +3.1.
+- **The smallest models hold up in English and fall off in Arabic.** d1-omni-600M scores 75.5 in English, within 6
+  points of the full d1, and 53.4 in Arabic, 30 points below it. Kev 0.8B (English-only, like Kev 4B) loses 16 points
+  between its English and Arabic sub-indexes. d1-3B, d3 nano and d3 lite keep the two within 1 point.
+- **Naluri scores match their model cards exactly** (61.0 and 50.4), which reported results on this benchmark before
+  it ran here. Both are trained on the train splits of XNLI, MASSIVE and DAIR Emotion, three of the datasets tested
+  here (we use their test splits). Even so, Naluri-279M answers "entailment" to 145 of 150 XNLI English cases and scores
+  near chance on all three XNLI sets.
+- **Latency isn't comparable** with the API models: these are local CPU timings, one call at a time, with no network,
+  so they stay out of the latency charts like Laya's. d1-omni-600M's run was stopped after 2,615 cases to reorder the
+  queue and resumed on the same machine.
+- **No vision scores.** Kev 0.8B and the Naluri encoders don't read images, so they're listed under `vision.no_image`.
+  d1 and d3 can with their mmproj files, but these runs left them out; they show as not run on images.
 
 ## Round 6: the vision track (2026-10-15)
 
@@ -584,3 +699,14 @@ runs as shipped. The Router sends Arabic to `laya-multilingual`, so its column i
   own sequence (batched, fp32 on MPS), so five questions cost about five times the compute. The card's ~33 ms figures are for a CUDA GPU.
 - Caveat: Laya's training families include topic, emotion, NLI and intent tasks, so some public test sets may
   overlap its training data.
+
+## Contributing, conduct and security
+
+- **Add a model or change the data** under the [benchmark rules](CONTRIBUTING.md); the
+  [PR template](.github/pull_request_template.md) checks each one. Or [request a model](https://github.com/alilibx/system-one-bench/issues/new?template=request-a-model.yml)
+  and we'll run it.
+- **Found a wrong score, label or case?** [Report it](https://github.com/alilibx/system-one-bench/issues/new?template=report-a-problem.yml).
+- Everyone here follows the [code of conduct](CODE_OF_CONDUCT.md). Report security issues privately, as
+  [SECURITY.md](SECURITY.md) describes.
+
+[![Contributors](https://contrib.rocks/image?repo=alilibx/system-one-bench)](https://github.com/alilibx/system-one-bench/graphs/contributors)
