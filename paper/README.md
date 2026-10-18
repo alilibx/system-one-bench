@@ -8,6 +8,9 @@ python3 paper/make_tables.py          # writes paper/tables.tex and paper/number
 cd paper && pdflatex main && bibtex main && pdflatex main && pdflatex main
 ```
 
+`docs/system-one-bench-report.docx` is a Word copy of the same draft for review. It isn't generated from these files,
+so bring it in line by hand when the paper changes.
+
 Before submitting:
 
 - Resolve every orange `\draftnote`, then delete the `\draftnote` definition in `main.tex`.

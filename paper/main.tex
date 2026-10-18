@@ -29,9 +29,11 @@ benchmark that runs every model on the same frozen data with byte-identical requ
 (\nDecisions{} decisions) across 16 labelled datasets in English, French and Arabic, and 1{,}200 image cases across
 6 datasets. Every dataset and image is pinned by a SHA-256 hash, and the runner refuses data that does not match, so
 a model added later sees exactly the bytes the first one did. We score accuracy, calibration, latency and cost, and
-report the \nModels{} models evaluated so far. The top of the text board is statistically tied: \topText{} leads at
-\topTextIdx{}, \topTextGap{} points ahead of \secondText{}, within a 95\% interval of $\pm$\topTextCI{}. Text and image
-rankings disagree: the text leader is \topTextVisionRank{}rd on images, and the image leader, \topVision{}, is
+report the \nModels{} models evaluated so far, \nLocal{} of them open-weight models run locally. The top of the text
+board is statistically tied: \topText{} leads at \topTextIdx{}, \topTextGap{} points ahead of \secondText{}, within a
+95\% interval of $\pm$\topTextCI{}. Small open weights come close: \localA{} and \localB{}, both under 3~GB and run on
+a four-core CPU, place \localARank{}th and \localBRank{}th, within \aboveLocalGap{} points of \aboveLocal{}. Text and
+image rankings disagree: the text leader is \topTextVisionRank{}rd on images, and the image leader, \topVision{}, is
 \topVisionTextRank{}th on text. Calibration error ranges from \eceMin{}\% to \eceMax{}\% and is largely independent
 of accuracy. Reading text from a picture costs at most \enGapWorst{} points in English but \arGapBest{} to
 \arGapWorst{} points in Arabic on the same items. Code, data, rules and per-model results are public at
@@ -50,8 +52,8 @@ bounding box in an image). The model returns, for every question, a probability 
 answers.
 
 Over September and October 2026, TypeSafe, OpenAI, Perplexity, Liquid AI, Microsoft, Cloudflare, Upstage, Inception,
-Together AI, Nace AI and independent developers released decision models, most of them through OpenRouter's
-Decisions API. Each release reports results chosen and run by its maker, often on a leaderboard the maker or its
+Together AI, Nace AI, vLLM Semantic Router and independent developers released decision models, most of them through
+OpenRouter's Decisions API and several as open weights. Each release reports results chosen and run by its maker, often on a leaderboard the maker or its
 community controls. Those numbers do not compare: different data, different prompts, different ways of counting
 failures, and latency measured from different places.
 
@@ -62,10 +64,10 @@ System One Bench measures every model the same way. Our contributions are:
   (Section~\ref{sec:data}).
   \item \textbf{A strict protocol.} Byte-identical requests for every model, failures counted as wrong, no tuning on
   test data, latency timed from one machine, and no vendor-reported numbers (Section~\ref{sec:protocol}).
-  \item \textbf{Results for \nModels{} models} on accuracy, calibration, latency and cost, with error bars, and a
-  vision track for the \nVision{} that read images (Section~\ref{sec:results}).
-  \item \textbf{Findings} that change how these models should be compared: the tied top, the split between text and
-  vision, calibration as an independent axis, and the cost of reading Arabic from pixels.
+  \item \textbf{Results for \nModels{} models} on accuracy, calibration, latency and cost, with error bars,
+  including \nLocal{} open-weight models run locally, and a vision track for the \nVision{} that read images (Section~\ref{sec:results}).
+  \item \textbf{Findings} that change how these models should be compared: the tied top, small open-weight models close
+  behind it, the split between text and vision, calibration as an independent axis, and the cost of reading Arabic from pixels.
 \end{itemize}
 
 \section{Data}\label{sec:data}
@@ -102,7 +104,9 @@ case, prompt or label is a new benchmark version, and every model is rerun on it
 \section{Protocol and metrics}\label{sec:protocol}
 
 \paragraph{Requests.} Every model receives byte-identical \texttt{state} and \texttt{questions} bodies through the
-same endpoint (OpenRouter's Decisions API, or the maker's own endpoint with the same request shape). There are no
+same request shape: OpenRouter's Decisions API, the maker's own endpoint, or, for open weights, a local server that
+answers the same \texttt{/v1/systemone} request (llama.cpp \citep{gerganov2023llamacpp} for GGUF builds, or the
+maker's own server). There are no
 per-model prompts, option orders or instructions, and nothing is tuned on the test data. Only transient errors (HTTP
 408, 429 and 5xx) are retried. A call that fails, or an answer that cannot be read, counts as wrong.
 
@@ -125,7 +129,9 @@ often it is right.
 \paragraph{Latency and cost.} Latency is the full round trip from the caller, so it depends on the network. Every API
 model was therefore timed again from one cloud server on the same day, with eight requests in flight, over all
 \nCases{} cases; from the machine behind our earlier runs, the same calls took 1.5 to 3.5 times as long, and the
-ranking changed. Cost is what the API billed per call.
+ranking changed. Open-weight models run locally, one call at a time and with no network: Laya on an Apple M5 GPU, and
+the others on a four-core (4-vCPU) cloud server with no GPU, at 8-bit quantisation (Q8\_0). Their latency is reported
+but not compared with the API models'. Cost is what the API billed per call; local runs have none.
 
 \section{Results}\label{sec:results}
 
@@ -137,13 +143,22 @@ interval of either model, and the top five models lie within \topFiveSpread{} po
 be read as a finding; the differences that matter are in which datasets each model is best at, and in calibration,
 latency and cost.
 
+\paragraph{Small open-weight models come close.} \localA{} and \localB{}, both under 3~GB and run on a four-core
+CPU, place \localARank{}th and \localBRank{}th at \localAIdx{} and \localBIdx{}, within the $\pm$\localCI{} intervals
+of \aboveLocal{} (\aboveLocalIdx{}) and above several API models. \localA{} is also the second best calibrated model on
+the board (\eceSecondVal{}\%). The smallest models keep much more of their accuracy in English than in Arabic:
+d1-omni-600M is \omniEnGap{} points below the full d1 in English and \omniArGap{} points below it in Arabic, and Kev
+0.8B, trained for English, loses \kevSmallGap{} points between its English and Arabic sub-indexes. Within one family,
+size buys accuracy: d3 gains \dThreeEdgeLite{} points from edge to lite and \dThreeLiteNano{} from lite to nano.
+
 \paragraph{Text and vision rank models differently.} \topVision{} leads the Vision Index at \topVisionIdx{} but is
 \topVisionTextRank{}th on text, while \topText{}, the text leader, is \topTextVisionRank{}rd on images. A single
 leaderboard that mixes the two would hide this, so we keep two indexes and never combine them.
 
 \paragraph{Calibration is a separate axis.} Calibration error ranges from \eceMin{}\% to \eceMax{}\% across models,
 and is only loosely related to accuracy: the model with the best English sub-index has one of the highest
-calibration errors, while the best-calibrated model is ranked fifth. For a system that acts on a model's
+calibration errors, while the best-calibrated model is ranked fifth and the second best, \eceSecond{}, is an open-weight model
+ranked \eceSecondRank{}th. For a system that acts on a model's
 confidence---escalating uncertain cases to a person, for example---this matters as much as accuracy.
 
 \paragraph{Reading Arabic from pixels is hard.} On the same 200 SST-2 reviews, reading the text from an image costs
@@ -172,11 +187,13 @@ in how they score abstentions and failures, and in whether they report latency, 
 
 \section{Limitations}
 
-Our datasets are public, and some may overlap the training data of the models we test; some fine-tunes disclose
-training on the train splits of datasets whose evaluation splits we use (the Laya Arabic fine-tunes, for example, on
-XNLI and MASSIVE), and we note this where it is known. Each dataset has 150 to
+Our datasets are public, and some may overlap the training data of the models we test; some models disclose
+training on the train splits of datasets whose evaluation splits we use (the Laya Arabic fine-tunes on XNLI and
+MASSIVE, and the Naluri encoders on XNLI, MASSIVE and DAIR Emotion), and we note this where it is known. Each dataset has 150 to
 400 cases, so per-dataset accuracies carry intervals of several points. Latency through an API depends on the route
-between caller and provider, so our numbers compare models with each other, not with a user's own measurements. API
+between caller and provider, so our numbers compare models with each other, not with a user's own measurements; local runs depend on the
+hardware and are not compared at all. Open-weight models ran as 8-bit quantised builds, which may score slightly
+differently from the original weights. API
 models can change behind a stable name, and one model was retired during the project; we record the served model
 version where the API reports it and keep retired runs for reference. Finally, the text track
 is weighted towards English (8 of 16 datasets) and covers only three languages.
@@ -185,7 +202,8 @@ is weighted towards English (8 of 16 datasets) and covers only three languages.
 
 System One Bench compares decision models under one protocol on frozen data, and reports what makers' own
 leaderboards tend to leave out: error bars, calibration, latency from one place, cost, and failures. It is a living
-benchmark: new models are added within days of release, every round is a tagged release, and anyone can request a
+benchmark: new models are added within days of release, open weights run on the same data as the APIs, every
+round is a tagged release, and anyone can request a
 model or rerun the benchmark with the published code.
 
 \bibliographystyle{plainnat}

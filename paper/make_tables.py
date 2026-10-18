@@ -46,7 +46,7 @@ def half_up(x, nd=1):
 
 f1 = lambda x: f"{half_up(x):.1f}"
 ms = lambda x: f"{int(half_up(x, 0)):,}".replace(",", "{,}")
-usd = lambda k: (lambda c: "free" if c == 0 else f"\\${c:.3f}")(1000 * R[k]["cost"]["usd"] / R[k]["cost"]["calls"]) if R[k].get("cost", {}).get("usd") is not None else "local"
+usd = lambda k: (lambda c: "free" if c == 0 else f"\\${c:.3f}")(1000 * R[k]["cost"]["usd"] / R[k]["cost"]["calls"]) if (R[k].get("cost") or {}).get("usd") is not None else "local"
 tex = lambda s: s.replace("&", "\\&").replace("_", "\\_").replace("%", "\\%")
 
 text_rank = sorted([k for k in charted if index(k) is not None], key=index, reverse=True)
@@ -66,13 +66,15 @@ lines += [r"\bottomrule\end{tabular}\end{table}", ""]
 
 # Table 2: text leaderboard.
 lines += [r"\begin{table*}[t]\centering\small",
-          r"\caption{Text track, ranked by the System One Index (mean accuracy over the 16 datasets, equal weight). $\pm$ is a 95\% interval from binomial sampling error. Calibration is top-label ECE. Latency is the median per call through OpenRouter, timed from one machine; Laya ran locally. Failed answers count as wrong. Best value per column in bold.}\label{tab:text}",
+          r"\caption{Text track, ranked by the System One Index (mean accuracy over the 16 datasets, equal weight). $\pm$ is a 95\% interval from binomial sampling error. Calibration is top-label ECE. Latency is the median per call through OpenRouter, timed from one machine, except for the " + str(sum(map(local, text_rank))) + r" open-weight models run locally. Failed answers count as wrong. Best value per column in bold; latency compares API models only.}\label{tab:text}",
           r"\resizebox{\textwidth}{!}{\begin{tabular}{rllrrrrrrr}\toprule \# & Model & Maker & Index & English & Arabic & ECE (\%) & Median ms & \$ / 1k calls & Failed \\ \midrule"]
 api = [k for k in text_rank if not local(k)]
 bI, bE, bA = best(index, text_rank), best(lambda k: index(k, "English"), text_rank), best(lambda k: index(k, "Arabic"), text_rank)
 bC = best(lambda k: R[k]["all"]["ece"], text_rank, True)
 bL = best(lambda k: R[k]["latency_ms"]["p50"], api, True)
 bold = lambda v, b, s: f"\\textbf{{{s}}}" if v == b else s
+# Local latency marks: dagger for the Apple GPU (Laya), double dagger for the cloud CPU runs.
+mark = lambda k: "$^\\dagger$" if "Apple" in M["models"][k]["latency"] else "$^\\ddagger$"
 for i, k in enumerate(text_rank, 1):
     m, r = M["models"][k], R[k]
     lat = r["latency_ms"]["p50"]
@@ -80,8 +82,8 @@ for i, k in enumerate(text_rank, 1):
         bold(index(k), bI, f1(index(k))) + f" $\\pm${f1(1.96 * index_se(k))}",
         bold(index(k, "English"), bE, f1(index(k, "English"))), bold(index(k, "Arabic"), bA, f1(index(k, "Arabic"))),
         bold(r["all"]["ece"], bC, f1(100 * r["all"]["ece"])),
-        (ms(lat) + "$^\\dagger$") if local(k) else bold(lat, bL, ms(lat)), usd(k), f"{r['all'].get('failed', 0):,}"]) + r" \\")
-lines += [r"\bottomrule\end{tabular}}", r"\\[2pt]\footnotesize $^\dagger$Local, one call at a time on an Apple M5 GPU; not comparable with API latency.", r"\end{table*}", ""]
+        (ms(lat) + mark(k)) if local(k) else bold(lat, bL, ms(lat)), usd(k), f"{r['all'].get('failed', 0):,}"]) + r" \\")
+lines += [r"\bottomrule\end{tabular}}", r"\\[2pt]\footnotesize $^\dagger$Local, one call at a time on an Apple M5 GPU. $^\ddagger$Local, one call at a time on a 4-vCPU cloud CPU (llama.cpp Q8\_0, or PyTorch for Naluri). Neither is comparable with API latency.", r"\end{table*}", ""]
 
 # Table 3: vision leaderboard.
 heads = " & ".join(tex(VSUITES[s].get("short", VSUITES[s]["label"])) for s in VSUITES)
@@ -100,6 +102,23 @@ n["nModels"] = len(text_rank)
 n["nApi"] = len(api)
 n["nMakers"] = len({M["models"][k]["maker"] for k in api})
 n["nVision"] = len(vision_rank)
+n["nLocal"] = sum(map(local, text_rank))
+# The best open-weight models, and the API model ranked just above them.
+lw = [k for k in text_rank if local(k)]
+above = text_rank[text_rank.index(lw[0]) - 1]
+n["localA"], n["localAIdx"], n["localARank"] = M["models"][lw[0]]["label"], f1(index(lw[0])), text_rank.index(lw[0]) + 1
+n["localB"], n["localBIdx"], n["localBRank"] = M["models"][lw[1]]["label"], f1(index(lw[1])), text_rank.index(lw[1]) + 1
+n["localCI"] = f1(max(1.96 * index_se(k) for k in lw[:2]))
+n["aboveLocal"], n["aboveLocalIdx"] = M["models"][above]["label"], f1(index(above))
+n["aboveLocalGap"] = f1(index(above) - index(lw[1]))
+by_ece = sorted(text_rank, key=lambda k: R[k]["all"]["ece"])
+n["eceSecond"], n["eceSecondVal"], n["eceSecondRank"] = M["models"][by_ece[1]]["label"], f1(100 * R[by_ece[1]]["all"]["ece"]), text_rank.index(by_ece[1]) + 1
+# How the smallest models lose Arabic: d1-omni-600M against the full d1, and Kev 0.8B's English-Arabic gap.
+n["omniEnGap"] = f1(index("liquid_d1", "English") - index("d1_omni_600m", "English"))
+n["omniArGap"] = f1(index("liquid_d1", "Arabic") - index("d1_omni_600m", "Arabic"))
+n["kevSmallGap"] = f1(index("kev_0_8b", "English") - index("kev_0_8b", "Arabic"))
+n["dThreeEdgeLite"] = f1(index("d3_lite") - index("d3_edge"))
+n["dThreeLiteNano"] = f1(index("d3_nano") - index("d3_lite"))
 n["topText"], n["topTextIdx"] = M["models"][text_rank[0]]["label"], f1(index(text_rank[0]))
 n["secondText"], n["secondTextIdx"] = M["models"][text_rank[1]]["label"], f1(index(text_rank[1]))
 n["topTextGap"] = f1(index(text_rank[0]) - index(text_rank[1]))
