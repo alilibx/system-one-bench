@@ -222,6 +222,83 @@
       "slug": "nace-ai/drex-v1.5",
       "series": 9,
       "short": "Drex"
+    },
+    "d1_omni_600m": {
+      "label": "d1-omni-600M",
+      "maker": "Liquid AI",
+      "access": "Open weights, local",
+      "slug": "LiquidAI/d1-omni-600M",
+      "run": "2026-10-17",
+      "series": 6,
+      "latency": "4-vCPU cloud CPU, llama.cpp Q8_0, one at a time",
+      "short": "d1-omni-600M",
+      "note": "Open-weight 600M version of d1, text only (no mmproj). LFM Open License."
+    },
+    "d3_nano": {
+      "label": "d3 nano",
+      "maker": "vLLM Semantic Router",
+      "access": "Open weights, local",
+      "slug": "vllm-sr/d3-nano",
+      "run": "2026-10-18",
+      "series": 9,
+      "latency": "4-vCPU cloud CPU, llama.cpp Q8_0, one at a time",
+      "short": "d3 nano",
+      "note": "Decision 3.0, text only (no mmproj). Apache 2.0."
+    },
+    "d3_lite": {
+      "label": "d3 lite",
+      "maker": "vLLM Semantic Router",
+      "access": "Open weights, local",
+      "slug": "vllm-sr/d3-lite",
+      "run": "2026-10-18",
+      "series": 9,
+      "latency": "4-vCPU cloud CPU, llama.cpp Q8_0, one at a time",
+      "short": "d3 lite",
+      "note": "Decision 3.0, text only (no mmproj). Apache 2.0."
+    },
+    "d3_edge": {
+      "label": "d3 edge",
+      "maker": "vLLM Semantic Router",
+      "access": "Open weights, local",
+      "slug": "vllm-sr/d3-edge",
+      "run": "2026-10-17",
+      "series": 9,
+      "latency": "4-vCPU cloud CPU, llama.cpp Q8_0, one at a time",
+      "short": "d3 edge",
+      "note": "Decision 3.0, text only (no mmproj). Apache 2.0."
+    },
+    "kev_0_8b": {
+      "label": "Kev 0.8B",
+      "maker": "Jared Palmer",
+      "access": "Open weights, local",
+      "slug": "jaredpalmer/kev-0.8b",
+      "run": "2026-10-18",
+      "series": 9,
+      "latency": "4-vCPU cloud CPU, llama.cpp Q8_0, one at a time",
+      "short": "Kev 0.8B",
+      "note": "English-only, like Kev 4B. Apache 2.0."
+    },
+    "naluri_308m": {
+      "label": "Naluri-308M",
+      "maker": "Jericho Siahaya",
+      "access": "Open weights, local",
+      "slug": "jerichosiahaya/Naluri-308M-encoder",
+      "run": "2026-10-17",
+      "series": 9,
+      "latency": "4-vCPU cloud CPU, PyTorch, one at a time",
+      "short": "Naluri 308M",
+      "note": "Trained on the train splits of XNLI, MASSIVE and DAIR Emotion; we test their test splits. CC BY-NC 4.0. Run with serve.py from the Naluri repo."
+    },
+    "naluri_279m": {
+      "label": "Naluri-279M",
+      "maker": "Jericho Siahaya",
+      "access": "Open weights, local",
+      "slug": "jerichosiahaya/Naluri-279M-encoder",
+      "run": "2026-10-17",
+      "series": 9,
+      "latency": "4-vCPU cloud CPU, PyTorch, one at a time",
+      "short": "Naluri 279M",
+      "note": "Trained on the train splits of XNLI, MASSIVE and DAIR Emotion; we test their test splits. CC BY-NC 4.0. Run with serve.py from the Naluri repo."
     }
   },
   "languages": [
@@ -341,19 +418,14 @@
       "title": "Next: open weights, run locally",
       "items": [
         {
-          "name": "Liquid AI d1-3B and d1-omni-600M",
-          "access": "LiquidAI/d1-3B, LiquidAI/d1-omni-600M",
-          "note": "Released 7 October 2026: small open-weight versions of Liquid's d1, with GGUF builds. LFM Open License, which restricts commercial use above $10M revenue."
-        },
-        {
-          "name": "Naluri-279M and Naluri-308M encoders",
-          "access": "jerichosiahaya/Naluri-279M-encoder, jerichosiahaya/Naluri-308M-encoder",
-          "note": "Multilingual encoders (XLM-R base and mmBERT-base) that score every option in one forward pass; serve.py in the Naluri repo answers POST /v1/systemone, so run_decisions.py --url runs them. CC BY-NC 4.0, and trained on the train splits of XNLI, MASSIVE and dair-ai/emotion."
+          "name": "Liquid AI d1-3B",
+          "access": "LiquidAI/d1-3B",
+          "note": "Released 7 October 2026: the 3B open-weight version of Liquid's d1, with GGUF builds. Its 600M sibling is on the board. LFM Open License, which restricts commercial use above $10M revenue."
         },
         {
           "name": "Kev size sweep",
-          "access": "jaredpalmer/kev-{0.5b, 0.6b, 0.8b, 8b, 9b, 27b}",
-          "note": "Apache 2.0. Kev 4B is already on the board; six more sizes from 0.5B to 27B show how one recipe scales."
+          "access": "jaredpalmer/kev-{0.5b, 0.6b, 8b, 9b, 27b}",
+          "note": "Apache 2.0. Kev 0.8B and 4B are on the board; five more sizes from 0.5B to 27B show how one recipe scales. 0.5B, 0.6B and 8B ship as LoRA adapters for kev.serve."
         },
         {
           "name": "Leading community open models",
@@ -366,9 +438,9 @@
           "note": "Open weights on Hugging Face. 340M open-weight models; the multi version is multilingual."
         },
         {
-          "name": "vLLM Semantic Router d3 (Decision 3.0)",
-          "access": "vllm-sr/d3-{edge, lite, nano, mini, flash}, vllm-sr/d3",
-          "note": "Released 10 October 2026, superseding Decision-2.0. Apache 2.0, with GGUF builds that llama.cpp serves on /v1/systemone. Five sizes fit a 24 GB Mac; the 27B doesn't."
+          "name": "vLLM Semantic Router d3, larger sizes",
+          "access": "vllm-sr/d3-{mini, flash}, vllm-sr/d3",
+          "note": "d3 edge, lite and nano are on the board. Mini (5.2 GB) and flash (9.5 GB) at Q8_0 fit a 24 GB Mac but are too slow for the 4-vCPU CPU the small sizes ran on; the 27B needs a bigger machine."
         },
         {
           "name": "GLiClass Multilang",
@@ -453,7 +525,10 @@
       "tev1",
       "solar",
       "solar_flash",
-      "drex"
+      "drex",
+      "kev_0_8b",
+      "naluri_308m",
+      "naluri_279m"
     ]
   }
 }

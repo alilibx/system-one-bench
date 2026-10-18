@@ -63,6 +63,10 @@ Models covered so far:
 | Microsoft-Decision-1 (`microsoft/microsoft-decision-1`) | Microsoft | OpenRouter Decisions API | 2026-10-12 |
 | Drex v1.5 (`nace-ai/drex-v1.5`) | Nace AI | OpenRouter Decisions API | 2026-10-12 |
 | [Laya](https://huggingface.co/convaiinnovations/laya) and its Arabic fine-tunes | Convai Innovations, Wouze | open weights, locally on Apple MPS | 2026-09-23, 2026-09-25 |
+| d1-omni-600M (`LiquidAI/d1-omni-600M`) | Liquid AI | open weights, llama.cpp on a 4-vCPU CPU | 2026-10-17 |
+| d3 edge, lite and nano (`vllm-sr/d3-{edge,lite,nano}`) | vLLM Semantic Router | open weights, llama.cpp on a 4-vCPU CPU | 2026-10-17, 2026-10-18 |
+| Kev 0.8B (`jaredpalmer/kev-0.8b`) | Jared Palmer | open weights, llama.cpp on a 4-vCPU CPU | 2026-10-18 |
+| Naluri-279M and Naluri-308M (`jerichosiahaya/Naluri-{279M,308M}-encoder`) | Jericho Siahaya | open weights, PyTorch on a 4-vCPU CPU | 2026-10-17 |
 
 Every API model is called at `POST https://openrouter.ai/api/alpha/decisions`, so they all share one gateway.
 
@@ -98,7 +102,8 @@ OPENROUTER_API_KEY=<your key> .venv/bin/python run_decisions.py --model typesafe
 - [Licence and citation](#licence-and-citation) · [Results site](#results-site) · [Roadmap](#roadmap) · [Live race](#live-race)
 - [Frozen data](#frozen-data) · [Full benchmark](#full-benchmark) · [Vision track](#vision-track) ·
   [Open-weight models, run locally](#open-weight-models-run-locally)
-- Rounds: [6, vision](#round-6-the-vision-track-2026-10-15) · [5, Jev 1.14](#round-5-jev-114-2026-10-15) ·
+- Rounds: [7, open weights on a CPU](#round-7-seven-small-open-weight-models-on-a-cpu-2026-10-18) ·
+  [6, vision](#round-6-the-vision-track-2026-10-15) · [5, Jev 1.14](#round-5-jev-114-2026-10-15) ·
   [latency](#latency-every-api-model-from-one-machine-2026-10-15) ·
   [4](#round-4-four-more-models-from-openrouter-2026-10-12) · [3](#round-3-microsoft-decision-1-2026-10-12) ·
   [2](#round-2-eleven-models-2026-10-07) · [Jev vs OpenAI](#jev-vs-openai-decisions-2026-10-07) ·
@@ -165,10 +170,11 @@ mkdir -p _site && cp site/* results.json results_vision.json _site/ && python3 .
 ## Roadmap
 
 The roadmap lives in `site/meta.json` and is published at [systemonebench.dev/#roadmap](https://systemonebench.dev/#roadmap).
-As of 2026-10-15 it lists 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
-Decision, Hanzo Kai 1, meraGPT Decider 1), 7 open-weight families to run locally (including Liquid AI's d1-3B and
-d1-omni-600M, the Naluri encoders, vLLM's d3 and the Kev size sweep), 2 entries that need a track of their own, and 3 on a watch list. Everything that
-runs as-is on OpenRouter's Decisions API has been benchmarked. Several vendors publish their own scores; none go on the
+As of 2026-10-18 it lists 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
+Decision, Hanzo Kai 1, meraGPT Decider 1), 6 open-weight families to run locally (Liquid AI's d1-3B, the rest of the Kev size
+sweep, the larger d3 sizes, the leading community models, GLiNER2.5-Decide and GLiClass), 2 entries that need a track of their
+own, and 3 on a watch list. [Round 7](#round-7-seven-small-open-weight-models-on-a-cpu-2026-10-18) ran the small
+open-weight models. Everything that runs as-is on OpenRouter's Decisions API has been benchmarked. Several vendors publish their own scores; none go on the
 site until they've run here like every other model.
 
 ## Live race
@@ -345,6 +351,43 @@ The other open models need their own runners:
 A 24 GB Mac fits everything up to 9B at Q8. The 27B models (Kev 27B, d3 27B, Open-Jev 27B) and Open-Jev 9B, whose base
 model alone is 19 GB, need a bigger machine. Laya Multilingual is already covered: Laya Router sends every non-English
 state, Arabic and French included, to those same weights.
+
+## Round 7: seven small open-weight models on a CPU (2026-10-18)
+
+Seven open-weight models from the roadmap, run on 17 and 18 October on all 3,250 cases from a 4-vCPU Linux cloud
+server with no GPU, one call at a time. The GGUF models ran under `llama-server` from llama.cpp b11716, built from
+source, at Q8_0 with `-b 8192 -ub 8192 -c 8192 -t 4` and no mmproj, so text only. The Naluri encoders ran under
+`serve.py` from [jerichosiahaya/naluri](https://github.com/jerichosiahaya/naluri) (commit `473a789`) on PyTorch's CPU
+build. Both answer `POST /v1/systemone`, so `run_decisions.py --url` sent every model the same bodies as the API
+models. Every call succeeded.
+
+| Model | Maker | Weights (revision) | Index | English | Arabic | Calibration error | Median latency, CPU |
+|---|---|---|---|---|---|---|---|
+| **d3 nano** | vLLM Semantic Router | `ggml-org/vllm-d3-nano-GGUF` (`67baf94`), 2.6 GB | **78.0** (10th) | **77.9** | **76.9** | 7.0% | 1,167 ms |
+| d3 lite | vLLM Semantic Router | `ggml-org/vllm-d3-lite-GGUF` (`a1f9fa1`), 1.1 GB | 74.9 (14th) | 74.3 | 74.7 | 7.1% | 620 ms |
+| d3 edge | vLLM Semantic Router | `ggml-org/vllm-d3-edge-GGUF` (`753af7a`), 0.8 GB | 65.9 (17th) | 69.1 | 62.2 | 18.7% | 294 ms |
+| d1-omni-600M | Liquid AI | `LiquidAI/d1-omni-600M-GGUF` (`8eb2d2a`), 0.4 GB | 65.2 (18th) | 75.5 | 53.4 | 9.8% | 251 ms |
+| Kev 0.8B | Jared Palmer | `ggml-org/Kev-0.8B-GGUF` (`e551e31`), 0.8 GB | 63.6 (20th) | 71.0 | 54.9 | **4.3%** | 705 ms |
+| Naluri-308M | Jericho Siahaya | `jerichosiahaya/Naluri-308M-encoder` (`2346b40`) | 61.0 (21st) | 59.3 | 61.9 | 5.7% | 189 ms |
+| Naluri-279M | Jericho Siahaya | `jerichosiahaya/Naluri-279M-encoder` (`765d51e`) | 50.4 (23rd) | 52.6 | 50.7 | 8.3% | **138 ms** |
+
+Ranks are out of the 23 models on the System One Index.
+
+- **d3 nano is the first open-weight model in the top 10.** At 2.6 GB it places above Drex v1.5, Kev 4B and GPT-6 Luna
+  Decisions, and 1.0 point below Jev 1.13. It scores 93.0% on Banking77 and 86.0% on XNLI French; emotion (59.5%) and
+  SST-5 (55.5%) are its weakest datasets. Each d3 size up adds points: edge to lite +9.0, lite to nano +3.1.
+- **The small models hold up in English and fall off in Arabic.** d1-omni-600M scores 75.5 in English, within 6 points
+  of the full d1, and 53.4 in Arabic, 30 points below it. Kev 0.8B (English-only, like Kev 4B) loses 16 points between
+  its English and Arabic sub-indexes. d3 nano and lite keep the two within about 1 point.
+- **Naluri scores match their model cards exactly** (61.0 and 50.4), which reported results on this benchmark before
+  it ran here. Both are trained on the train splits of XNLI, MASSIVE and DAIR Emotion, three of the datasets tested
+  here (we use their test splits). Even so, Naluri-279M answers "entailment" to 145 of 150 XNLI English cases and scores
+  near chance on all three XNLI sets.
+- **Latency isn't comparable** with the API models: these are local CPU timings, one call at a time, with no network,
+  so they stay out of the latency charts like Laya's. d1-omni-600M's run was stopped after 2,615 cases to reorder the
+  queue and resumed on the same machine.
+- **No vision scores.** Kev 0.8B and the Naluri encoders don't read images, so they're listed under `vision.no_image`.
+  d1 and d3 can with their mmproj files, but these runs left them out; they show as not run on images.
 
 ## Round 6: the vision track (2026-10-15)
 
