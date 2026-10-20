@@ -12,13 +12,16 @@ The [PR template](.github/pull_request_template.md) asks you to confirm each one
   ```bash
   .venv/bin/pip install -r requirements-data.txt
   .venv/bin/python build_suites.py && .venv/bin/python build_arabic.py && .venv/bin/python build_images.py
-  .venv/bin/python data_lock.py        # both files must say "matches"
+  .venv/bin/python build_extraction.py
+  .venv/bin/python data_lock.py        # every file must say "matches"
   ```
 
-- `run_decisions.py` and `score.py` refuse cases that don't match `data.lock.json`. Don't work around that:
+- `run_decisions.py`, `run_extraction.py`, `score.py` and `score_extraction.py` refuse cases that don't match
+  `data.lock.json`. Don't work around that:
   `--unverified` is for experiments only, and an unverified run never goes on the board.
-- Every scored run records the data it ran on as `data_sha256` in `results.json` or `results_vision.json`.
-- Don't edit `cases.jsonl`, `image_cases.jsonl` or the images by hand. They're rebuilt from pinned sources, and the
+- Every scored run records the data it ran on as `data_sha256` in `results.json`, `results_vision.json` or
+  `results_extraction.json`.
+- Don't edit `cases.jsonl`, `image_cases.jsonl`, `extraction_cases.jsonl` or the images by hand. They're rebuilt from pinned sources, and the
   400 rendered-text images under `images/img_sst2` and `images/img_ar_sentiment` are committed because they can't be
   redrawn byte for byte.
 
@@ -28,7 +31,8 @@ Changing a case, a prompt, a label, a dataset, a source revision or an image cha
 on purpose, as a new version:
 
 1. Change the build script, and pin any new source to an exact commit in its `REVISIONS`.
-2. Rebuild, then freeze: `.venv/bin/python data_lock.py --write cases.jsonl image_cases.jsonl`.
+2. Rebuild, then freeze: `.venv/bin/python data_lock.py --write cases.jsonl image_cases.jsonl` (or just the track
+   that changed, such as `extraction_cases.jsonl`).
 3. Rerun every model on the board, since scores on different data don't compare.
 4. Say so in the README round notes.
 
@@ -44,6 +48,9 @@ any model.
 - A failed call or unreadable answer counts as wrong. Retry only transient errors (408, 429, 5xx), as
   `run_decisions.py` does; if a model rejects a case outright (too many options, an unsupported input), it stays wrong
   and the model's `note` in `site/meta.json` says why.
+- On the extraction track, every extraction model receives byte-identical `state` and `fields` bodies, and every LLM
+  baseline the same fixed prompt (`PROMPT` in `run_extraction.py`), whose hash each run records as `prompt_sha256`.
+  Changing the prompt means rerunning every LLM.
 - A model that doesn't accept images has no vision score. List it under `vision.no_image` in `site/meta.json`; don't
   score it as zero. Box questions run only on models that support them (`--suites` leaves them out for the rest).
 
@@ -57,7 +64,8 @@ from that same kind of machine, 8 calls in flight, and set it with `set_latency.
 ## 5. Results go in without disturbing other runs
 
 - Add a run with `score.py --merge preds_<name>.jsonl`, which keeps every other run in `results.json` unchanged. For
-  the vision track, score into `results_vision.json` with `--cases image_cases.jsonl`.
+  the vision track, score into `results_vision.json` with `--cases image_cases.jsonl`; for the extraction track, use
+  `score_extraction.py --merge extraction/preds_<name>.jsonl`, which writes `results_extraction.json`.
 - Add the model to `site/meta.json` with its label, maker, slug, run date and any note. Runs without an entry don't
   show on the site.
 - Add a round section to the README with what ran, how, and what failed.

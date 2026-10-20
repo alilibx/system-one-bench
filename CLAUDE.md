@@ -1,7 +1,9 @@
 # System One Bench
 
 A benchmark of decision models: `build_*.py` build the cases, `run_decisions.py` runs a model, `score.py` scores it into
-`results.json` (text) or `results_vision.json` (images), and `site/` publishes them. See README.md for everything else.
+`results.json` (text) or `results_vision.json` (images), and `site/` publishes them. Extraction models such as Clairic
+have their own track: `build_extraction.py`, `run_extraction.py` and `score_extraction.py` into `results_extraction.json`.
+See README.md for everything else.
 
 Follow [CONTRIBUTING.md](CONTRIBUTING.md) for any run, data or results change. In short:
 

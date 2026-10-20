@@ -101,6 +101,7 @@ OPENROUTER_API_KEY=<your key> .venv/bin/python run_decisions.py --model typesafe
 
 - [Licence and citation](#licence-and-citation) · [Results site](#results-site) · [Roadmap](#roadmap) · [Live race](#live-race)
 - [Frozen data](#frozen-data) · [Full benchmark](#full-benchmark) · [Vision track](#vision-track) ·
+  [Extraction track](#extraction-track) ·
   [Open-weight models, run locally](#open-weight-models-run-locally)
 - Rounds: [7, open weights on a CPU](#round-7-eight-small-open-weight-models-on-a-cpu-2026-10-18) ·
   [6, vision](#round-6-the-vision-track-2026-10-15) · [5, Jev 1.14](#round-5-jev-114-2026-10-15) ·
@@ -170,10 +171,11 @@ mkdir -p _site && cp site/* results.json results_vision.json _site/ && python3 .
 ## Roadmap
 
 The roadmap lives in `site/meta.json` and is published at [systemonebench.dev/#roadmap](https://systemonebench.dev/#roadmap).
-As of 2026-10-20 it lists 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
+As of 2026-10-20 it lists the first runs of the [extraction track](#extraction-track) (Cloudflare Clairic and LLM
+baselines), 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
 Decision, Hanzo Kai 1, meraGPT Decider 1), 5 open-weight families to run locally (the rest of the Kev size sweep, the larger
-d3 sizes, the leading community models, GLiNER2.5-Decide and GLiClass), 3 entries that need a track of their
-own (Cloudflare's Clairic extraction model among them), and 3 on a watch list.
+d3 sizes, the leading community models, GLiNER2.5-Decide and GLiClass), 2 entries that need a track of their
+own, and 3 on a watch list.
 [Round 7](#round-7-eight-small-open-weight-models-on-a-cpu-2026-10-18) ran the small open-weight models. Everything that runs as-is on OpenRouter's Decisions API has been benchmarked. Several vendors publish their own scores; none go on the
 site until they've run here like every other model.
 
@@ -314,6 +316,67 @@ V=img_sst2,img_ar_sentiment,img_pets,img_vqa_yesno,img_count
 Box answers are scored by intersection over union with the labelled box: right when IoU is 0.5 or more, plus mean IoU,
 and calibration of the answer's `confidence` against being right. They're reported apart and stay out of the Vision
 Index, since only Jev 1.14 answers them. Run names match the text runs, so the site shows both under one name.
+
+## Extraction track
+
+Every other model here is a decision model: it picks from options. On 19 October 2026 Cloudflare released
+[Clairic](https://blog.cloudflare.com/clairic-extraction-model), the first System One **extraction** model. It reads a
+`state` and returns one typed value per named field: text, number, date, time, datetime, duration, list, estimate or
+forecast. Each value comes with a `confidence` and a `p_null`, the probability that the input doesn't hold it, and
+estimates and forecasts come with an 80% interval. It answers no yes/no or choice questions, so it can't run the
+decision benchmark. It gets a track of its own, scored against plain LLMs prompted for the same fields, which is the
+work Clairic is meant to replace.
+
+`build_extraction.py` builds 1,800 cases (200 per dataset) into `extraction_cases.jsonl`, frozen in `data.lock.json`
+like the other two tracks. They cover the four things Clairic says it does:
+
+| Dataset | Group | Fields | Source |
+|---|---|---|---|
+| SQuAD 2.0 | extract | text; for 108 of the 200 the passage doesn't hold the answer, so null is right | `rajpurkar/squad_v2` validation, CC BY-SA 4.0 |
+| PIAF (French) | extract | text | `AgentPublic/piaf`, MIT |
+| ARCD (Arabic) | extract | text | `hsseinmz/arcd` validation, MIT |
+| SROIE receipts | extract | company (text), date, total (number), from a receipt's OCR text | `jsdnrs/ICDAR2019-SROIE` test, CC BY 4.0 |
+| TAT-QA lists | extract | list, from a financial report's table and text | `next-tat/TAT-QA` validation, multi-span answers, CC BY 4.0 |
+| DROP | compute | number: counting and arithmetic over a passage, where every annotator agreed | `ucinlp/drop` validation, CC BY-SA 4.0 |
+| TAT-QA arithmetic | compute | number, worked out from a financial report | `next-tat/TAT-QA` validation, arithmetic answers, CC BY 4.0 |
+| Wine reviews | estimate | price (log scale, $4 to $2,000) and points (80 to 100), neither stated in the tasting note | `james-burton/wine_reviews` test (Kaggle's Wine Reviews, CC BY-NC-SA 4.0) |
+| Tourism | forecast | the next 24 months of a monthly series, from the 8 years before | `autogluon/chronos_datasets` monash_tourism_monthly |
+
+Every extraction model gets the case's `{state, fields}` body, byte for byte the same. An LLM gets that same body
+rendered into one fixed prompt, `PROMPT` in `run_extraction.py`, through OpenRouter's chat completions API with a JSON
+schema built from the fields and temperature 0. The prompt asks for the same values, the same `confidence` and `p_null`,
+and the same 80% intervals, so every number on the track compares. Each LLM run records the prompt's hash as
+`prompt_sha256`; changing the prompt means rerunning every LLM.
+
+```bash
+.venv/bin/python build_extraction.py              # -> extraction_cases.jsonl
+.venv/bin/python data_lock.py                     # extraction_cases.jsonl: matches
+CLOUDFLARE_API_TOKEN=<token> CLOUDFLARE_ACCOUNT_ID=<id> .venv/bin/python run_extraction.py --provider cloudflare --name clairic
+OPENROUTER_API_KEY=<key> .venv/bin/python run_extraction.py --llm openai/gpt-6-luna --name llm_luna
+.venv/bin/python score_extraction.py extraction/preds_clairic.jsonl extraction/preds_llm_luna.jsonl   # -> results_extraction.json
+```
+
+`--url` points the runner at any other endpoint that takes the body, such as an open-weight extraction model on a local
+server. Each field scores from 0 to 1:
+
+- **text**: token F1 with the best gold answer, after SQuAD's normalisation. When the passage doesn't hold the answer,
+  only null scores, and a null scores 0 when it does.
+- **number**: right when it equals the gold value rounded to the gold's decimals. **date**: right when it's the same day.
+- **list**: F1 between the predicted and gold items, each pair matched once (as DROP scores its spans).
+- **estimate**: right when the median is within 25% of the price, or 2 of the points.
+- **forecast**: right when the forecast's mean absolute error beats repeating the last year (the seasonal-naive
+  forecast).
+
+A failed call or an unreadable answer scores 0. The **Extraction Index** is the mean over the 9 datasets, equal weight
+per dataset, 0 to 100, with sub-indexes for extract, compute, estimate and forecast. Next to it, `score_extraction.py`
+reports calibration: the ECE and AUROC of `confidence` against an exact hit, how often an unanswerable SQuAD question
+gets null and the AUROC of `p_null`, and how often the truth falls inside the 80% interval (0.8 is calibrated). For
+forecasts it also reports MASE, sMAPE and weighted quantile loss, plus cost and latency.
+
+The track covers text, number, date, list, estimate and forecast fields. Time, datetime and duration have no dataset yet.
+The tourism series are public and may be in an LLM's training data; Clairic's open weights aren't out, so its training
+data can't be checked either. No run is on the board yet: Clairic is on Workers AI only, and runs need a Cloudflare
+account.
 
 ## Open-weight models, run locally
 

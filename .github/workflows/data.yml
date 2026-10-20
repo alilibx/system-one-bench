@@ -4,7 +4,7 @@ name: Check frozen data
 
 on:
   pull_request:
-    paths: [build_suites.py, build_arabic.py, build_images.py, data_lock.py, data.lock.json, requirements-data.txt, "images/**", .github/workflows/data.yml]
+    paths: [build_suites.py, build_arabic.py, build_images.py, build_extraction.py, data_lock.py, data.lock.json, requirements-data.txt, "images/**", .github/workflows/data.yml]
   schedule:
     - cron: "17 6 * * 1"  # Mondays
   workflow_dispatch:
@@ -24,10 +24,11 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-data.txt
       - run: pip install -r requirements-data.txt
-      - name: Rebuild the text and image cases
+      - name: Rebuild the text, image and extraction cases
         run: |
           python build_suites.py
           python build_arabic.py
           python build_images.py
+          python build_extraction.py
       - name: Compare with data.lock.json
         run: python data_lock.py

@@ -96,5 +96,46 @@
     "sha256": "f4aa9e20d076396f89945acbdd4d1ad417cce6b503f913fc8160cea63136f09d"
    }
   }
+ },
+ "extraction_cases.jsonl": {
+  "sha256": "c73d229640b461a2159836ba341adc5eda61cda9f1fea43cfc98082506f2ba3f",
+  "suites": {
+   "arcd_ar": {
+    "n": 200,
+    "sha256": "4247a435a3fe7f4108c2f20221c18fd5081a412526154860d32a8bcb7c7f83bf"
+   },
+   "drop_number": {
+    "n": 200,
+    "sha256": "5e04e18a0f8907c4d81460f3bca51c7e29cd5bc77bef08b095e36032c3b38161"
+   },
+   "piaf_fr": {
+    "n": 200,
+    "sha256": "7bce8832112d0e631dda21199fe9a0f7ef5bb6294a7345801335e063fb493d6f"
+   },
+   "squad2": {
+    "n": 200,
+    "sha256": "97f15c84d47663224cd3887b30a3baf24f8a1d7e09f124ae4bc50b0607e85f14"
+   },
+   "sroie": {
+    "n": 200,
+    "sha256": "717f124a2a59e480db2130703178d2313253a137082762cc891ef56c0ad55f10"
+   },
+   "tatqa_arith": {
+    "n": 200,
+    "sha256": "5a53441d7ec72994d2c485b4a50a7761079764ed8cd9337eb405a6138baf653c"
+   },
+   "tatqa_list": {
+    "n": 200,
+    "sha256": "b71425a7b4355829cd0a2dced231fbd08a47a22b1867b40be2fc62c2246472be"
+   },
+   "tourism": {
+    "n": 200,
+    "sha256": "fa2ffd7f474499f8eeb45180e2710638cbb6426b5598acc35687695dafc969fb"
+   },
+   "wine": {
+    "n": 200,
+    "sha256": "3e75655ef890d11297878d135441ea389536730e0d9911e0df1f1888eb358c99"
+   }
+  }
  }
 }
