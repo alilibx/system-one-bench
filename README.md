@@ -170,11 +170,11 @@ mkdir -p _site && cp site/* results.json results_vision.json _site/ && python3 .
 ## Roadmap
 
 The roadmap lives in `site/meta.json` and is published at [systemonebench.dev/#roadmap](https://systemonebench.dev/#roadmap).
-As of 2026-10-18 it lists 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
+As of 2026-10-20 it lists 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
 Decision, Hanzo Kai 1, meraGPT Decider 1), 5 open-weight families to run locally (the rest of the Kev size sweep, the larger
-d3 sizes, the leading community models, GLiNER2.5-Decide and GLiClass), 2 entries that need a track of their
-own, and 3 on a watch list. [Round 7](#round-7-eight-small-open-weight-models-on-a-cpu-2026-10-18) ran the small
-open-weight models. Everything that runs as-is on OpenRouter's Decisions API has been benchmarked. Several vendors publish their own scores; none go on the
+d3 sizes, the leading community models, GLiNER2.5-Decide and GLiClass), 3 entries that need a track of their
+own (Cloudflare's Clairic extraction model among them), and 3 on a watch list.
+[Round 7](#round-7-eight-small-open-weight-models-on-a-cpu-2026-10-18) ran the small open-weight models. Everything that runs as-is on OpenRouter's Decisions API has been benchmarked. Several vendors publish their own scores; none go on the
 site until they've run here like every other model.
 
 ## Live race

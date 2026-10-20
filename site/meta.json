@@ -467,6 +467,11 @@
           "name": "Plain chat-model baselines",
           "access": "openai/gpt-6-luna, qwen/qwen3.5-9b",
           "note": "The same base models as Luna Decisions and Clef Flash, prompted for JSON. Shows what decision training adds."
+        },
+        {
+          "name": "Cloudflare Clairic",
+          "access": "Workers AI, @cf/cloudflare/clairic",
+          "note": "Released 19 October 2026 as a preview. An extraction model, not a decision model: it takes a state and typed fields (text, number, date, list, estimate, forecast) and returns values, with no yes/no or choice fields, so it can't take this benchmark's questions. Needs an extraction track of its own. $0.10 per 1M input tokens."
         }
       ]
     },
