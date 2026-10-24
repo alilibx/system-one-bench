@@ -158,7 +158,7 @@ def page(path, title, description, body):
 <body><div class="wrap">
 <header><a class="mark" href="/">{MARK}System One Bench</a><nav><a href="/#leaderboard">Leaderboard</a></nav></header>
 {body}
-<footer><span>Results under CC BY 4.0</span><a href="/">Full leaderboard</a><a href="/results.json">Raw results (JSON)</a><a href="https://github.com/alilibx/system-one-bench/blob/main/CONTRIBUTING.md">Benchmark rules</a><a href="https://github.com/alilibx/system-one-bench/releases">Releases</a></footer>
+<footer><span>Results under CC BY 4.0</span><a href="/">Full leaderboard</a><a href="/results.json">Raw results (JSON)</a><a href="https://github.com/alilibx/system-one-bench/blob/main/CONTRIBUTING.md">Benchmark rules</a><a href="https://github.com/alilibx/system-one-bench/releases">Releases</a><a href="https://www.linkedin.com/company/system-one-bench/">LinkedIn</a></footer>
 </div></body>
 </html>
 """
