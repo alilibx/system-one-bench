@@ -34,7 +34,8 @@ Accuracy, calibration, latency and cost on frozen data, with byte-identical requ
   <a href="CONTRIBUTING.md">Benchmark rules</a> ·
   <a href="https://github.com/alilibx/system-one-bench/releases">Releases</a> ·
   <a href="#licence-and-citation">Cite</a> ·
-  <a href="https://github.com/alilibx/system-one-bench/issues/new?template=request-a-model.yml">Request a model</a>
+  <a href="https://github.com/alilibx/system-one-bench/issues/new?template=request-a-model.yml">Request a model</a> ·
+  <a href="https://www.linkedin.com/company/system-one-bench/">LinkedIn</a>
 </p>
 
 A benchmark for System One models: models that read a `state` and answer named questions with typed, probabilistic
