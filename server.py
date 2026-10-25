@@ -1,8 +1,9 @@
 """System One Bench live race: any set of decision models, racing on the same labelled cases at the same time.
 
 Racers: every model on OpenRouter's Decisions API (TypeSafe Jev 1.13 and 1.14, OpenAI GPT-6 Luna Decisions, Perplexity Decider
-V1.1, Liquid AI d1, Cloudflare Clef, Clef Flash and Clef Omni, Inception Mercury, Upstage Solar and Solar Flash, Kev 4B,
-Together Tev1, Microsoft-Decision-1, Nace Drex), and, with LAYA=1, Laya running locally.
+V1.2 and Decider Flash V1.2, Liquid AI d1 and d1-ultra, Cloudflare Clef, Clef Flash and Clef Omni, Inception Mercury, Upstage
+Solar and Solar Flash, Kev 4B, Together Tev1, Microsoft-Decision-1, Nace Drex v1.5, v2.0 and Max, Respan Span-02), and, with
+LAYA=1, Laya running locally. ScaleDown Classify-1 isn't a racer: it rejects every state but plain text.
 
 Run:  OPENROUTER_API_KEY=<your key> .venv/bin/python server.py
       OPENROUTER_API_KEY=kerstel://global/OPENROUTER_API_KEY ks run -- .venv/bin/python server.py
@@ -52,8 +53,10 @@ API_RACERS = [
     ("jev", "Jev 1.13", "TypeSafe", os.environ.get("JEV_MODEL", "typesafe/jev-1.13"), 1),
     ("jev-1.14", "Jev 1.14", "TypeSafe", "typesafe/jev-1.14", 1),
     ("openai", "GPT-6 Luna Decisions", "OpenAI", os.environ.get("OPENAI_DECISIONS_MODEL", "openai/gpt-6-luna-decisions"), 2),
-    ("pplx", "Decider V1.1 27B", "Perplexity", "perplexity/pplx-decider-v1.1-27b", 4),
+    ("pplx", "Decider V1.2", "Perplexity", "perplexity/pplx-decider-v1.2", 4),
+    ("pplx-flash", "Decider Flash V1.2", "Perplexity", "perplexity/pplx-decider-flash-v1.2", 4),
     ("liquid", "d1", "Liquid AI", "liquid/d1", 6),
+    ("liquid-ultra", "d1-ultra", "Liquid AI", "liquid/d1-ultra", 6),
     ("clef", "Clef", "Cloudflare", "cloudflare/clef", 5),
     ("clef-flash", "Clef Flash", "Cloudflare", "cloudflare/clef-flash", 5),
     ("clef-omni", "Clef Omni", "Cloudflare", "cloudflare/clef-omni", 5),
@@ -64,6 +67,9 @@ API_RACERS = [
     ("tev1", "Tev1 4B", "Together AI", "togethercomputer/tev1-4b-experimental", 9),
     ("microsoft", "Microsoft-Decision-1", "Microsoft", "microsoft/microsoft-decision-1", 10),
     ("drex", "Drex v1.5", "Nace AI", "nace-ai/drex-v1.5", 9),
+    ("drex-v2", "Drex v2.0", "Nace AI", "nace-ai/drex-v2.0", 9),
+    ("drex-max", "Drex Max", "Nace AI", "nace-ai/drex-max", 9),
+    ("span", "Span-02", "Respan", "respan/span-02", 9),
 ]
 RACERS = {k: {"label": label, "maker": maker, "where": f"openrouter.ai · {model}", "series": series, "api": True,
               "url": DECISIONS_URL, "model": model, "key": "OPENROUTER_API_KEY"}
