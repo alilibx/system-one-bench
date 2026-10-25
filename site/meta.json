@@ -511,7 +511,7 @@
         {
           "name": "Baseten Mammoth 1 and Elephant 1",
           "access": "baseten/mammoth-1:free, baseten/elephant-1:free; baselabs/mammoth-1, baselabs/elephant-1",
-          "note": "27B and 9B decision models from Base Labs, built on Qwen3.5-27B and 9B, MIT licence. On OpenRouter only on the free tier, which allows 1,000 requests a day against the 3,341 a run takes; Mammoth's run started on 25 October. If free access ends first, the open weights can run on a GPU."
+          "note": "27B and 9B decision models from Base Labs, built on Qwen3.5-27B and 9B, MIT licence. On OpenRouter only on the free tier, which allows 1,000 requests a day against the 3,341 a run takes, so they were left out of round 8. The open weights can run on a GPU."
         },
         {
           "name": "Kev size sweep",

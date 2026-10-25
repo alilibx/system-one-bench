@@ -183,8 +183,8 @@ Kev size sweep, the leading community models, GLiNER2.5-Decide, the larger d3 si
 Decision-1.0 Eos 0.8B for the next CPU round), 3 entries that need a track of their own (Span-01's conversations,
 Cloudflare Clairic's extraction and plain chat-model baselines), and 5 on a watch list, including the unconfirmed Fastino
 GLiDE v1.2. [Round 8](#round-8-seven-more-models-from-openrouter-2026-10-25) ran every decision model on OpenRouter's
-Decisions API as of 25 October except Baseten's two, which are only on the free tier, at 1,000 requests a day; Mammoth 1's
-run is under way. Several vendors publish their own scores; none go on the site until they've run here like every other
+Decisions API as of 25 October except Baseten's two, which are only on the free tier, at 1,000 requests a day, and were
+left out of the round. Several vendors publish their own scores; none go on the site until they've run here like every other
 model.
 
 ## Live race
@@ -431,11 +431,10 @@ parts") and are listed under `vision.no_image`.
 it's tagged retired and left out of the charts and rankings like Decider V1. Decider V1.2 replaces it in the live race,
 and every new model except Classify-1 joins it.
 
-**Baseten's Mammoth 1 and Elephant 1 aren't on the board yet.** They're served only on OpenRouter's free tier, which
-allows 1,000 requests a day, and a text run takes 3,341 (3,250 cases and the 91-call latency probe). Both answered our
-request shape correctly. Mammoth 1's run is resumable and had 898 cases on 25 October; Elephant 1 starts after it.
-Their open weights (`baselabs/mammoth-1`, `baselabs/elephant-1`, MIT) are on the roadmap as the fallback if free access
-ends first.
+**Baseten's Mammoth 1 and Elephant 1 are left out of this round.** They're served only on OpenRouter's free tier, which
+allows 1,000 requests a day, and a text run takes 3,341 (3,250 cases and the 91-call latency probe), so a run would
+take days and free access may end first. Both answered our request shape correctly; a partial Mammoth 1 run was stopped
+and isn't published. Their open weights (`baselabs/mammoth-1`, `baselabs/elephant-1`, MIT) are on the roadmap.
 
 **Latency.** These runs were timed from a different cloud server than the one behind the board's 15 October timings,
 with several models running at once. As a control, Jev 1.14 ran again alongside them (not published): 122 ms median
