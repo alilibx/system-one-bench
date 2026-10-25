@@ -191,7 +191,10 @@
       "maker": "Perplexity",
       "slug": "perplexity/pplx-decider-v1.1-27b",
       "series": 4,
-      "short": "Decider"
+      "short": "Decider V1.1",
+      "chart": false,
+      "note": "Dropped out of OpenRouter's catalog in October 2026 (its slug now returns 404) and replaced by Decider V1.2. Left out of the charts. Its latency was timed on 15 October 2026 with the other API models.",
+      "tag": "retired"
     },
     "clef_omni": {
       "access": "OpenRouter API",
@@ -310,6 +313,83 @@
       "latency": "4-vCPU cloud CPU, llama.cpp Q8_0, one at a time",
       "short": "d1-3B",
       "note": "Open-weight 3B version of d1, text only (no mmproj). LFM Open License. Served with 4,096-token batches and one slot; with the 8,192-token setting the other GGUFs used, its server died, most likely out of memory."
+    },
+    "pplx_v12": {
+      "label": "Decider V1.2",
+      "maker": "Perplexity",
+      "access": "OpenRouter API",
+      "slug": "perplexity/pplx-decider-v1.2",
+      "run": "2026-10-25",
+      "series": 4,
+      "latency": "API, 8 in flight, timed 25 October 2026",
+      "short": "Decider V1.2",
+      "note": "27B. Replaces Decider V1.1 27B. Doesn't answer Box questions."
+    },
+    "pplx_flash_v12": {
+      "label": "Decider Flash V1.2",
+      "maker": "Perplexity",
+      "access": "OpenRouter API",
+      "slug": "perplexity/pplx-decider-flash-v1.2",
+      "run": "2026-10-25",
+      "series": 4,
+      "latency": "API, 8 in flight, timed 25 October 2026",
+      "short": "Decider Flash",
+      "note": "4B sibling of Decider V1.2. Doesn't answer Box questions."
+    },
+    "d1_ultra": {
+      "label": "d1-ultra",
+      "maker": "Liquid AI",
+      "access": "OpenRouter API",
+      "slug": "liquid/d1-ultra",
+      "run": "2026-10-25",
+      "series": 6,
+      "latency": "API, 8 in flight, timed 25 October 2026",
+      "short": "d1-ultra",
+      "note": "Liquid AI's largest decision model. 32K context. Doesn't answer Box questions."
+    },
+    "drex_max": {
+      "label": "Drex Max",
+      "maker": "Nace AI",
+      "access": "OpenRouter API",
+      "slug": "nace-ai/drex-max",
+      "run": "2026-10-25",
+      "series": 9,
+      "latency": "API, 8 in flight, timed 25 October 2026",
+      "short": "Drex Max",
+      "note": "Nace AI's largest decision model, the successor to Drex v2.0. Text only."
+    },
+    "drex_v2": {
+      "label": "Drex v2.0",
+      "maker": "Nace AI",
+      "access": "OpenRouter API",
+      "slug": "nace-ai/drex-v2.0",
+      "run": "2026-10-25",
+      "series": 9,
+      "latency": "API, 8 in flight, timed 25 October 2026",
+      "short": "Drex v2.0",
+      "note": "35B mixture-of-experts, 3B active. Text only."
+    },
+    "span02": {
+      "label": "Span-02",
+      "maker": "Respan",
+      "access": "OpenRouter API",
+      "slug": "respan/span-02",
+      "run": "2026-10-25",
+      "series": 9,
+      "latency": "API, 8 in flight, timed 25 October 2026",
+      "short": "Span-02",
+      "note": "Open weights. Unlike Span-01, which only takes a conversation, it reads the same state as every other model. Doesn't answer Box questions."
+    },
+    "classify1": {
+      "label": "Classify-1",
+      "maker": "ScaleDown",
+      "access": "OpenRouter API",
+      "slug": "scaledown/classify-1",
+      "run": "2026-10-25",
+      "series": 9,
+      "latency": "API, 8 in flight, timed 25 October 2026",
+      "short": "Classify-1",
+      "note": "Only accepts a state that is a string or an object with text or document fields, so it rejected every case except the 200 DAIR Emotion cases, whose state is {\"text\": ...}. The 3,050 rejected cases count as wrong. It also rejects image_url parts, so it has no vision score. Its latency and cost come from the 200 calls it answered."
     }
   },
   "languages": [
@@ -429,6 +509,11 @@
       "title": "Next: open weights, run locally",
       "items": [
         {
+          "name": "Baseten Mammoth 1 and Elephant 1",
+          "access": "baseten/mammoth-1:free, baseten/elephant-1:free; baselabs/mammoth-1, baselabs/elephant-1",
+          "note": "27B and 9B decision models from Base Labs, built on Qwen3.5-27B and 9B, MIT licence. On OpenRouter only on the free tier, which allows 1,000 requests a day against the 3,341 a run takes, so they were left out of round 8. The open weights can run on a GPU."
+        },
+        {
           "name": "Kev size sweep",
           "access": "jaredpalmer/kev-{0.5b, 0.6b, 8b, 9b, 27b}",
           "note": "Apache 2.0. Kev 0.8B and 4B are on the board; five more sizes from 0.5B to 27B show how one recipe scales. 0.5B, 0.6B and 8B ship as LoRA adapters for kev.serve."
@@ -452,6 +537,16 @@
           "name": "GLiClass Multilang",
           "access": "knowledgator/gliclass-multilang-mini",
           "note": "Open weights on Hugging Face. Small zero-shot classifier trained on 20 languages including Arabic: a cheap multilingual floor."
+        },
+        {
+          "name": "THX-01",
+          "access": "doofz/THX-01 (pip install thx01)",
+          "note": "322M, Apache 2.0. Runs with thx01.load(\"doofz/THX-01\").decide(state, questions), the same state and questions. For the next CPU round."
+        },
+        {
+          "name": "vLLM Semantic Router Decision-1.0 Eos 0.8B",
+          "access": "vllm-sr/Decision-1.0-Eos-0.8B",
+          "note": "Apache 2.0, built on Qwen3.5-0.8B. Serves /v1/systemone, so run_decisions.py --url runs it unchanged. For the next CPU round."
         }
       ]
     },
@@ -461,7 +556,12 @@
         {
           "name": "Respan Span-01 and Span-01 Lite",
           "access": "respan/span-01, respan/span-01-lite:free",
-          "note": "Only accepts a conversation (a list of chat messages) as the state and answers yes/no questions, so it needs a conversation track of its own."
+          "note": "Only accepts a conversation (a list of chat messages) as the state and answers yes/no questions, so it needs a conversation track of its own. Span-02 takes a normal state and is on the board."
+        },
+        {
+          "name": "Cloudflare Clairic",
+          "access": "@cf/cloudflare/clairic",
+          "note": "Released 19 October 2026. Extracts typed values such as numbers and dates instead of making decisions, so it needs an extraction track."
         },
         {
           "name": "Plain chat-model baselines",
@@ -487,6 +587,16 @@
           "name": "Other leaderboards",
           "access": "",
           "note": "S1MB, JevBench, Decision Index and BenchLM publish decision-model results to cross-check ours against."
+        },
+        {
+          "name": "Fastino GLiDE v1.2",
+          "access": "",
+          "note": "Unconfirmed: said to be released on 22 October 2026, but only one aggregator site lists it so far."
+        },
+        {
+          "name": "Clinical System One (CS1)",
+          "access": "arXiv 2610.27099",
+          "note": "Research only: a paper, with no model to call or download yet."
         }
       ]
     }
@@ -534,7 +644,10 @@
       "drex",
       "kev_0_8b",
       "naluri_308m",
-      "naluri_279m"
+      "naluri_279m",
+      "drex_max",
+      "drex_v2",
+      "classify1"
     ]
   }
 }

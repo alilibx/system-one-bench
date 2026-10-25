@@ -51,9 +51,11 @@ Models covered so far:
 | Jev 1.13 (`typesafe/jev-1.13`) | TypeSafe | OpenRouter Decisions API, or the TypeSafe API | all |
 | Jev 1.14 (`typesafe/jev-1.14`), preview | TypeSafe | OpenRouter Decisions API | 2026-10-15, text and vision |
 | GPT-6 Luna Decisions (`openai/gpt-6-luna-decisions`) | OpenAI | OpenRouter Decisions API | 2026-10-07 |
-| Decider V1.1 27B (`perplexity/pplx-decider-v1.1-27b`) | Perplexity | OpenRouter Decisions API | 2026-10-12 |
+| Decider V1.2 and Decider Flash V1.2 (`perplexity/pplx-decider-v1.2`, `perplexity/pplx-decider-flash-v1.2`) | Perplexity | OpenRouter Decisions API | 2026-10-25, text and vision |
+| Decider V1.1 27B (`perplexity/pplx-decider-v1.1-27b`), retired | Perplexity | OpenRouter Decisions API, no longer served | 2026-10-12 |
 | Decider V1 27B (`perplexity/pplx-decider-v1-27b`), retired | Perplexity | OpenRouter Decisions API, no longer served | 2026-10-07 |
 | d1 (`liquid/d1`) | Liquid AI | OpenRouter Decisions API | 2026-10-07 |
+| d1-ultra (`liquid/d1-ultra`) | Liquid AI | OpenRouter Decisions API | 2026-10-25, text and vision |
 | Clef and Clef Flash (`cloudflare/clef`, `cloudflare/clef-flash`) | Cloudflare | OpenRouter Decisions API | 2026-10-07 |
 | Clef Omni (`cloudflare/clef-omni`) | Cloudflare | OpenRouter Decisions API | 2026-10-12 |
 | Solar Decide (`upstage/solar-decide`) | Upstage | OpenRouter Decisions API | 2026-10-07 |
@@ -63,6 +65,9 @@ Models covered so far:
 | Tev1 4B Experimental (`togethercomputer/tev1-4b-experimental`) | Together AI | OpenRouter Decisions API | 2026-10-07 |
 | Microsoft-Decision-1 (`microsoft/microsoft-decision-1`) | Microsoft | OpenRouter Decisions API | 2026-10-12 |
 | Drex v1.5 (`nace-ai/drex-v1.5`) | Nace AI | OpenRouter Decisions API | 2026-10-12 |
+| Drex v2.0 and Drex Max (`nace-ai/drex-v2.0`, `nace-ai/drex-max`) | Nace AI | OpenRouter Decisions API | 2026-10-25 |
+| Span-02 (`respan/span-02`) | Respan | OpenRouter Decisions API | 2026-10-25, text and vision |
+| Classify-1 (`scaledown/classify-1`) | ScaleDown | OpenRouter Decisions API; rejects most of our cases | 2026-10-25 |
 | [Laya](https://huggingface.co/convaiinnovations/laya) and its Arabic fine-tunes | Convai Innovations, Wouze | open weights, locally on Apple MPS | 2026-09-23, 2026-09-25 |
 | d1-3B and d1-omni-600M (`LiquidAI/d1-3B`, `LiquidAI/d1-omni-600M`) | Liquid AI | open weights, llama.cpp on a 4-vCPU CPU | 2026-10-17, 2026-10-18 |
 | d3 edge, lite and nano (`vllm-sr/d3-{edge,lite,nano}`) | vLLM Semantic Router | open weights, llama.cpp on a 4-vCPU CPU | 2026-10-17, 2026-10-18 |
@@ -103,7 +108,8 @@ OPENROUTER_API_KEY=<your key> .venv/bin/python run_decisions.py --model typesafe
 - [Licence and citation](#licence-and-citation) · [Results site](#results-site) · [Roadmap](#roadmap) · [Live race](#live-race)
 - [Frozen data](#frozen-data) · [Full benchmark](#full-benchmark) · [Vision track](#vision-track) ·
   [Open-weight models, run locally](#open-weight-models-run-locally)
-- Rounds: [7, open weights on a CPU](#round-7-eight-small-open-weight-models-on-a-cpu-2026-10-18) ·
+- Rounds: [8, seven more from OpenRouter](#round-8-seven-more-models-from-openrouter-2026-10-25) ·
+  [7, open weights on a CPU](#round-7-eight-small-open-weight-models-on-a-cpu-2026-10-18) ·
   [6, vision](#round-6-the-vision-track-2026-10-15) · [5, Jev 1.14](#round-5-jev-114-2026-10-15) ·
   [latency](#latency-every-api-model-from-one-machine-2026-10-15) ·
   [4](#round-4-four-more-models-from-openrouter-2026-10-12) · [3](#round-3-microsoft-decision-1-2026-10-12) ·
@@ -127,7 +133,7 @@ To cite System One Bench, use GitHub's "Cite this repository" button, which read
 A model that has run here can link to its results with this badge. Replace the model id with the model's own (as in
 the table above); the link opens the board filtered to that model.
 
-[![Scored on System One Bench](https://img.shields.io/badge/System_One_Bench-scored-2a78d6)](https://systemonebench.dev/?q=perplexity/pplx-decider-v1.1-27b)
+[![Scored on System One Bench](https://img.shields.io/badge/System_One_Bench-scored-2a78d6)](https://systemonebench.dev/?q=perplexity/pplx-decider-v1.2)
 
 ```markdown
 [![Scored on System One Bench](https://img.shields.io/badge/System_One_Bench-scored-2a78d6)](https://systemonebench.dev/?q=<model id>)
@@ -171,12 +177,15 @@ mkdir -p _site && cp site/* results.json results_vision.json _site/ && python3 .
 ## Roadmap
 
 The roadmap lives in `site/meta.json` and is published at [systemonebench.dev/#roadmap](https://systemonebench.dev/#roadmap).
-As of 2026-10-18 it lists 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
-Decision, Hanzo Kai 1, meraGPT Decider 1), 5 open-weight families to run locally (the rest of the Kev size sweep, the larger
-d3 sizes, the leading community models, GLiNER2.5-Decide and GLiClass), 2 entries that need a track of their
-own, and 3 on a watch list. [Round 7](#round-7-eight-small-open-weight-models-on-a-cpu-2026-10-18) ran the small
-open-weight models. Everything that runs as-is on OpenRouter's Decisions API has been benchmarked. Several vendors publish their own scores; none go on the
-site until they've run here like every other model.
+As of 2026-10-25 it lists 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
+Decision, Hanzo Kai 1, meraGPT Decider 1), 8 open-weight entries (Baseten's Mammoth 1 and Elephant 1, the rest of the
+Kev size sweep, the leading community models, GLiNER2.5-Decide, the larger d3 sizes, GLiClass, and THX-01 and vLLM's
+Decision-1.0 Eos 0.8B for the next CPU round), 3 entries that need a track of their own (Span-01's conversations,
+Cloudflare Clairic's extraction and plain chat-model baselines), and 5 on a watch list, including the unconfirmed Fastino
+GLiDE v1.2. [Round 8](#round-8-seven-more-models-from-openrouter-2026-10-25) ran every decision model on OpenRouter's
+Decisions API as of 25 October except Baseten's two, which are only on the free tier, at 1,000 requests a day, and were
+left out of the round. Several vendors publish their own scores; none go on the site until they've run here like every other
+model.
 
 ## Live race
 
@@ -250,7 +259,10 @@ export OPENROUTER_API_KEY=<your key>
 .venv/bin/python score.py preds_laya_router.jsonl preds_laya_ara.jsonl preds_laya_ara-rag.jsonl preds_jev.jsonl \
   preds_or_jev.jsonl preds_luna.jsonl preds_pplx.jsonl preds_liquid_d1.jsonl preds_clef.jsonl preds_clef_flash.jsonl \
   preds_solar.jsonl preds_mercury.jsonl preds_kev.jsonl preds_tev1.jsonl preds_msft_d1.jsonl preds_pplx_v11.jsonl \
-  preds_clef_omni.jsonl preds_drex.jsonl preds_solar_flash.jsonl preds_or_jev_114.jsonl
+  preds_clef_omni.jsonl preds_drex.jsonl preds_solar_flash.jsonl preds_or_jev_114.jsonl preds_naluri_279m.jsonl \
+  preds_naluri_308m.jsonl preds_d1_omni_600m.jsonl preds_d3_edge.jsonl preds_kev_0_8b.jsonl preds_d3_lite.jsonl \
+  preds_d3_nano.jsonl preds_d1_3b.jsonl preds_pplx_v12.jsonl preds_d1_ultra.jsonl preds_pplx_flash_v12.jsonl \
+  preds_drex_max.jsonl preds_span02.jsonl preds_drex_v2.jsonl preds_classify1.jsonl
 ```
 
 Latency on the site comes from a separate re-run of every API model from one machine (see
@@ -309,8 +321,12 @@ V=img_sst2,img_ar_sentiment,img_pets,img_vqa_yesno,img_count
 .venv/bin/python run_decisions.py --cases image_cases.jsonl --out-dir vision --model openai/gpt-6-luna-decisions --name luna --suites $V
 .venv/bin/python score.py --cases image_cases.jsonl --out results_vision.json vision/preds_or_jev_114.jsonl vision/preds_or_jev.jsonl \
   vision/preds_luna.jsonl vision/preds_pplx_v11.jsonl vision/preds_clef.jsonl vision/preds_clef_flash.jsonl \
-  vision/preds_clef_omni.jsonl vision/preds_mercury.jsonl
+  vision/preds_clef_omni.jsonl vision/preds_mercury.jsonl vision/preds_d1_ultra.jsonl vision/preds_pplx_v12.jsonl \
+  vision/preds_pplx_flash_v12.jsonl vision/preds_span02.jsonl
 ```
+
+To add one vision run without touching the others, merge it: `score.py --merge --cases image_cases.jsonl --out
+results_vision.json vision/preds_<name>.jsonl`.
 
 Box answers are scored by intersection over union with the labelled box: right when IoU is 0.5 or more, plus mean IoU,
 and calibration of the answer's `confidence` against being right. They're reported apart and stay out of the Vision
@@ -352,6 +368,78 @@ The other open models need their own runners:
 A 24 GB Mac fits everything up to 9B at Q8. The 27B models (Kev 27B, d3 27B, Open-Jev 27B) and Open-Jev 9B, whose base
 model alone is 19 GB, need a bigger machine. Laya Multilingual is already covered: Laya Router sends every non-English
 state, Arabic and French included, to those same weights.
+
+## Round 8: seven more models from OpenRouter (2026-10-25)
+
+On 25 October, OpenRouter's catalog (`GET /api/v1/models?output_modalities=all`) listed nine decision models that
+weren't on the board. Seven ran on all 3,250 text cases through the Decisions API, 8 calls in flight, from a cloud
+server: Perplexity Decider V1.2 and Decider Flash V1.2, Nace AI Drex Max and Drex v2.0, Liquid AI d1-ultra, Respan
+Span-02 and ScaleDown Classify-1. The four that read images also ran the vision track. Before each run, one case of every
+question type checked that the model answers our request shape. Every call succeeded except Classify-1's, below.
+
+| Model | Maker | Index | English | Arabic | Calibration error | Median latency | Cost per 1,000 calls |
+|---|---|---|---|---|---|---|---|
+| **Decider V1.2** | Perplexity | **84.6** (1st) | 82.0 | **86.9** | **0.7%** | 178 ms | $0.007 |
+| Drex Max | Nace AI | 84.1 (2nd) | **82.8** | 84.5 | 6.2% | 277 ms | $0.021 |
+| d1-ultra | Liquid AI | 82.9 (3rd) | 81.7 | 84.2 | 1.0% | 168 ms | $0.010 |
+| Decider Flash V1.2 | Perplexity | 81.9 (7th) | 80.0 | 83.3 | 1.8% | **104 ms** | **$0.005** |
+| Span-02 | Respan | 79.5 (11th) | 77.9 | 82.3 | 10.5% | 204 ms | **$0.005** |
+| Drex v2.0 | Nace AI | 78.6 (14th) | 77.8 | 79.6 | 1.5% | 294 ms | $0.015 |
+| Classify-1 | ScaleDown | 30.6 (30th) | 30.7 | 30.6 | 3.2% | 254 ms | $0.018 |
+
+Ranks are out of the 30 models on the System One Index, with Decider V1.1 retired (below).
+
+- **Decider V1.2 leads the System One Index**, 1.2 points above Decider V1.1 (83.4). Most of the gain is Banking77
+  (+7.0) and Arabic MASSIVE scenario (+6.5). It's the most accurate model on XNLI Arabic (90.0%) and the best
+  calibrated on the board: 0.7% over all decisions (pooling every dataset evens out over- and under-confidence, so
+  every model's figure is lower than its per-dataset ones; Decider V1.2's are 1.5% to 8.5%). It's also the cheapest
+  paid model at its accuracy.
+- **Drex Max is 2nd, 0.5 points behind**, and most accurate on BoolQ (93.0%), XNLI English (95.3%) and XNLI French
+  (91.3%). It's 6.5 points above Drex v1.5; Drex v2.0 adds only 1.0 of those. It's the dearest of the new models: Nace
+  bills about 1.2 M output tokens per run, though the price on OpenRouter counts input tokens only.
+- **d1-ultra is 3rd**, 0.2 points above Liquid AI's d1, and well calibrated (1.0%).
+- **Decider Flash V1.2 is the fastest API model on the board** (104 ms median) and, with Span-02, the cheapest
+  ($0.005 per 1,000 calls), 2.7 points behind Decider V1.2.
+- **Span-02 fits the normal text track**, unlike Span-01, which only takes a conversation. Its first 441 answers were
+  checked by hand before the full run counted. It's the most accurate model on Arabic offensive language (97.0%) and
+  ties Decider V1.2 on MIRACL pairwise (91.5%), but it's overconfident (10.5%) and slow on long states: 2.1 s median on
+  the 5-question typed-decisions cases against 190 ms on the rest.
+- **Classify-1 rejects most of our cases.** It only accepts a state that is a string or an object with `text` and
+  `document` fields, and returns 400 for any other. Only DAIR Emotion's state (`{"text": ...}`) fits, so it answered
+  those 200 cases (59.0%, in line with the other models) and failed the other 3,050, which count as wrong. Its latency
+  and cost come from those 200 calls.
+
+**Vision.** Decider V1.2, Decider Flash V1.2, d1-ultra and Span-02 read images; none answers Box questions, so they ran
+the 5 Vision Index datasets. Drex Max, Drex v2.0 and Classify-1 reject images (Classify-1: "does not accept image_url
+parts") and are listed under `vision.no_image`.
+
+| Model | Vision Index | SST-2 image | Arabic sentiment image | Pets (37) | VQAv2 yes/no | CountBench | Calibration error | Median latency | Cost per 1,000 calls |
+|---|---|---|---|---|---|---|---|---|---|
+| **Span-02** | **86.1** (1st) | 92.5 | **70.0** | **92.5** | 87.0 | 88.5 | 4.4% | 231 ms | $0.004 |
+| d1-ultra | 85.6 (2nd) | **97.0** | 62.5 | 87.5 | **89.5** | 91.5 | 3.9% | 183 ms | $0.019 |
+| Decider V1.2 | 83.8 (5th) | 94.5 | 57.0 | 85.5 | 86.5 | **95.5** | 4.2% | 226 ms | $0.009 |
+| Decider Flash V1.2 | 77.5 (10th) | 93.5 | 35.0 | 84.0 | 87.5 | 87.5 | 6.0% | **134 ms** | **$0.004** |
+
+- **Span-02 leads the Vision Index**, 1.0 point above Jev 1.14 (85.1), with d1-ultra between them. It reads Arabic from
+  a picture better than any model so far, losing 6.0 points against its text score on the same 200 tweets; every other
+  model has lost 12.5 or more.
+- d1-ultra scores higher on the SST-2 images (97.0%) than on the same reviews as text (95.5%). Decider V1.2 is the best
+  counter (95.5% on CountBench). Decider Flash V1.2 falls to 35.0% on the Arabic images, near the 3-way floor.
+- Ranks are out of the 11 models on the Vision Index.
+
+**Decider V1.1 is retired.** It has left OpenRouter's catalog, and its slug returns 404 ("No endpoints found"), so
+it's tagged retired and left out of the charts and rankings like Decider V1. Decider V1.2 replaces it in the live race,
+and every new model except Classify-1 joins it.
+
+**Baseten's Mammoth 1 and Elephant 1 are left out of this round.** They're served only on OpenRouter's free tier, which
+allows 1,000 requests a day, and a text run takes 3,341 (3,250 cases and the 91-call latency probe), so a run would
+take days and free access may end first. Both answered our request shape correctly; a partial Mammoth 1 run was stopped
+and isn't published. Their open weights (`baselabs/mammoth-1`, `baselabs/elephant-1`, MIT) are on the roadmap.
+
+**Latency.** These runs were timed from a different cloud server than the one behind the board's 15 October timings,
+with several models running at once. As a control, Jev 1.14 ran again alongside them (not published): 122 ms median
+here against 136 ms on the board, so the new models' latencies compare with the others to within about 10%. Tails were
+wider with several runs at once (Jev 1.14's 95th percentile was 215 ms against 175 ms).
 
 ## Round 7: eight small open-weight models on a CPU (2026-10-18)
 

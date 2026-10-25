@@ -290,7 +290,7 @@ def compare_page(a, b):
 <h2>Overall</h2><div class="card"><table>{head}{summary_rows}</table></div>
 <h2>Text datasets, accuracy</h2><div class="card"><table>{head}{''.join(rows)}</table></div>
 {f'<h2>Image datasets, accuracy</h2><div class="card"><table>{head}{"".join(vrows)}</table></div>' if vrows else ''}
-<p class="note">Model pages: <a href="/models/{slugs[a]}/">{e(ma['label'])}</a> · <a href="/models/{slugs[b]}/">{e(mb['label'])}</a>. Latency for API models is the median per call through OpenRouter, timed from one machine.</p>"""
+<p class="note">Model pages: <a href="/models/{slugs[a]}/">{e(ma['label'])}</a> · <a href="/models/{slugs[b]}/">{e(mb['label'])}</a>. Latency for API models is the median per call through OpenRouter, timed from a cloud server with 8 calls in flight.</p>"""
     return page(f"compare/{pair_slug(a, b)}", f"{ma['label']} vs {mb['label']}: System One Bench", verdict, body)
 
 
