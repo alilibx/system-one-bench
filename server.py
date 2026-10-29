@@ -1,9 +1,9 @@
 """System One Bench live race: any set of decision models, racing on the same labelled cases at the same time.
 
 Racers: every model on OpenRouter's Decisions API (TypeSafe Jev 1.13 and 1.14, OpenAI GPT-6 Luna Decisions, Perplexity Decider
-V1.2 and Decider Flash V1.2, Liquid AI d1 and d1-ultra, Cloudflare Clef, Clef Flash and Clef Omni, Inception Mercury, Upstage
-Solar and Solar Flash, Kev 4B, Together Tev1, Microsoft-Decision-1, Nace Drex v1.5, v2.0 and Max, Respan Span-02), and, with
-LAYA=1, Laya running locally. ScaleDown Classify-1 isn't a racer: it rejects every state but plain text.
+V1.2 and Decider Flash V1.2, Liquid AI d1, d1.1 and d1-ultra, Cloudflare Clef, Clef Flash and Clef Omni, Inception Mercury,
+Upstage Solar and Solar Flash, Kev 4B, Together Tev1, Microsoft-Decision-1, Nace Drex v1.5, v2.0 and Max, Respan Span-02,
+Baseten Mammoth 1, Elephant 1 and Joey 1), and, with LAYA=1, Laya running locally. ScaleDown Classify-1 isn't a racer: it rejects every state but plain text.
 
 Run:  OPENROUTER_API_KEY=<your key> .venv/bin/python server.py
       OPENROUTER_API_KEY=kerstel://global/OPENROUTER_API_KEY ks run -- .venv/bin/python server.py
@@ -56,6 +56,7 @@ API_RACERS = [
     ("pplx", "Decider V1.2", "Perplexity", "perplexity/pplx-decider-v1.2", 4),
     ("pplx-flash", "Decider Flash V1.2", "Perplexity", "perplexity/pplx-decider-flash-v1.2", 4),
     ("liquid", "d1", "Liquid AI", "liquid/d1", 6),
+    ("liquid-1.1", "d1.1", "Liquid AI", "liquid/d1.1", 6),
     ("liquid-ultra", "d1-ultra", "Liquid AI", "liquid/d1-ultra", 6),
     ("clef", "Clef", "Cloudflare", "cloudflare/clef", 5),
     ("clef-flash", "Clef Flash", "Cloudflare", "cloudflare/clef-flash", 5),
@@ -70,6 +71,9 @@ API_RACERS = [
     ("drex-v2", "Drex v2.0", "Nace AI", "nace-ai/drex-v2.0", 9),
     ("drex-max", "Drex Max", "Nace AI", "nace-ai/drex-max", 9),
     ("span", "Span-02", "Respan", "respan/span-02", 9),
+    ("mammoth", "Mammoth 1", "Baseten", "baseten/mammoth-1", 9),
+    ("elephant", "Elephant 1", "Baseten", "baseten/elephant-1", 9),
+    ("joey", "Joey 1", "Baseten", "baseten/joey-1", 9),
 ]
 RACERS = {k: {"label": label, "maker": maker, "where": f"openrouter.ai · {model}", "series": series, "api": True,
               "url": DECISIONS_URL, "model": model, "key": "OPENROUTER_API_KEY"}

@@ -56,6 +56,7 @@ Models covered so far:
 | Decider V1 27B (`perplexity/pplx-decider-v1-27b`), retired | Perplexity | OpenRouter Decisions API, no longer served | 2026-10-07 |
 | d1 (`liquid/d1`) | Liquid AI | OpenRouter Decisions API | 2026-10-07 |
 | d1-ultra (`liquid/d1-ultra`) | Liquid AI | OpenRouter Decisions API | 2026-10-25, text and vision |
+| d1.1 (`liquid/d1.1`) | Liquid AI | OpenRouter Decisions API | 2026-10-30, text and vision |
 | Clef and Clef Flash (`cloudflare/clef`, `cloudflare/clef-flash`) | Cloudflare | OpenRouter Decisions API | 2026-10-07 |
 | Clef Omni (`cloudflare/clef-omni`) | Cloudflare | OpenRouter Decisions API | 2026-10-12 |
 | Solar Decide (`upstage/solar-decide`) | Upstage | OpenRouter Decisions API | 2026-10-07 |
@@ -68,6 +69,7 @@ Models covered so far:
 | Drex v2.0 and Drex Max (`nace-ai/drex-v2.0`, `nace-ai/drex-max`) | Nace AI | OpenRouter Decisions API | 2026-10-25 |
 | Span-02 (`respan/span-02`) | Respan | OpenRouter Decisions API | 2026-10-25, text and vision |
 | Classify-1 (`scaledown/classify-1`) | ScaleDown | OpenRouter Decisions API; rejects most of our cases | 2026-10-25 |
+| Mammoth 1, Elephant 1 and Joey 1 (`baseten/mammoth-1`, `baseten/elephant-1`, `baseten/joey-1`) | Baseten | OpenRouter Decisions API | 2026-10-30 |
 | [Laya](https://huggingface.co/convaiinnovations/laya) and its Arabic fine-tunes | Convai Innovations, Wouze | open weights, locally on Apple MPS | 2026-09-23, 2026-09-25 |
 | d1-3B and d1-omni-600M (`LiquidAI/d1-3B`, `LiquidAI/d1-omni-600M`) | Liquid AI | open weights, llama.cpp on a 4-vCPU CPU | 2026-10-17, 2026-10-18 |
 | d3 edge, lite and nano (`vllm-sr/d3-{edge,lite,nano}`) | vLLM Semantic Router | open weights, llama.cpp on a 4-vCPU CPU | 2026-10-17, 2026-10-18 |
@@ -108,7 +110,8 @@ OPENROUTER_API_KEY=<your key> .venv/bin/python run_decisions.py --model typesafe
 - [Licence and citation](#licence-and-citation) · [Results site](#results-site) · [Roadmap](#roadmap) · [Live race](#live-race)
 - [Frozen data](#frozen-data) · [Full benchmark](#full-benchmark) · [Vision track](#vision-track) ·
   [Open-weight models, run locally](#open-weight-models-run-locally)
-- Rounds: [8, seven more from OpenRouter](#round-8-seven-more-models-from-openrouter-2026-10-25) ·
+- Rounds: [9, four more from OpenRouter](#round-9-four-more-models-from-openrouter-2026-10-30) ·
+  [8, seven more from OpenRouter](#round-8-seven-more-models-from-openrouter-2026-10-25) ·
   [7, open weights on a CPU](#round-7-eight-small-open-weight-models-on-a-cpu-2026-10-18) ·
   [6, vision](#round-6-the-vision-track-2026-10-15) · [5, Jev 1.14](#round-5-jev-114-2026-10-15) ·
   [latency](#latency-every-api-model-from-one-machine-2026-10-15) ·
@@ -177,14 +180,13 @@ mkdir -p _site && cp site/* results.json results_vision.json _site/ && python3 .
 ## Roadmap
 
 The roadmap lives in `site/meta.json` and is published at [systemonebench.dev/#roadmap](https://systemonebench.dev/#roadmap).
-As of 2026-10-25 it lists 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
-Decision, Hanzo Kai 1, meraGPT Decider 1), 8 open-weight entries (Baseten's Mammoth 1 and Elephant 1, the rest of the
-Kev size sweep, the leading community models, GLiNER2.5-Decide, the larger d3 sizes, GLiClass, and THX-01 and vLLM's
-Decision-1.0 Eos 0.8B for the next CPU round), 3 entries that need a track of their own (Span-01's conversations,
-Cloudflare Clairic's extraction and plain chat-model baselines), and 5 on a watch list, including the unconfirmed Fastino
-GLiDE v1.2. [Round 8](#round-8-seven-more-models-from-openrouter-2026-10-25) ran every decision model on OpenRouter's
-Decisions API as of 25 October except Baseten's two, which are only on the free tier, at 1,000 requests a day, and were
-left out of the round. Several vendors publish their own scores; none go on the site until they've run here like every other
+As of 2026-10-30 it lists 4 hosted models on their own APIs with the same request shape (Fastino GLiDE, Celeris-1
+Decision, Hanzo Kai 1, meraGPT Decider 1), 7 open-weight entries (the rest of the Kev size sweep, the leading community
+models, GLiNER2.5-Decide, the larger d3 sizes, GLiClass, and THX-01 and vLLM's Decision-1.0 Eos 0.8B for the next CPU
+round), 3 entries that need a track of their own (Span-01's conversations, Cloudflare Clairic's extraction and plain
+chat-model baselines), and 4 on a watch list. [Round 9](#round-9-four-more-models-from-openrouter-2026-10-30) ran every
+decision model on OpenRouter's Decisions API as of 30 October, including Baseten's Mammoth 1 and Elephant 1, which round 8
+left out because they were then only on the free tier. Several vendors publish their own scores; none go on the site until they've run here like every other
 model.
 
 ## Live race
@@ -262,7 +264,8 @@ export OPENROUTER_API_KEY=<your key>
   preds_clef_omni.jsonl preds_drex.jsonl preds_solar_flash.jsonl preds_or_jev_114.jsonl preds_naluri_279m.jsonl \
   preds_naluri_308m.jsonl preds_d1_omni_600m.jsonl preds_d3_edge.jsonl preds_kev_0_8b.jsonl preds_d3_lite.jsonl \
   preds_d3_nano.jsonl preds_d1_3b.jsonl preds_pplx_v12.jsonl preds_d1_ultra.jsonl preds_pplx_flash_v12.jsonl \
-  preds_drex_max.jsonl preds_span02.jsonl preds_drex_v2.jsonl preds_classify1.jsonl
+  preds_drex_max.jsonl preds_span02.jsonl preds_drex_v2.jsonl preds_classify1.jsonl preds_d1_1.jsonl \
+  preds_mammoth1.jsonl preds_elephant1.jsonl preds_joey1.jsonl
 ```
 
 Latency on the site comes from a separate re-run of every API model from one machine (see
@@ -272,6 +275,10 @@ Latency on the site comes from a separate re-run of every API model from one mac
 ```bash
 .venv/bin/python set_latency.py lat/preds_*.jsonl   # re-runs written by run_decisions.py run inside lat/
 ```
+
+Round 9's models (d1.1, Mammoth 1, Elephant 1, Joey 1) have no latency on the board, since they ran from a machine whose
+round trips don't compare (see [round 9](#round-9-four-more-models-from-openrouter-2026-10-30)). After a full re-score,
+set their `latency_ms` back to `null`.
 
 Models on their vendor's own API take the same request body. `--provider fastino|celeris|hanzo|meragpt` sets the
 endpoint, model id and auth header, and reads the key from `FASTINO_API_KEY`, `CELERIS_API_KEY`, `HANZO_API_KEY` or
@@ -322,7 +329,7 @@ V=img_sst2,img_ar_sentiment,img_pets,img_vqa_yesno,img_count
 .venv/bin/python score.py --cases image_cases.jsonl --out results_vision.json vision/preds_or_jev_114.jsonl vision/preds_or_jev.jsonl \
   vision/preds_luna.jsonl vision/preds_pplx_v11.jsonl vision/preds_clef.jsonl vision/preds_clef_flash.jsonl \
   vision/preds_clef_omni.jsonl vision/preds_mercury.jsonl vision/preds_d1_ultra.jsonl vision/preds_pplx_v12.jsonl \
-  vision/preds_pplx_flash_v12.jsonl vision/preds_span02.jsonl
+  vision/preds_pplx_flash_v12.jsonl vision/preds_span02.jsonl vision/preds_d1_1.jsonl
 ```
 
 To add one vision run without touching the others, merge it: `score.py --merge --cases image_cases.jsonl --out
@@ -368,6 +375,54 @@ The other open models need their own runners:
 A 24 GB Mac fits everything up to 9B at Q8. The 27B models (Kev 27B, d3 27B, Open-Jev 27B) and Open-Jev 9B, whose base
 model alone is 19 GB, need a bigger machine. Laya Multilingual is already covered: Laya Router sends every non-English
 state, Arabic and French included, to those same weights.
+
+## Round 9: four more models from OpenRouter (2026-10-30)
+
+On 30 October, OpenRouter's catalog (`GET /api/v1/models?output_modalities=decisions`) listed four decision models that
+weren't on the board: Liquid AI d1.1, the successor to d1, and Baseten's Mammoth 1, Elephant 1 and Joey 1, from Base Labs,
+Baseten's research team. Round 8 left Mammoth 1 and Elephant 1 out because they were only on the free tier; both now
+have paid endpoints. All four ran on the 3,250 text cases through the Decisions API, 8 calls in flight. Before each run,
+one case of every question type checked that the model answers our request shape. Every call succeeded; Joey 1's run
+hit rate limits, and the 3 cases that gave up on 429 succeeded when the run was resumed.
+
+| Model | Maker | Index | English | Arabic | Calibration error | Cost per 1,000 calls |
+|---|---|---|---|---|---|---|
+| **Mammoth 1** | Baseten | **82.9** (4th) | **82.5** | 82.8 | 4.9% | $0.037 |
+| d1.1 | Liquid AI | 82.3 (7th) | 81.2 | **83.3** | **2.1%** | $0.005 |
+| Elephant 1 | Baseten | 82.1 (8th) | 81.3 | 82.0 | 3.7% | $0.013 |
+| Joey 1 | Baseten | 73.3 (24th) | 72.9 | 73.5 | **2.1%** | **$0.004** |
+
+Ranks are out of the 34 models on the System One Index.
+
+- **Mammoth 1 is 4th**, 0.04 points behind d1-ultra, so both show as 82.9. It's built on Qwen3.5-27B, and it's 2nd on
+  the typed decisions (76.4%, behind Microsoft-Decision-1's 79.0%). It's also the dearest of the four.
+- **Elephant 1 is 0.8 points behind Mammoth 1 at about a third of the price.** It's built on Qwen3.5-9B, like
+  Microsoft-Decision-1 (82.0), and is tied 2nd on XNLI English (94.0%) and XNLI French (90.0%), behind Drex Max.
+- **d1.1 is 0.4 points behind d1 (82.7)**, the model it replaces. It gains on Arabic sentiment (+5.0) and SST-5 (+3.5)
+  and loses on Arabic offensive language and DAIR Emotion (3.0 each). It's the most accurate model on SST-2 (98.0%),
+  better calibrated than d1 (2.1% against 2.9%), and costs the same.
+- **Joey 1 is the cheapest paid model on the board** ($0.004 per 1,000 calls). It has 2B parameters and scores 73.3,
+  above Tev1 4B (71.5) and below Kev 4B (76.8). It scores 93.0% on Banking77 but falls on SST-5 (40.5%) and Arabic
+  MIRACL reranking (62.0%).
+
+**Vision.** d1.1 reads images but doesn't answer Box questions, so it ran the 5 Vision Index datasets. Baseten's three
+reject images ("BaseTen does not accept \"image_url\" parts in state") and are listed under `vision.no_image`.
+
+| Model | Vision Index | SST-2 image | Arabic sentiment image | Pets (37) | VQAv2 yes/no | CountBench | Calibration error | Cost per 1,000 calls |
+|---|---|---|---|---|---|---|---|---|
+| d1.1 | 85.8 (2nd) | 96.5 | 61.0 | 90.5 | 89.5 | 91.5 | 3.3% | $0.009 |
+
+- d1.1 is 2nd on the Vision Index, 0.3 points behind Span-02 (86.1) and 0.2 above d1-ultra. d1, which it replaces,
+  has no image input. It ties d1-ultra on VQAv2 yes/no (89.5%) and is the third best calibrated on images (3.3%).
+- It loses 11.5 points reading Arabic from a picture (61.0% on the images against 72.5% on the same tweets as text).
+  Only Span-02 loses less (6.0); every other model has lost 12.5 or more.
+- Ranks are out of the 12 models on the Vision Index.
+
+**Latency isn't on the board for these four.** This round ran from a machine where round trips through OpenRouter take
+far longer than from the cloud server behind the board's timings. As a control, Jev 1.14 ran again alongside the four
+(not published): 492 ms median with 8 calls in flight, against 136 ms on the board. Accuracy, calibration and cost don't
+depend on the network, so only latency is left out (`latency_ms` is `null`), and the four don't appear in the latency
+charts. Each model's `note` in `site/meta.json` says so.
 
 ## Round 8: seven more models from OpenRouter (2026-10-25)
 
