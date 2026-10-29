@@ -185,9 +185,9 @@ Decision, Hanzo Kai 1, meraGPT Decider 1), 7 open-weight entries (the rest of th
 models, GLiNER2.5-Decide, the larger d3 sizes, GLiClass, and THX-01 and vLLM's Decision-1.0 Eos 0.8B for the next CPU
 round), 3 entries that need a track of their own (Span-01's conversations, Cloudflare Clairic's extraction and plain
 chat-model baselines), and 4 on a watch list. [Round 9](#round-9-four-more-models-from-openrouter-2026-10-30) ran every
-decision model on OpenRouter's Decisions API as of 30 October, including Baseten's Mammoth 1 and Elephant 1, which round 8
-left out because they were then only on the free tier. Several vendors publish their own scores; none go on the site until they've run here like every other
-model.
+decision model on OpenRouter's Decisions API as of 30 October except Span-01 and Span-01 Lite, which need a conversation
+track. That includes Baseten's Mammoth 1 and Elephant 1, which round 8 left out because they were then only on the free
+tier. Several vendors publish their own scores; none go on the site until they've run here like every other model.
 
 ## Live race
 
@@ -382,8 +382,8 @@ On 30 October, OpenRouter's catalog (`GET /api/v1/models?output_modalities=decis
 weren't on the board: Liquid AI d1.1, the successor to d1, and Baseten's Mammoth 1, Elephant 1 and Joey 1, from Base Labs,
 Baseten's research team. Round 8 left Mammoth 1 and Elephant 1 out because they were only on the free tier; both now
 have paid endpoints. All four ran on the 3,250 text cases through the Decisions API, 8 calls in flight. Before each run,
-one case of every question type checked that the model answers our request shape. Every call succeeded; Joey 1's run
-hit rate limits, and the 3 cases that gave up on 429 succeeded when the run was resumed.
+one case of every question type checked that the model answers our request shape. Every case got an answer: Joey 1's
+run hit rate limits, and the 3 cases that gave up on 429 succeeded when the run was resumed.
 
 | Model | Maker | Index | English | Arabic | Calibration error | Cost per 1,000 calls |
 |---|---|---|---|---|---|---|
@@ -400,7 +400,8 @@ Ranks are out of the 34 models on the System One Index.
   Microsoft-Decision-1 (82.0), and is tied 2nd on XNLI English (94.0%) and XNLI French (90.0%), behind Drex Max.
 - **d1.1 is 0.4 points behind d1 (82.7)**, the model it replaces. It gains on Arabic sentiment (+5.0) and SST-5 (+3.5)
   and loses on Arabic offensive language and DAIR Emotion (3.0 each). It's the most accurate model on SST-2 (98.0%),
-  better calibrated than d1 (2.1% against 2.9%), and costs the same.
+  better calibrated than d1 (2.1% against 2.9%), and costs a third as much per call ($0.005 against $0.015 per 1,000
+  calls).
 - **Joey 1 is the cheapest paid model on the board** ($0.004 per 1,000 calls). It has 2B parameters and scores 73.3,
   above Tev1 4B (71.5) and below Kev 4B (76.8). It scores 93.0% on Banking77 but falls on SST-5 (40.5%) and Arabic
   MIRACL reranking (62.0%).
@@ -422,7 +423,7 @@ reject images ("BaseTen does not accept \"image_url\" parts in state") and are l
 far longer than from the cloud server behind the board's timings. As a control, Jev 1.14 ran again alongside the four
 (not published): 492 ms median with 8 calls in flight, against 136 ms on the board. Accuracy, calibration and cost don't
 depend on the network, so only latency is left out (`latency_ms` is `null`), and the four don't appear in the latency
-charts. Each model's `note` in `site/meta.json` says so.
+charts. Each model's `latency` field in `site/meta.json` says so.
 
 ## Round 8: seven more models from OpenRouter (2026-10-25)
 

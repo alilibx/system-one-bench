@@ -3,7 +3,8 @@
 Racers: every model on OpenRouter's Decisions API (TypeSafe Jev 1.13 and 1.14, OpenAI GPT-6 Luna Decisions, Perplexity Decider
 V1.2 and Decider Flash V1.2, Liquid AI d1, d1.1 and d1-ultra, Cloudflare Clef, Clef Flash and Clef Omni, Inception Mercury,
 Upstage Solar and Solar Flash, Kev 4B, Together Tev1, Microsoft-Decision-1, Nace Drex v1.5, v2.0 and Max, Respan Span-02,
-Baseten Mammoth 1, Elephant 1 and Joey 1), and, with LAYA=1, Laya running locally. ScaleDown Classify-1 isn't a racer: it rejects every state but plain text.
+Baseten Mammoth 1, Elephant 1 and Joey 1), and, with LAYA=1, Laya running locally. ScaleDown Classify-1 isn't a racer:
+it rejects every state but plain text.
 
 Run:  OPENROUTER_API_KEY=<your key> .venv/bin/python server.py
       OPENROUTER_API_KEY=kerstel://global/OPENROUTER_API_KEY ks run -- .venv/bin/python server.py

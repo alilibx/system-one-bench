@@ -400,7 +400,7 @@
       "series": 6,
       "latency": "API; not timed (round 9 ran from a machine whose round trips don't compare with the board's)",
       "short": "d1.1",
-      "note": "The successor to d1, served as liquid/d1.1-20261027. 64K context. Doesn't answer Box questions. Ran from a machine whose round trips don't compare with the board's cloud server, so it has no latency on the board."
+      "note": "The successor to d1, served as liquid/d1.1-20261027. 64K context. Doesn't answer Box questions."
     },
     "mammoth1": {
       "label": "Mammoth 1",
@@ -411,7 +411,7 @@
       "series": 9,
       "latency": "API; not timed (round 9 ran from a machine whose round trips don't compare with the board's)",
       "short": "Mammoth 1",
-      "note": "27B, built on Qwen3.5-27B by Base Labs, Baseten's research team. MIT weights (baselabs/mammoth-1). Text only. Ran from a machine whose round trips don't compare with the board's cloud server, so it has no latency on the board."
+      "note": "27B, built on Qwen3.5-27B by Base Labs, Baseten's research team. MIT weights (baselabs/mammoth-1). Text only."
     },
     "elephant1": {
       "label": "Elephant 1",
@@ -422,7 +422,7 @@
       "series": 9,
       "latency": "API; not timed (round 9 ran from a machine whose round trips don't compare with the board's)",
       "short": "Elephant 1",
-      "note": "9B, built on Qwen3.5-9B by Base Labs, Baseten's research team. MIT weights (baselabs/elephant-1). Text only. Ran from a machine whose round trips don't compare with the board's cloud server, so it has no latency on the board."
+      "note": "9B, built on Qwen3.5-9B by Base Labs, Baseten's research team. MIT weights (baselabs/elephant-1). Text only."
     },
     "joey1": {
       "label": "Joey 1",
@@ -433,7 +433,7 @@
       "series": 9,
       "latency": "API; not timed (round 9 ran from a machine whose round trips don't compare with the board's)",
       "short": "Joey 1",
-      "note": "2B, built on Qwen3.5-2B by Base Labs, Baseten's research team. MIT weights (baselabs/joey-1). Text only. Ran from a machine whose round trips don't compare with the board's cloud server, so it has no latency on the board."
+      "note": "2B, built on Qwen3.5-2B by Base Labs, Baseten's research team. MIT weights (baselabs/joey-1). Text only."
     }
   },
   "languages": [
