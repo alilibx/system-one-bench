@@ -390,6 +390,50 @@
       "latency": "API, 8 in flight, timed 25 October 2026",
       "short": "Classify-1",
       "note": "Only accepts a state that is a string or an object with text or document fields, so it rejected every case except the 200 DAIR Emotion cases, whose state is {\"text\": ...}. The 3,050 rejected cases count as wrong. It also rejects image_url parts, so it has no vision score. Its latency and cost come from the 200 calls it answered."
+    },
+    "d1_1": {
+      "label": "d1.1",
+      "maker": "Liquid AI",
+      "access": "OpenRouter API",
+      "slug": "liquid/d1.1",
+      "run": "2026-10-30",
+      "series": 6,
+      "latency": "API; not timed (round 9 ran from a machine whose round trips don't compare with the board's)",
+      "short": "d1.1",
+      "note": "The successor to d1, served as liquid/d1.1-20261027. 64K context. Doesn't answer Box questions."
+    },
+    "mammoth1": {
+      "label": "Mammoth 1",
+      "maker": "Baseten",
+      "access": "OpenRouter API",
+      "slug": "baseten/mammoth-1",
+      "run": "2026-10-30",
+      "series": 9,
+      "latency": "API; not timed (round 9 ran from a machine whose round trips don't compare with the board's)",
+      "short": "Mammoth 1",
+      "note": "27B, built on Qwen3.5-27B by Base Labs, Baseten's research team. MIT weights (baselabs/mammoth-1). Text only."
+    },
+    "elephant1": {
+      "label": "Elephant 1",
+      "maker": "Baseten",
+      "access": "OpenRouter API",
+      "slug": "baseten/elephant-1",
+      "run": "2026-10-30",
+      "series": 9,
+      "latency": "API; not timed (round 9 ran from a machine whose round trips don't compare with the board's)",
+      "short": "Elephant 1",
+      "note": "9B, built on Qwen3.5-9B by Base Labs, Baseten's research team. MIT weights (baselabs/elephant-1). Text only."
+    },
+    "joey1": {
+      "label": "Joey 1",
+      "maker": "Baseten",
+      "access": "OpenRouter API",
+      "slug": "baseten/joey-1",
+      "run": "2026-10-30",
+      "series": 9,
+      "latency": "API; not timed (round 9 ran from a machine whose round trips don't compare with the board's)",
+      "short": "Joey 1",
+      "note": "Built on Qwen3.5-2B by Base Labs, Baseten's research team. MIT weights (baselabs/joey-1). Text only."
     }
   },
   "languages": [
@@ -486,7 +530,7 @@
         {
           "name": "Fastino GLiDE",
           "access": "api.fastino.ai/v1/systemone",
-          "note": "Same request shape on Fastino's own API, so only the base URL and key change. $0.15 per 1M input tokens."
+          "note": "Same request shape on Fastino's own API, so only the base URL and key change. $0.15 per 1M input tokens. Version 1.2's weights (fastino/GLiDE, 26B, Fastino's community licence) have been on Hugging Face since 19 October 2026, but are too big for the 24 GB Mac."
         },
         {
           "name": "Celeris-1 Decision",
@@ -508,11 +552,6 @@
     {
       "title": "Next: open weights, run locally",
       "items": [
-        {
-          "name": "Baseten Mammoth 1 and Elephant 1",
-          "access": "baseten/mammoth-1:free, baseten/elephant-1:free; baselabs/mammoth-1, baselabs/elephant-1",
-          "note": "27B and 9B decision models from Base Labs, built on Qwen3.5-27B and 9B, MIT licence. On OpenRouter only on the free tier, which allows 1,000 requests a day against the 3,341 a run takes, so they were left out of round 8. The open weights can run on a GPU."
-        },
         {
           "name": "Kev size sweep",
           "access": "jaredpalmer/kev-{0.5b, 0.6b, 8b, 9b, 27b}",
@@ -589,11 +628,6 @@
           "note": "S1MB, JevBench, Decision Index and BenchLM publish decision-model results to cross-check ours against."
         },
         {
-          "name": "Fastino GLiDE v1.2",
-          "access": "",
-          "note": "Unconfirmed: said to be released on 22 October 2026, but only one aggregator site lists it so far."
-        },
-        {
           "name": "Clinical System One (CS1)",
           "access": "arXiv 2610.27099",
           "note": "Research only: a paper, with no model to call or download yet."
@@ -647,7 +681,10 @@
       "naluri_279m",
       "drex_max",
       "drex_v2",
-      "classify1"
+      "classify1",
+      "joey1",
+      "mammoth1",
+      "elephant1"
     ]
   }
 }
