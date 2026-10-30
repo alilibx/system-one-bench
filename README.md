@@ -399,9 +399,9 @@ Ranks are out of the 34 models on the System One Index.
 - **Elephant 1 is 0.8 points behind Mammoth 1 at about a third of the price.** It's built on Qwen3.5-9B, like
   Microsoft-Decision-1 (82.0), and is tied 2nd on XNLI English (94.0%) and XNLI French (90.0%), behind Drex Max.
 - **d1.1 is 0.4 points behind d1 (82.7)**, the model it replaces. It gains on Arabic sentiment (+5.0) and SST-5 (+3.5)
-  and loses on Arabic offensive language and DAIR Emotion (3.0 each). It's the most accurate model on SST-2 (98.0%),
-  better calibrated than d1 (2.1% against 2.9%), and costs a third as much per call ($0.005 against $0.015 per 1,000
-  calls).
+  and loses on Arabic offensive language and DAIR Emotion (3.0 each). It's the most accurate model on SST-2 (98.0%)
+  and better calibrated than d1 (2.1% against 2.9%). Its $0.005 per 1,000 calls is a third of d1's $0.015, but that
+  gap comes from when d1 ran: it was billed about $0.04 per 1M input tokens on 7 October, and both now list $0.02.
 - **Joey 1 is the cheapest paid model on the board** ($0.004 per 1,000 calls). It has 2B parameters and scores 73.3,
   above Tev1 4B (71.5) and below Kev 4B (76.8). It scores 93.0% on Banking77 but falls on SST-5 (40.5%) and Arabic
   MIRACL reranking (62.0%).
