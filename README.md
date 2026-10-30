@@ -402,7 +402,7 @@ Ranks are out of the 34 models on the System One Index.
   and loses on Arabic offensive language and DAIR Emotion (3.0 each). It's the most accurate model on SST-2 (98.0%)
   and better calibrated than d1 (2.1% against 2.9%). Its $0.005 per 1,000 calls is a third of d1's $0.015, but that
   gap comes from when d1 ran: it was billed about $0.04 per 1M input tokens on 7 October, and both now list $0.02.
-- **Joey 1 is the cheapest paid model on the board** ($0.004 per 1,000 calls). It has 2B parameters and scores 73.3,
+- **Joey 1 is the cheapest paid model on the board** ($0.004 per 1,000 calls). It's built on Qwen3.5-2B and scores 73.3,
   above Tev1 4B (71.5) and below Kev 4B (76.8). It scores 93.0% on Banking77 but falls on SST-5 (40.5%) and Arabic
   MIRACL reranking (62.0%).
 
