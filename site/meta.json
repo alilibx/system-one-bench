@@ -433,7 +433,7 @@
       "series": 9,
       "latency": "API; not timed (round 9 ran from a machine whose round trips don't compare with the board's)",
       "short": "Joey 1",
-      "note": "2B, built on Qwen3.5-2B by Base Labs, Baseten's research team. MIT weights (baselabs/joey-1). Text only."
+      "note": "Built on Qwen3.5-2B by Base Labs, Baseten's research team. MIT weights (baselabs/joey-1). Text only."
     }
   },
   "languages": [
